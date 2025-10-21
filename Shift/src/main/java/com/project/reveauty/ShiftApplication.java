@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ReVeautyApplication {
+public class ShiftApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ReVeautyApplication.class, args);
+        SpringApplication.run(ShiftApplication.class, args);
     }
 
 }
