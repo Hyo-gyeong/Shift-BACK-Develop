@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -23,11 +24,21 @@ public class ProductController {
     }
 
     /**
-     * 전체 상품 목록 조회 (PROD-001)
+     * 전체 상품 목록 조회(카테고리 필터)
      */
     @GetMapping
-    public ResponseEntity<List<ProductDTO>> getProductList() {
-        List<ProductDTO> productList = productService.getAllProducts(); // 서비스에서 상품 목록 조회
-        return ResponseEntity.ok(productList); // 200 OK로 반환
+    public ResponseEntity<List<ProductDTO>> getProductList(
+            @RequestParam(value = "categoryId", required = false) Long categoryId
+    ) {
+        List<ProductDTO> productList;
+
+        if (categoryId != null) {
+            productList = productService.getProductsByCategory(categoryId);
+        } else {
+            productList = productService.getAllProducts();
+        }
+
+        return ResponseEntity.ok(productList);
     }
 }
+

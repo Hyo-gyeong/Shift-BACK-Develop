@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * 상품 목록을 처리하는 서비스.
- */
+
 @Service
 public class ProductService {
 
@@ -21,7 +19,7 @@ public class ProductService {
     }
 
     /**
-     * 전체 상품 목록을 조회하여 DTO로 변환 후 반환.
+     * 전체 상품 조회
      */
     public List<ProductDTO> getAllProducts() {
         List<Product> products = productRepository.findAll(); // 데이터베이스에서 모든 상품 조회
