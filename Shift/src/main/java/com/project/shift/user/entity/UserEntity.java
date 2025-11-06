@@ -41,4 +41,7 @@ public class UserEntity {
 
     @Column(name = "admin_flag", length = 1)
     private String adminFlag = "N";
+
+    @Column
+    private String refreshToken;
 }
