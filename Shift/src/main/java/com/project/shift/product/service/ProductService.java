@@ -31,19 +31,12 @@ public class ProductService {
                         product.getName(),
                         product.getPrice(),
                         product.getStock(),
-                        // product.getCategory().getCategoryName(), // 카테고리명 포함
-                        getImageUrl(product) // 이미지 URL 부분 - 이미지 조회 시 수정 필요
+                        // 카테고리명과 이미지 URL 제외
+                        null, // 카테고리명 부분은 null로 설정 - 기능 없는 오류 문제로 null 처리
+                        null  // 이미지 URL도 null로 설정 - 기능 없는 오류 문제로 null 처리
                 ))
                 .collect(Collectors.toList()); // DTO 리스트로 변환 후 반환
     }
 
-    /**
-     * 상품의 이미지 URL을 조회하는 메서드 (대표 이미지).
-     */
-//    private String getImageUrl(Product product) {
-//        if (product.getImages() != null && !product.getImages().isEmpty()) {
-//            return product.getImages().get(0).getImageUrl(); // 첫 번째 이미지 URL 반환
-//        }
-//        return null; // 이미지가 없으면 null 반환
-//    }
+    // 카테고리명과 이미지 URL을 포함하는 메서드 삭제
 }
