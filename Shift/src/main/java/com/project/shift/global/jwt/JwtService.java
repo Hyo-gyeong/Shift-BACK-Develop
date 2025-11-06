@@ -57,6 +57,7 @@ public class JwtService {
         return null;
     }
 
+    // 토큰에서 userId 추출
     private Long getUserIdFromToken(String token) {
         try {
             String subject = Jwts.parserBuilder()
@@ -96,5 +97,15 @@ public class JwtService {
         } catch (Exception e){
             return false;
         }
+    }
+    
+    // 토큰 타입 체크
+    public String getTokenType(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("type", String.class);
     }
 }
