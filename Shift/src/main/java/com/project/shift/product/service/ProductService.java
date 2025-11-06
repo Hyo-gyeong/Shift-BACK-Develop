@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * 상품 목록을 처리하는 서비스.
- */
+
 @Service
 public class ProductService {
 
@@ -21,29 +19,38 @@ public class ProductService {
     }
 
     /**
-     * 전체 상품 목록을 조회하여 DTO로 변환 후 반환.
+     * 전체 상품 조회
      */
     public List<ProductDTO> getAllProducts() {
-        List<Product> products = productRepository.findAll(); // 데이터베이스에서 모든 상품 조회
-        return products.stream()
-                .map(product -> new ProductDTO(
-                        product.getId().toString(),
-                        product.getName(),
-                        product.getPrice(),
-                        product.getStock(),
-                        // product.getCategory().getCategoryName(), // 카테고리명 포함
-                        getImageUrl(product) // 이미지 URL 부분 - 이미지 조회 시 수정 필요
-                ))
-                .collect(Collectors.toList()); // DTO 리스트로 변환 후 반환
+        return productRepository.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     /**
-     * 상품의 이미지 URL을 조회하는 메서드 (대표 이미지).
+     * 카테고리별 상품 조회
      */
-//    private String getImageUrl(Product product) {
-//        if (product.getImages() != null && !product.getImages().isEmpty()) {
-//            return product.getImages().get(0).getImageUrl(); // 첫 번째 이미지 URL 반환
-//        }
-//        return null; // 이미지가 없으면 null 반환
-//    }
+    public List<ProductDTO> getProductsByCategory(Long categoryId) {
+        return productRepository.findByCategory_CategoryId(categoryId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Product 엔티티 → ProductDTO 변환
+     */
+    private ProductDTO convertToDTO(Product product) {
+        String productId = product.getId() != null ? product.getId().toString() : null;
+        String productName = product.getName();
+        int price = product.getPrice();
+        int stock = product.getStock();
+        String categoryName = (product.getCategory() != null)
+                ? product.getCategory().getCategoryName()
+                : null;
+        String imageUrl = product.getFirstImageUrl();
+
+        return new ProductDTO(productId, productName, price, stock, categoryName, imageUrl);
+    }
 }
