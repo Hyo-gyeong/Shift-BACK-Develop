@@ -49,7 +49,7 @@ public class JwtService {
     }
 
     // 요청에서 userId 추출
-    public Long getAuthUser(HttpServletRequest request) throws Exception {
+    public Long getAuthUser(HttpServletRequest request) {
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (token != null && token.startsWith(PREFIX)) {
             return getUserIdFromToken(token.substring(PREFIX.length()));
