@@ -1,5 +1,8 @@
 package com.project.shift.product.service;
 
-public interface ICategoryService {
+import com.project.shift.product.dto.CategoryDTO;
+import java.util.List;
 
+public interface ICategoryService {
+    List<CategoryDTO> getCategoryList();
 }
