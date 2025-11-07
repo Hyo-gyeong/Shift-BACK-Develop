@@ -77,6 +77,14 @@ public class ProductService implements IProductService {
     }
 
     /**
+     * 상품을 저장하는 서비스 메소드입니다. (시퀀스를 사용하여 자동으로 ID 생성)
+     * @param product 저장할 상품 객체
+     */
+    public void saveProduct(Product product) {
+        productRepository.save(product); // JPA가 시퀀스를 사용하여 자동 ID 생성
+    }
+
+    /**
      * Product 엔티티를 ProductDTO로 변환
      */
     private ProductDTO convertToDTO(Product product) {

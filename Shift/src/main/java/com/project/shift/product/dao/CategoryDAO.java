@@ -44,5 +44,4 @@ public class CategoryDAO implements ICategoryDAO {
         Optional<Category> category = categoryRepository.findById(categoryId);
         return category.orElse(null); // 카테고리가 존재하지 않으면 null 반환
     }
-
 }

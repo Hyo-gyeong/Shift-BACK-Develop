@@ -12,11 +12,12 @@ import jakarta.persistence.*;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CATEGORY_ID")  // 컬럼 이름 대소문자 맞추기
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq_generator")
+    @SequenceGenerator(name = "category_seq_generator", sequenceName = "seq_categories", allocationSize = 1)
+    @Column(name = "CATEGORY_ID")
     private Long categoryId;
 
-    @Column(name = "CATEGORY_NAME")  // 컬럼 이름 대소문자 맞추기
+    @Column(name = "CATEGORY_NAME")
     private String categoryName;
 
     // 기본 생성자

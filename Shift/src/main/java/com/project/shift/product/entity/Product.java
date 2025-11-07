@@ -18,6 +18,8 @@ public class Product {
 
     /** 제품 PK */
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq_generator")
+    @SequenceGenerator(name = "product_seq_generator", sequenceName = "seq_products", allocationSize = 1)
     @Column(name = "PRODUCT_ID")
     private Long id;
 

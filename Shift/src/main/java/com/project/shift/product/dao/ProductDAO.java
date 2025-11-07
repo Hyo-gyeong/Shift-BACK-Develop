@@ -27,4 +27,12 @@ public class ProductDAO implements IProductDAO {
     public List<Product> findAll() {
         return productRepository.findAll(); // ProductRepository를 이용해 모든 상품 조회
     }
+    
+    /**
+     * 상품을 저장합니다. (시퀀스를 사용하여 자동으로 ID 생성)
+     * @param product 저장할 상품 객체
+     */
+    public void saveProduct(Product product) {
+        productRepository.save(product); // save는 시퀀스를 사용하여 자동 ID 생성
+    }
 }
