@@ -39,9 +39,9 @@ public class UserEntity {
     @Column
     private Integer points = 0;
 
-    @Column(name = "admin_flag", length = 1)
-    private String adminFlag = "N";
-
-    @Column
+    @Column(name = "refresh_token")
     private String refreshToken;
+
+    @Column(name = "admin_flag", length = 1, columnDefinition = "CHAR(1) DEFAULT 'N'")
+    private String adminFlag = "N";
 }
