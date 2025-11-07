@@ -1,9 +1,10 @@
 package com.project.shift.shop.service;
 
-import com.project.shift.shop.dao.CartDAO; 
+import com.project.shift.shop.dao.CartDAO;
 import com.project.shift.shop.dto.CartItemDTO;
 import com.project.shift.shop.dto.CartResponseDTO;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -17,9 +18,14 @@ public class CartService implements ICartService {
 
     @Override
     public CartResponseDTO getCartByUserId(Long userId) {
-        List<CartItemDTO> items = cartDAO.findByUserId(userId); 
+        List<CartItemDTO> items = cartDAO.findByUserId(userId);
         CartResponseDTO response = new CartResponseDTO();
         response.setItems(items);
         return response;
+    }
+
+    @Override
+    public CartItemDTO addCartItem(Long userId, Long productId, Integer quantity) {
+        return cartDAO.insertCartItem(userId, productId, quantity);
     }
 }
