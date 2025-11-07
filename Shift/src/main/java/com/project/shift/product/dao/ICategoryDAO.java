@@ -10,14 +10,14 @@ import java.util.List;
 public interface ICategoryDAO {
 
     /**
-     * 모든 카테고리 목록을 조회하는 메소드입니다.
+     * 모든 카테고리 목록을 조회하는 메소드입니다.	(PROD-003)
      * 
      * @return 카테고리 목록
      */
     List<Category> findAll();
 
     /**
-     * 카테고리 ID로 카테고리 정보를 조회하는 메소드입니다.
+     * 카테고리 ID로 카테고리 정보를 조회하는 메소드입니다.	(PROD-004)
      * 
      * @param categoryId 카테고리 ID
      * @return 카테고리 정보

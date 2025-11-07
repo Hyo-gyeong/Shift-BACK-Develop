@@ -11,7 +11,7 @@ import java.util.List;
 public interface ICategoryService {
 
     /**
-     * 카테고리 목록을 조회하는 메소드입니다.
+     * 카테고리 목록을 조회하는 메소드입니다.	(PROD-003)
      * 
      * @return 카테고리 목록
      */

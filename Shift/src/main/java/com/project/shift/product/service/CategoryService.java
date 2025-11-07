@@ -22,7 +22,7 @@ public class CategoryService implements ICategoryService {
     }
 
     /**
-     * 카테고리 목록을 조회하는 메소드입니다.
+     * 카테고리 목록을 조회하는 메소드입니다.	(PROD-003)
      * - 데이터베이스에서 모든 카테고리 정보를 조회하고, 이를 DTO로 변환하여 반환합니다.
      * 
      * @return 카테고리 목록
