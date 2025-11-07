@@ -33,7 +33,7 @@ public class CategoryController {
      * 카테고리 목록을 조회하는 API 메소드입니다.
      * - 클라이언트의 GET /categories 요청을 처리하여 모든 카테고리 정보를 반환합니다.
      * 
-     * @return 카테고리 목록
+     * @return 카테고리 목록 (PROD-003)
      */
     @GetMapping
     public List<CategoryDTO> getCategoryList() {
@@ -45,7 +45,7 @@ public class CategoryController {
      * 특정 카테고리에 속한 상품 목록을 조회하는 API 메소드입니다.
      * - 클라이언트의 GET /categories/{categoryId}/products 요청을 처리하여 해당 카테고리에 속한 상품 목록을 반환합니다.
      * 
-     * @param categoryId 카테고리 ID
+     * @param categoryId 카테고리 ID (PROD-004)
      * @return 해당 카테고리에 속한 상품 목록
      */
     @GetMapping("/{categoryId}/products")
