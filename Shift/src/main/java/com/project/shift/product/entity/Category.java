@@ -11,12 +11,13 @@ import jakarta.persistence.*;
 @Table(name = "CATEGORIES")  // 테이블 이름을 대소문자 맞추기
 public class Category {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CATEGORY_ID")  // 컬럼 이름 대소문자 맞추기
+	@Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_categories")
+    @SequenceGenerator(name = "seq_categories", sequenceName = "seq_categories", allocationSize = 1)
+    @Column(name = "CATEGORY_ID")
     private Long categoryId;
 
-    @Column(name = "CATEGORY_NAME")  // 컬럼 이름 대소문자 맞추기
+    @Column(name = "CATEGORY_NAME")
     private String categoryName;
 
     // 기본 생성자

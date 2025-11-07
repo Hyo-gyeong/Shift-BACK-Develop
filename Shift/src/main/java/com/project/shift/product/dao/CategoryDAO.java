@@ -15,34 +15,30 @@ import java.util.Optional;
 @Repository
 public class CategoryDAO implements ICategoryDAO {
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository; // Repository 의존성 주입
 
-    // 의존성 주입: CategoryRepository를 통해 JPA를 사용하여 데이터베이스와 상호작용
     @Autowired
     public CategoryDAO(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
     /**
-     * 모든 카테고리 목록을 조회합니다.	(PROD-003)
-     * 
-     * @return 카테고리 목록
+     * 모든 카테고리 목록을 조회합니다. (PROD-003)
      */
     @Override
     public List<Category> findAll() {
-        return categoryRepository.findAll();
+        return categoryRepository.findAll(); // Repository에서 모든 카테고리 조회
     }
 
     /**
-     * 카테고리 ID로 카테고리 정보를 조회합니다.	(PROD-004)
+     * 카테고리 ID로 카테고리 정보를 조회합니다. (PROD-004)
      * 
      * @param categoryId 카테고리 ID
      * @return 카테고리 정보
      */
     @Override
     public Category findById(Long categoryId) {
-        Optional<Category> category = categoryRepository.findById(categoryId);
-        return category.orElse(null); // 카테고리가 존재하지 않으면 null 반환
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found")); // ID로 카테고리 조회
     }
-
 }

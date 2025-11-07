@@ -14,5 +14,20 @@ public interface IProductDAO {
      * @return 상품 목록
      */
     List<Product> findAll(); // 상품 목록 조회 메서드 정의
+    
+    /**
+     * 상품을 저장하는 메소드.
+     * @param product 저장할 상품 객체
+     */
+    void saveProduct(Product product); // 상품 저장 메소드 정의
 
+	/**
+	 * 상품을 ID로 조회합니다. (PROD-002)
+	 */
+	Product findById(Long productId);
+
+	/**
+	 * 특정 카테고리에 속한 상품 목록을 조회합니다. (PROD-004)
+	 */
+	List<Product> findByCategory(Long categoryId);
 }
