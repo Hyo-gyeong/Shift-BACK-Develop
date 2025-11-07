@@ -17,9 +17,9 @@ import java.util.List;
 public class Product {
 
     /** 제품 PK */
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq_generator")
-    @SequenceGenerator(name = "product_seq_generator", sequenceName = "seq_products", allocationSize = 1)
+	@Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_products_generator")
+    @SequenceGenerator(name = "seq_products_generator", sequenceName = "seq_products", allocationSize = 1)
     @Column(name = "PRODUCT_ID")
     private Long id;
 

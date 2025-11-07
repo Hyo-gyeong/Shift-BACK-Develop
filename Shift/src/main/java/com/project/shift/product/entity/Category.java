@@ -11,9 +11,9 @@ import jakarta.persistence.*;
 @Table(name = "CATEGORIES")  // 테이블 이름을 대소문자 맞추기
 public class Category {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_seq_generator")
-    @SequenceGenerator(name = "category_seq_generator", sequenceName = "seq_categories", allocationSize = 1)
+	@Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_categories_generator")
+    @SequenceGenerator(name = "seq_categories_generator", sequenceName = "seq_categories", allocationSize = 1)
     @Column(name = "CATEGORY_ID")
     private Long categoryId;
 

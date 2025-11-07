@@ -14,8 +14,9 @@ import lombok.*;
 public class Image {
 
     /** 이미지 ID */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_images_generator")
+    @SequenceGenerator(name = "seq_images_generator", sequenceName = "seq_images", allocationSize = 1)
     @Column(name = "IMAGE_ID")
     private Long id;
 
