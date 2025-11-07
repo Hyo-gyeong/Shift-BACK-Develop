@@ -1,6 +1,5 @@
 package com.project.shift.product.repository;
 
-import com.project.shift.product.entity.Category;
 import com.project.shift.product.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,9 +11,9 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     /**
-     * 카테고리와 연결된 상품 목록을 조회하는 메서드.
-     * @param category 카테고리 객체
+     * 카테고리 ID를 기준으로 상품 목록을 조회하는 메서드.
+     * @param categoryId 카테고리 ID	(PROD-004)
      * @return 해당 카테고리에 속한 상품 목록
      */
-    List<Product> findByCategory(Category category); // Category 객체를 기준으로 상품 조회
+    List<Product> findByCategory_CategoryId(Long categoryId); // 카테고리의 categoryId를 기준으로 상품 조회
 }

@@ -10,7 +10,7 @@ import java.util.List;
 public interface IProductDAO {
 
     /**
-     * 모든 상품을 조회.
+     * 모든 상품을 조회.	(PROD-001)
      * @return 상품 목록
      */
     List<Product> findAll(); // 상품 목록 조회 메서드 정의

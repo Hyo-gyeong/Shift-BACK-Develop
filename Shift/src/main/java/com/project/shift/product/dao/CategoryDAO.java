@@ -24,7 +24,7 @@ public class CategoryDAO implements ICategoryDAO {
     }
 
     /**
-     * 모든 카테고리 목록을 조회합니다.
+     * 모든 카테고리 목록을 조회합니다.	(PROD-003)
      * 
      * @return 카테고리 목록
      */
@@ -34,7 +34,7 @@ public class CategoryDAO implements ICategoryDAO {
     }
 
     /**
-     * 카테고리 ID로 카테고리 정보를 조회합니다.
+     * 카테고리 ID로 카테고리 정보를 조회합니다.	(PROD-004)
      * 
      * @param categoryId 카테고리 ID
      * @return 카테고리 정보

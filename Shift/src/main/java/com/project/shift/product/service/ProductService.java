@@ -1,18 +1,18 @@
 package com.project.shift.product.service;
 
 import com.project.shift.product.dto.ProductDTO;
-import com.project.shift.product.entity.Category;
 import com.project.shift.product.entity.Product;
 import com.project.shift.product.repository.ProductRepository;
-import org.springframework.stereotype.Service;  // 이 부분 추가
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * 상품 목록을 처리하는 서비스.
  */
-@Service  // 이 어노테이션이 없으면 빈으로 등록되지 않음
+@Service
 public class ProductService implements IProductService {
 
     private final ProductRepository productRepository;
@@ -22,28 +22,7 @@ public class ProductService implements IProductService {
     }
 
     /**
-     * 특정 카테고리에 속한 상품 목록을 조회하는 서비스 메소드입니다.
-     * @param categoryId 카테고리 ID
-     * @return 해당 카테고리에 속한 상품 목록
-     */
-    public List<ProductDTO> getProductsByCategory(Long categoryId) {
-        Category category = new Category();
-        category.setCategoryId(categoryId); // categoryId로 카테고리 객체 생성
-
-        List<Product> products = productRepository.findByCategory(category); // 카테고리로 상품 조회
-
-        return products.stream()
-                .map(product -> new ProductDTO(
-                        product.getId().toString(),
-                        product.getName(),
-                        product.getPrice(),
-                        product.getStock()
-                ))
-                .collect(Collectors.toList()); // DTO 리스트로 변환 후 반환
-    }
-
-    /**
-     * 전체 상품 목록을 조회하여 DTO로 변환 후 반환.
+     * 전체 상품 목록을 조회하여 DTO로 변환 후 반환. (PROD-001)
      */
     public List<ProductDTO> getAllProducts() {
         List<Product> products = productRepository.findAll(); // 데이터베이스에서 모든 상품 조회
@@ -52,8 +31,66 @@ public class ProductService implements IProductService {
                         product.getId().toString(),
                         product.getName(),
                         product.getPrice(),
-                        product.getStock()
+                        product.getStock(),
+                        product.getRegistrationDate().toString(),  // 등록 날짜
+                        product.getSeller(),
+                        product.getImages().stream()
+                                .map(image -> image.getImageUrl())
+                                .collect(Collectors.toList()) // 이미지 URL 목록
                 ))
                 .collect(Collectors.toList()); // DTO 리스트로 변환 후 반환
+    }
+
+    /**
+     * 상품 상세 조회 (ID로 조회) (PROD-002)
+     */
+    public ProductDTO getProductDetails(Long productId) {
+        Optional<Product> productOpt = productRepository.findById(productId); // 상품 ID로 조회
+
+        // 상품이 존재하면 DTO로 변환하여 반환, 없으면 예외 처리
+        return productOpt.map(this::convertToDTO)
+                .orElseThrow(() -> new RuntimeException("Product not found")); // 예외 처리
+    }
+
+    /**
+     * 특정 카테고리에 속한 상품 목록을 조회하는 서비스 메소드입니다. (PROD-004)
+     * @param categoryId 카테고리 ID 
+     * @return 해당 카테고리에 속한 상품 목록
+     */
+    public List<ProductDTO> getProductsByCategory(Long categoryId) {
+        // 카테고리 ID로 상품 목록 조회
+        List<Product> products = productRepository.findByCategory_CategoryId(categoryId); // 수정된 메소드 사용
+
+        return products.stream()
+                .map(product -> new ProductDTO(
+                        product.getId().toString(),
+                        product.getName(),
+                        product.getPrice(),
+                        product.getStock(),
+                        product.getRegistrationDate().toString(),  // 등록 날짜
+                        product.getSeller(),
+                        product.getImages().stream()
+                                .map(image -> image.getImageUrl())  // 이미지 URL 목록 추가
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList()); // DTO 리스트로 변환 후 반환
+    }
+
+    /**
+     * Product 엔티티를 ProductDTO로 변환
+     */
+    private ProductDTO convertToDTO(Product product) {
+        ProductDTO productDTO = new ProductDTO(
+                product.getId().toString(),
+                product.getName(),
+                product.getPrice(),
+                product.getStock(),
+                product.getRegistrationDate().toString(),  // 등록 날짜
+                product.getSeller(),
+                product.getImages().stream()
+                        .map(image -> image.getImageUrl())  // 이미지 URL 목록 추가
+                        .collect(Collectors.toList())
+        );
+        return productDTO;
     }
 }
