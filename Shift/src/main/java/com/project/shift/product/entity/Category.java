@@ -12,8 +12,8 @@ import jakarta.persistence.*;
 public class Category {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_categories_generator")
-    @SequenceGenerator(name = "seq_categories_generator", sequenceName = "seq_categories", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_categories")
+    @SequenceGenerator(name = "seq_categories", sequenceName = "seq_categories", allocationSize = 1)
     @Column(name = "CATEGORY_ID")
     private Long categoryId;
 
