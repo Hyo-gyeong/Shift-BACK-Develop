@@ -59,7 +59,7 @@ public class ChatroomEntity {
     private String isDarkMode; // DEFAULT 'N', 'Y' 또는 'N'
     
     // DTO -> Entity 변환
-    public ChatroomEntity toEntity(ChatroomDTO dto) {
+    public static ChatroomEntity toEntity(ChatroomDTO dto) {
         return ChatroomEntity.builder()
                 .chatroomId(dto.getChatroomId())
                 .fromUserId(dto.getFromUserId())
