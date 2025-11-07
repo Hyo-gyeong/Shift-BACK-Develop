@@ -5,37 +5,37 @@ import lombok.*;
 
 /**
  * images 테이블 매핑
- *
- * 목적:
- * - 목록 카드의 썸네일로 쓸 대표 이미지 1개를 고른다.
- * - is_representative = 'Y' 인 행을 대표 이미지로 간주한다.
  */
 @Entity
-@Table(name = "images")
+@Table(name = "IMAGES")  // 테이블 이름을 대문자로 지정
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-@ToString(exclude = "product")
+@ToString(exclude = {"product"})  // 상품과 이미지를 제외한 toString() 출력
 public class Image {
 
-    /** 이미지 PK */
+    /** 이미지 ID */
     @Id
-    @Column(name = "image_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "IMAGE_ID")
     private Long id;
 
-    /** 상품(FK: product_id). */
+    /** 상품 ID (외래키) */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product; // 이미지가 속하는 상품
+    @JoinColumn(name = "PRODUCT_ID", nullable = false)
+    private Product product;
 
-    /** 실제 접근 경로(S3 URL, CDN, 내부 저장소 키 등) */
-    @Column(name = "image_url", nullable = false, length = 100)
+    /** 이미지 URL */
+    @Column(name = "IMAGE_URL", nullable = false)
     private String imageUrl;
 
+    /** 대표 이미지 여부 */
+    @Column(name = "IS_REPRESENTATIVE", nullable = false)
+    private String isRepresentative;  // Y: 대표 이미지, N: 기타 이미지
+
     /**
-     * 대표 이미지 플래그
-     * - 값: 'Y' 또는 'N'
-     * - 목록 썸네일 선택 기준
+     * 이미지 URL을 반환하는 메소드 추가
      */
-    @Column(name = "is_representative", length = 1)
-    private String isRepresentative; // 대표 이미지 여부
+    public String getImageUrl() {
+        return this.imageUrl;
+    }
 }

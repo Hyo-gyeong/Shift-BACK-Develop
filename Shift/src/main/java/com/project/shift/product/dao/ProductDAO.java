@@ -21,7 +21,7 @@ public class ProductDAO implements IProductDAO {
     }
 
     /**
-     * 모든 상품을 조회.
+     * 모든 상품을 조회.	(PROD-001)
      */
     @Override
     public List<Product> findAll() {

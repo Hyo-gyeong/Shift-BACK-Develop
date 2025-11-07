@@ -1,19 +1,43 @@
 package com.project.shift.product.repository;
 
 import com.project.shift.product.entity.Image;
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.Optional;
+import jakarta.persistence.*;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Image 엔티티에 대한 CRUD 작업을 처리하는 리포지토리.
- */
-public interface ImageRepository extends JpaRepository<Image, Long> {
+import java.util.List;
 
-    /**
-     * 특정 상품의 대표 이미지를 조회하는 메서드.
-     * @param productId 상품 ID
-     * @param isRepresentative 'Y' 또는 'N' 값으로 대표 이미지 여부 확인
-     * @return 대표 이미지 (있을 경우 첫 번째 이미지)
-     */
-    Optional<Image> findFirstByProduct_IdAndIsRepresentative(Long productId, String isRepresentative);
+@Repository
+public class ImageRepository {
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    // 상품에 속한 모든 이미지의 is_representative 값을 'N'으로 설정
+    @Transactional
+    public void updateIsRepresentativeByProductId(Long productId, String value) {
+        String query = "UPDATE Image i SET i.isRepresentative = :value WHERE i.product.id = :productId";
+        entityManager.createQuery(query)
+                     .setParameter("value", value)
+                     .setParameter("productId", productId)
+                     .executeUpdate();
+    }
+
+    // 특정 이미지의 is_representative 값을 'Y'로 설정
+    @Transactional
+    public void updateIsRepresentativeByImageId(Long imageId, String value) {
+        String query = "UPDATE Image i SET i.isRepresentative = :value WHERE i.id = :imageId";
+        entityManager.createQuery(query)
+                     .setParameter("value", value)
+                     .setParameter("imageId", imageId)
+                     .executeUpdate();
+    }
+
+    // 특정 상품에 속한 모든 이미지 조회
+    public List<Image> findByProductId(Long productId) {
+        String query = "SELECT i FROM Image i WHERE i.product.id = :productId";
+        return entityManager.createQuery(query, Image.class)
+                            .setParameter("productId", productId)
+                            .getResultList();
+    }
 }
