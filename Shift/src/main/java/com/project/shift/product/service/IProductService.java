@@ -1,6 +1,7 @@
 package com.project.shift.product.service;
 
 import com.project.shift.product.dto.ProductDTO;
+import com.project.shift.product.entity.Product;
 
 import java.util.List;
 
@@ -28,4 +29,10 @@ public interface IProductService {
      * @return 상품 상세 정보
      */
     ProductDTO getProductDetails(Long productId); // 상품 상세 조회 메서드 정의
+
+	/**
+	 * 상품을 저장하는 서비스 메소드입니다. (시퀀스를 사용하여 자동으로 ID 생성)
+	 * @param product 저장할 상품 객체
+	 */
+	void saveProduct(Product product);
 }
