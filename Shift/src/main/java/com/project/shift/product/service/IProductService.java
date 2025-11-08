@@ -35,4 +35,8 @@ public interface IProductService {
 	 * @param product 저장할 상품 객체
 	 */
 	void saveProduct(Product product);
+
+	/** 상품 검색 로직 (PROD-005) */
+	List<ProductDTO> searchProducts(String keyword);
+	
 }
