@@ -4,17 +4,25 @@ import java.util.Date;
 
 import com.project.shift.chat.entity.MessageEntity;
 
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class MessageDTO {
 
+	public enum MessageType {
+        CHAT, JOIN, LEAVE
+    }
+	@Transient //DB와 매핑하지 않는 필드
+	private MessageType type;
     private long messageId;
     private long chatroomId;
     private String isFromUser;

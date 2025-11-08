@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDTO {
+public class ChatUserDTO {
 
     private long userId;
     private String loginId;
@@ -24,8 +24,8 @@ public class UserDTO {
     private String adminFlag; // DEFAULT 'N', 'Y' 또는 'N'
 
     // Entity -> DTO 변환
-    public static UserDTO toDto(UserEntity entity) {
-        return UserDTO.builder()
+    public static ChatUserDTO toDto(UserEntity entity) {
+        return ChatUserDTO.builder()
                 .userId(entity.getUserId())
                 .loginId(entity.getLoginId())
                 .password(entity.getPassword())

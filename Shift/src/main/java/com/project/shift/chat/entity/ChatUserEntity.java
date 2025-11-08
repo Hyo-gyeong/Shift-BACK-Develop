@@ -1,6 +1,6 @@
 package com.project.shift.chat.entity;
 
-import com.project.shift.chat.dto.UserDTO;
+import com.project.shift.chat.dto.ChatUserDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserEntity {
+public class ChatUserEntity {
 	
     @Id
     @GeneratedValue(
@@ -60,8 +60,8 @@ public class UserEntity {
     private String adminFlag; // DEFAULT 'N', 'Y' 또는 'N'
     
     // DTO -> Entity 변환
-    public static UserEntity toEntity(UserDTO dto) {
-        return UserEntity.builder()
+    public static ChatUserEntity toEntity(ChatUserDTO dto) {
+        return ChatUserEntity.builder()
                 .userId(dto.getUserId())
                 .loginId(dto.getLoginId())
                 .password(dto.getPassword())

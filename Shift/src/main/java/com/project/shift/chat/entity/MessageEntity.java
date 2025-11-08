@@ -53,7 +53,7 @@ public class MessageEntity {
     private Date sentDate;
 
     @Column(name = "MESSAGE_CONTENT", length = 300)
-    private String messageContent;
+    private String content;
 
     @Column(name = "IS_GIFT", length = 1)
     private String isGift; // 'Y' 또는 'N'
@@ -69,7 +69,7 @@ public class MessageEntity {
                 .isFromUser(dto.getIsFromUser())
                 .isRead(dto.getIsRead())
                 .sentDate(dto.getSentDate())
-                .messageContent(dto.getMessageContent())
+                .content(dto.getContent())
                 .isGift(dto.getIsGift())
                 .isEmoji(dto.getIsEmoji())
                 .build();
