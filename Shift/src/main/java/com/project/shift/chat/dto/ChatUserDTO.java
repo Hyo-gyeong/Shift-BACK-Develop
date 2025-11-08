@@ -1,6 +1,6 @@
 package com.project.shift.chat.dto;
 
-import com.project.shift.user.entity.UserEntity;
+import com.project.shift.chat.entity.ChatUserEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +24,7 @@ public class ChatUserDTO {
     private String adminFlag; // DEFAULT 'N', 'Y' 또는 'N'
 
     // Entity -> DTO 변환
-    public static ChatUserDTO toDto(UserEntity entity) {
+    public static ChatUserDTO toDto(ChatUserEntity entity) {
         return ChatUserDTO.builder()
                 .userId(entity.getUserId())
                 .loginId(entity.getLoginId())
