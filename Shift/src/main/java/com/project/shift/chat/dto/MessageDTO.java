@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.project.shift.chat.entity.MessageEntity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,12 +24,18 @@ public class MessageDTO {
     }
 	@Transient //DB와 매핑하지 않는 필드
 	private MessageType type;
+	@Transient
+    private int toId;
+	@Transient
+	private int fromId; // 로그인 구현 후 없애야 함
+	
     private long messageId;
     private long chatroomId;
     private String isFromUser;
     private String isRead; // DEFAULT 'N', 'Y' 또는 'N'
     private Date sentDate;
-    private String messageContent;
+    @Column(name="MESSAGE_CONTENT")
+    private String content;
     private String isGift; // DEFAULT 'N', 'Y' 또는 'N'
     private String isEmoji; // DEFAULT 'N', 'Y' 또는 'N'
 
@@ -40,7 +47,7 @@ public class MessageDTO {
                 .isFromUser(entity.getIsFromUser())
                 .isRead(entity.getIsRead())
                 .sentDate(entity.getSentDate())
-                .messageContent(entity.getMessageContent())
+                .content(entity.getContent())
                 .isGift(entity.getIsGift())
                 .isEmoji(entity.getIsEmoji())
                 .build();
