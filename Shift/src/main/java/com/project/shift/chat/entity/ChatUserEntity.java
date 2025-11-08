@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="Users")
+@Table(name="USERS")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,39 +24,39 @@ public class ChatUserEntity {
 	
     @Id
     @GeneratedValue(
-        strategy = GenerationType.SEQUENCE,
-        generator = "seq_users"
-    )
-    @SequenceGenerator(
-        name = "seq_users",
-        sequenceName = "seq_users",
-        allocationSize = 1
-    )
-    @Column(name = "user_id")
+	    strategy = GenerationType.SEQUENCE,
+	    generator = "SEQ_USERS"
+	)
+	@SequenceGenerator(
+	    name = "SEQ_USERS",
+	    sequenceName = "SEQ_USERS",
+	    allocationSize = 1
+	)
+    @Column(name = "USER_ID")
     private long userId;
 
-    @Column(name = "login_id", unique = true)
+    @Column(name = "LOGIN_ID", unique = true)
     private String loginId;
 
-    @Column(name = "password")
+    @Column(name = "PASSWORD")
     private String password;
 
-    @Column(name = "name")
+    @Column(name = "NAME")
     private String name;
 
-    @Column(name = "phone", unique = true)
+    @Column(name = "PHONE", unique = true)
     private String phone;
 
-    @Column(name = "address")
+    @Column(name = "ADDRESS")
     private String address;
 
-    @Column(name = "points")
+    @Column(name = "POINTS")
     private int points; // DEFAULT 0
 
-    @Column(name = "refresh_token")
+    @Column(name = "REFRESH_TOKEN")
     private String refreshToken;
 
-    @Column(name = "admin_flag", length = 1)
+    @Column(name = "ADMIN_FLAG", length = 1)
     private String adminFlag; // DEFAULT 'N', 'Y' 또는 'N'
     
     // DTO -> Entity 변환

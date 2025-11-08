@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="Messages")
+@Table(name="MESSAGES")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,11 +29,11 @@ public class MessageEntity {
     @Id
     @GeneratedValue(
         strategy = GenerationType.SEQUENCE,
-        generator = "seq_messages"
+        generator = "SEQ_MESSAGES"
     )
     @SequenceGenerator(
-        name = "seq_messages",
-        sequenceName = "seq_messages",
+        name = "SEQ_MESSAGES",
+        sequenceName = "SEQ_MESSAGES",
         allocationSize = 1
     )
     @Column(name = "MESSAGE_ID")

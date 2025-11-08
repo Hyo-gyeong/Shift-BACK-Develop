@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="Chatrooms")
+@Table(name="CHATROOMS")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,11 +29,11 @@ public class ChatroomEntity {
     @Id
     @GeneratedValue(
         strategy = GenerationType.SEQUENCE,
-        generator = "seq_chatrooms"
+        generator = "SEQ_CHATROOMS"
     )
     @SequenceGenerator(
-        name = "seq_chatrooms",
-        sequenceName = "seq_chatrooms",
+        name = "SEQ_CHATROOMS",
+        sequenceName = "SEQ_CHATROOMS",
         allocationSize = 1
     )
     @Column(name = "CHATROOM_ID")
