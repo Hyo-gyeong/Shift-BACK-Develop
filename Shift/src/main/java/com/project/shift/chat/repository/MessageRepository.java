@@ -12,8 +12,8 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long>{
 		
 	// 두 참여자 같이 참여한 채팅방의 메시지 내역 반환
 	@Query("SELECT m FROM MessageEntity m " +
-            "WHERE m.chatRoomId IN :chatroomIds " +
-            "ORDER BY m.id ASC")
+            "WHERE m.chatroomId IN :chatroomIds " +
+            "ORDER BY m.messageId ASC")
      List<MessageEntity> findMessagesByChatroomIds(@Param("chatroomIds") List<Integer> chatroomIds);
 
 }
