@@ -11,7 +11,7 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 
 	List<ChatroomEntity> findByFromId(int userId);
 	
-	// 두 사용자가 서로 대화하는 두 방의 ID 조회
+	// 두 사용자가 서로 대화하는 방의 ID 조회(사용자별로 chatroomId가 다름)
     @Query("SELECT c.id FROM Chatroom c " +
            "WHERE (c.fromId = :fromId AND c.toId = :toId) " +
            "   OR (c.fromId = :toId AND c.toId = :fromId)")
