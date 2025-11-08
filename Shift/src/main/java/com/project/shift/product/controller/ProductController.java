@@ -1,10 +1,13 @@
 package com.project.shift.product.controller;
 
 import com.project.shift.product.dto.ProductDTO;
+import com.project.shift.product.entity.Product;
 import com.project.shift.product.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,5 +42,14 @@ public class ProductController {
     public ResponseEntity<ProductDTO> getProductDetails(@PathVariable Long productId) {
         ProductDTO productDTO = productService.getProductDetails(productId); // 상품 상세 조회 서비스 호출
         return ResponseEntity.ok(productDTO); // 200 OK로 반환
+    }
+    
+    /**
+     * 상품 추가 (시퀀스를 사용하여 상품 저장)
+     */
+    @PostMapping
+    public ResponseEntity<String> addProduct(@RequestBody Product product) {
+        productService.saveProduct(product); // 상품 저장
+        return ResponseEntity.ok("Product Added Successfully");
     }
 }
