@@ -38,4 +38,14 @@ public class ChatUserDTO {
                 .build(); // 생성자 호출
     }
 
+    // 채팅방 친구 목록에 띄운 사용자 정보
+	public static ChatUserDTO toFriendUserDTO(ChatUserEntity entity) {
+		return ChatUserDTO.builder()
+                .userId(entity.getUserId())
+                .loginId(entity.getLoginId())
+                .name(entity.getName())
+                .phone(entity.getPhone())
+                .build(); // 생성자 호출
+	}
+
 }
