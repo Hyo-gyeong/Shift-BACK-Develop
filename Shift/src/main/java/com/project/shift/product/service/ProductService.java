@@ -6,8 +6,12 @@ import com.project.shift.product.entity.Product;
 import com.project.shift.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -60,6 +64,37 @@ public class ProductService implements IProductService {
     @Override
     public void saveProduct(Product product) {
         productDAO.saveProduct(product); // DAO를 통해 상품 저장
+    }
+    
+    /** 상품 검색 로직 (PROD-005) */
+    @Override
+    public List<ProductDTO> searchProducts(String keyword) {
+        keyword = keyword == null ? "" : keyword.trim();
+        if (keyword.isEmpty()) return List.of();
+
+        List<Product> results = new ArrayList<>();
+
+        // ✅ ① 공백 없는 검색어 처리
+        if (!keyword.contains(" ")) {
+            // 공백 제거 비교
+            results.addAll(productDAO.searchIgnoringSpaces(keyword));
+            // 부분 일치도 포함 (화이트 → 화이트 머스크 디퓨저)
+            results.addAll(productDAO.searchByName(keyword));
+        }
+
+        // ✅ ② 공백 포함 검색 (AND 조건)
+        else {
+            String[] words = Arrays.stream(keyword.split("\\s+"))
+                    .filter(s -> !s.isBlank())
+                    .toArray(String[]::new);
+            results.addAll(productDAO.searchByMultipleKeywords(words));
+        }
+
+        // ✅ 중복 제거 및 DTO 변환
+        return results.stream()
+                .distinct()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     /**

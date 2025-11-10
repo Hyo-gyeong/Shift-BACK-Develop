@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -51,5 +52,16 @@ public class ProductController {
     public ResponseEntity<String> addProduct(@RequestBody Product product) {
         productService.saveProduct(product); // 상품 저장
         return ResponseEntity.ok("Product Added Successfully");
+    }
+    
+    /**
+     * 상품명 부분일치 검색 (PROD-005)
+     * @param keyword 검색어
+     * @return 검색된 상품 목록
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductDTO>> searchProducts(@RequestParam String keyword) {
+        List<ProductDTO> productList = productService.searchProducts(keyword); // 서비스에서 상품 검색
+        return ResponseEntity.ok(productList); // 200 OK로 반환
     }
 }

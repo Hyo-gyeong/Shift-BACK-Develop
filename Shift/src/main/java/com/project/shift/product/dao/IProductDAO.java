@@ -30,4 +30,20 @@ public interface IProductDAO {
 	 * 특정 카테고리에 속한 상품 목록을 조회합니다. (PROD-004)
 	 */
 	List<Product> findByCategory(Long categoryId);
+
+	/** 
+	 * 공백 없는 검색 처리 ("화이트디퓨저") (PROD-005)
+	*/
+	List<Product> searchIgnoringSpaces(String keyword);
+
+	/**
+	 * 부분 단어 검색 ("화이트") (PROD-005)
+	*/
+	List<Product> searchByName(String productName);
+
+	/** 
+	 * 공백 포함 AND 조건 검색 ("화이트 디퓨저") (PROD-005)
+	*/
+	List<Product> searchByMultipleKeywords(String[] keywords);
+	
 }
