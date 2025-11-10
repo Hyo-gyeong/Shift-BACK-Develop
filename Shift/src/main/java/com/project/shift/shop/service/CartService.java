@@ -46,4 +46,26 @@ public class CartService implements ICartService {
         dto.setResult(true);
         return dto;
     }
+    
+    // SHOP-004
+    @Override
+    public CartDeleteResponseDTO deleteCartItem(Long cartId) {
+        boolean deleted = cartDAO.deleteCartItem(cartId);
+
+        CartDeleteResponseDTO dto = new CartDeleteResponseDTO();
+        dto.setCartId(cartId);
+        dto.setDeleted(deleted);
+        return dto;
+    }
+
+    // SHOP-005
+    @Override
+    public CartClearResponseDTO clearCartByUserId(Long userId) {
+        long deletedCount = cartDAO.clearCartByUserId(userId);
+
+        CartClearResponseDTO dto = new CartClearResponseDTO();
+        dto.setUserId(userId);
+        dto.setCleared(deletedCount > 0);
+        return dto;
+    }
 }

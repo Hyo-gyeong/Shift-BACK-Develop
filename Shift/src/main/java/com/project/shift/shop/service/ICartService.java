@@ -13,4 +13,10 @@ public interface ICartService {
 
     // SHOP-003
     CartUpdateResponseDTO updateCartItem(Long cartId, Integer quantity);
+    
+    // SHOP-004
+    CartDeleteResponseDTO deleteCartItem(Long cartId);
+
+    // SHOP-005
+    CartClearResponseDTO clearCartByUserId(Long userId);
 }

@@ -65,7 +65,22 @@ public class CartDAO {
 
         return toDto(saved);
     }
+    
+    // SHOP-004 : 장바구니 상품 단건 삭제
+    public boolean deleteCartItem(Long cartId) {
+        boolean exists = cartRepository.existsById(cartId);
+        if (!exists) {
+            return false;
+        }
+        cartRepository.deleteById(cartId);
+        return true;
+    }
 
+    // SHOP-005 : 해당 사용자의 장바구니 전체 비우기
+    public long clearCartByUserId(Long userId) {
+        return cartRepository.deleteAllByUser_UserId(userId);
+    }
+    
     // 내부 공통 변환
     private CartItemDTO toDto(Cart entity) {
         CartItemDTO dto = new CartItemDTO();
