@@ -26,7 +26,7 @@ public class Image {
     private Product product;
 
     /** 이미지 URL */
-    @Column(name = "IMAGE_URL", nullable = false)
+    @Column(name = "IMAGE_URL", nullable = false, length = 100)
     private String imageUrl;
 
     /** 대표 이미지 여부 */

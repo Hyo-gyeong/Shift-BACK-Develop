@@ -1,43 +1,17 @@
 package com.project.shift.product.repository;
 
 import com.project.shift.product.entity.Image;
-import jakarta.persistence.*;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Repository
-public class ImageRepository {
+public interface ImageRepository extends JpaRepository<Image, Long> {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    // 상품에 속한 모든 이미지의 is_representative 값을 'N'으로 설정
-    @Transactional
-    public void updateIsRepresentativeByProductId(Long productId, String value) {
-        String query = "UPDATE Image i SET i.isRepresentative = :value WHERE i.product.id = :productId";
-        entityManager.createQuery(query)
-                     .setParameter("value", value)
-                     .setParameter("productId", productId)
-                     .executeUpdate();
-    }
-
-    // 특정 이미지의 is_representative 값을 'Y'로 설정
-    @Transactional
-    public void updateIsRepresentativeByImageId(Long imageId, String value) {
-        String query = "UPDATE Image i SET i.isRepresentative = :value WHERE i.id = :imageId";
-        entityManager.createQuery(query)
-                     .setParameter("value", value)
-                     .setParameter("imageId", imageId)
-                     .executeUpdate();
-    }
-
-    // 특정 상품에 속한 모든 이미지 조회
-    public List<Image> findByProductId(Long productId) {
-        String query = "SELECT i FROM Image i WHERE i.product.id = :productId";
-        return entityManager.createQuery(query, Image.class)
-                            .setParameter("productId", productId)
-                            .getResultList();
-    }
+    /**
+     * 상품 ID 기준으로 이미지 목록 조회
+     * Product 엔티티의 필드명은 id이므로 Product_Id로 지정해야 함.
+     */
+    List<Image> findByProduct_Id(Long productId);
 }

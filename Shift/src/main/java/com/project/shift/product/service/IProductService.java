@@ -1,5 +1,6 @@
 package com.project.shift.product.service;
 
+import com.project.shift.product.dto.ImageDTO;
 import com.project.shift.product.dto.ProductDTO;
 import com.project.shift.product.entity.Product;
 
@@ -58,4 +59,12 @@ public interface IProductService {
      * @return 정렬된 상품 DTO 목록
      */
     List<ProductDTO> getProductsByCategorySorted(Long categoryId, String sortType);
+
+	/**
+	 * 상품 이미지 조회	(PROD-007)
+	 * ----------------------------------------------------------
+	 * 특정 상품의 이미지(대표/상세 포함)를 조회한다.
+	 * DAO → Repository → DB 순서로 접근한다.
+	 */
+	List<ImageDTO> getProductImages(Long productId);
 }

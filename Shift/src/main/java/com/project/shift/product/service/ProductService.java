@@ -1,7 +1,11 @@
 package com.project.shift.product.service;
 
+import com.project.shift.product.dao.IImageDAO;
+import com.project.shift.product.dao.ImageDAO;
 import com.project.shift.product.dao.ProductDAO;
+import com.project.shift.product.dto.ImageDTO;
 import com.project.shift.product.dto.ProductDTO;
+import com.project.shift.product.entity.Image;
 import com.project.shift.product.entity.Product;
 import com.project.shift.product.repository.ProductRepository;
 
@@ -24,9 +28,11 @@ import java.util.stream.Collectors;
 public class ProductService implements IProductService {
 
     private final ProductDAO productDAO; // DAO 의존성 주입
+    private final IImageDAO imageDAO; // 
 
-    public ProductService(ProductDAO productDAO) {
+    public ProductService(ProductDAO productDAO, IImageDAO imageDAO) {
         this.productDAO = productDAO;
+        this.imageDAO = imageDAO;
     }
 
     /**
@@ -168,6 +174,29 @@ public class ProductService implements IProductService {
         };
         return productDAO.findByCategorySorted(categoryId, sort)
                 .stream().map(this::convertToDTO).toList();
+    }
+    
+    /**
+     * [PROD-007] 상품 이미지 조회
+     * ----------------------------------------------------------
+     * 특정 상품의 이미지(대표/상세 포함)를 조회한다.
+     * DAO → Repository → DB 순서로 접근한다.
+     */
+    @Override
+    public List<ImageDTO> getProductImages(Long productId) {
+
+        // 1. DAO를 통해 상품에 속한 이미지 목록 조회
+        List<Image> imageList = imageDAO.findByProductId(productId);
+
+        // 2. Entity → DTO 변환
+        return imageList.stream()
+                .map(img -> ImageDTO.builder()
+                        .imageId(img.getId())
+                        .productId(img.getProduct().getId())
+                        .imageUrl(img.getImageUrl())
+                        .isRepresentative(img.getIsRepresentative())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     /**
