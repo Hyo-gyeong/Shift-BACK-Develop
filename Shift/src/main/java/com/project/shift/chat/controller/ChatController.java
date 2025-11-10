@@ -74,7 +74,7 @@ public class ChatController {
 		// 메시지
 		// 메시지를 받는 사람의 채팅방 ID를 추출하기 위한 로직
 		List<Integer> chatrooms = chatroomService.findChatroomIdsForUsers(fromId, toId);
-		if (chatrooms.size() > 1) {
+		if (chatrooms.size() > 1) { // DB에 두 사용자 간의 채팅방이 하나만 저장되어있으면 브로드캐스팅이 안되는 문제 존재
 			chatrooms.removeIf(id -> id == Integer.parseInt(roomId));
 			try {
 				// 받는 사람의 채팅방 ID 추출

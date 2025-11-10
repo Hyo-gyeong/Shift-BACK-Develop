@@ -3,7 +3,6 @@ package com.project.shift.chat.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,12 +13,18 @@ import com.project.shift.chat.dto.ChatUserDTO;
 import com.project.shift.chat.dto.FriendDTO;
 import com.project.shift.chat.service.ChatUserService;
 import com.project.shift.chat.service.FriendService;
+import com.project.shift.global.jwt.JwtService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Slf4j
 public class FriendController {
+	
+	@Autowired
+	JwtService jwtService;
+	
 	@Autowired
     FriendService friendService;
 	
@@ -48,8 +53,22 @@ public class FriendController {
 	}
 	
 	@GetMapping("/friends/search/{phone}")
-	public ChatUserDTO searchUser(@PathVariable String phone) {
-		return chatUserService.getUserInfoByPhone(phone);
+	public ChatUserDTO searchFriend(HttpServletRequest request, @PathVariable String phone) {
+		// jwt에서 현재 사용자의 PK 추출
+		long userId = jwtService.getAuthUser(request);
+		
+		// 전화번호로 유저를 찾고, 현재 사용자의 친구 목록을 가져옴
+		ChatUserDTO targetDto = chatUserService.getUserInfoByPhone(phone);
+		List<FriendDTO> friendsList = friendService.getUserFriends((int)userId);
+		
+		// 친구인지 판단
+		boolean isFriend = friendsList.stream().anyMatch(friend -> friend.getFriendId() == targetDto.getUserId());
+		
+		// 친구라면 찾은 ChatUserDTO를 반환, 아니라면 null 반환
+		if (isFriend) {
+			return targetDto;
+		}
+		return null;
 	}
 	
 	@PostMapping("/friends/insert")
