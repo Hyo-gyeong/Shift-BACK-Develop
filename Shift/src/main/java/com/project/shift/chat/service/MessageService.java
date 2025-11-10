@@ -12,6 +12,8 @@ import com.project.shift.chat.dao.MessageDAO;
 import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.entity.MessageEntity;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class MessageService {
 	
@@ -25,6 +27,7 @@ public class MessageService {
 		messageDAO.insertMessage(MessageEntity.toEntity(message));
 	}
 	
+	@Transactional
 	public List<MessageDTO> getMessagesBetweenUsers(int fromId, int toId){
 		List<Integer> chatroomIds = chatroomDAO.findChatroomIdsForUsers(fromId, toId);
 		
