@@ -1,5 +1,6 @@
 package com.project.shift.product.controller;
 
+import com.project.shift.product.dto.ImageDTO;
 import com.project.shift.product.dto.ProductDTO;
 import com.project.shift.product.entity.Product;
 import com.project.shift.product.service.ProductService;
@@ -125,5 +126,24 @@ public class ProductController {
             }
         }
         return ResponseEntity.ok(productService.getProductsByCategorySorted(categoryId, sortType));
+    }
+    
+    /**
+     *	상품 이미지 조회 	(PROD-007)
+     * ----------------------------------------------------------
+     * 특정 상품의 이미지 목록(대표/상세 이미지 포함)을 조회한다.
+     * - 상품 목록 카드에서는 대표 이미지(Y)만 사용
+     * - 상품 상세 페이지에서는 모든 이미지(Y/N)를 노출
+
+     * @param productId 상품 ID (PathVariable)
+     * @return 해당 상품의 이미지 목록 (대표 + 상세)
+     */
+    @GetMapping("/{productId}/images")
+    public ResponseEntity<List<ImageDTO>> getProductImages(@PathVariable Long productId) {
+        // Service 계층 호출 → DAO → Repository 순으로 DB 조회
+        List<ImageDTO> images = productService.getProductImages(productId);
+
+        // 조회 결과를 JSON 형태로 반환
+        return ResponseEntity.ok(images);
     }
 }
