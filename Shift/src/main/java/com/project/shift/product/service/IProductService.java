@@ -36,7 +36,26 @@ public interface IProductService {
 	 */
 	void saveProduct(Product product);
 
-	/** 상품 검색 로직 (PROD-005) */
+	/** 
+	 * 상품 검색 로직 (PROD-005)
+	*/
 	List<ProductDTO> searchProducts(String keyword);
 	
+	/**
+     * 정렬 조건에 따른 상품 목록 조회. (PROD-006)
+     * 허용값: priceAsc | priceDesc | latest
+     * null/빈값은 latest 처리.
+     */
+    List<ProductDTO> getSortedProducts(String sortType);
+    
+    /**
+     * 카테고리 한정 정렬 조회. (PROD-004 + PROD-006)
+     * 허용값: priceAsc | priceDesc | latest
+     * null/빈값은 latest 처리.
+     *
+     * @param categoryId 카테고리 ID
+     * @param sortType   정렬 타입 문자열
+     * @return 정렬된 상품 DTO 목록
+     */
+    List<ProductDTO> getProductsByCategorySorted(Long categoryId, String sortType);
 }
