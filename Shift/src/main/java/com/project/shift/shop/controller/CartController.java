@@ -40,12 +40,25 @@ public class CartController {
         return response;
     }
 
-    // SHOP-003 : 장바구니 수량 변경
+    // SHOP-003
     @PostMapping("/{cartId}")
     public CartUpdateResponseDTO updateCartItem(
             @PathVariable Long cartId,
             @RequestBody CartUpdateRequestDTO request
     ) {
         return cartService.updateCartItem(cartId, request.getQuantity());
+    }
+    // SHOP-004
+    // DELETE /cart/{cartId}
+    @DeleteMapping("/{cartId}")
+    public CartDeleteResponseDTO deleteCartItem(@PathVariable Long cartId) {
+        return cartService.deleteCartItem(cartId);
+    }
+
+    // SHOP-005
+    // DELETE /cart/all  + body: { "userId": 3 }
+    @DeleteMapping("/all")
+    public CartClearResponseDTO clearCart(@RequestBody CartClearRequestDTO request) {
+        return cartService.clearCartByUserId(request.getUserId());
     }
 }
