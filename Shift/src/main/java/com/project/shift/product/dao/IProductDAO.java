@@ -30,7 +30,7 @@ public interface IProductDAO {
     void saveProduct(Product product); // 상품 저장 메소드 정의
 
 	/**
-	 * 상품을 ID로 조회합니다. (PROD-002)
+	 * 상품을 ID로 조회합니다. (PROD-002) / (PROD-009)
 	 */
 	Product findById(Long productId);
 

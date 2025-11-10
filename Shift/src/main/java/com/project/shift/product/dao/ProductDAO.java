@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -46,12 +47,11 @@ public class ProductDAO implements IProductDAO {
     }
 
     /**
-     * 상품을 ID로 조회합니다. (PROD-002)
+     * 상품을 ID로 조회합니다. (PROD-002) - (PROD-009)
      */
     @Override
     public Product findById(Long productId) {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found")); // ID로 상품 조회
+        return productRepository.findById(productId).orElse(null);
     }
 
     /**
