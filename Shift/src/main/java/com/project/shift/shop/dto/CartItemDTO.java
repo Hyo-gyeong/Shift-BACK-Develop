@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CartItemDTO {
 
-    private Long cartId;       // cart.cart_items_id
-    private Long productId;    // cart.product_id
-    private String productName; // products.product_name
-    private Integer quantity;   // cart.quantity
-    private Integer price;      // cart.price (또는 products.price)
-    private String imageUrl;    // 대표 이미지 (없으면 null)
+    private Long cartId;
+    private Long productId;
+    private String productName;
+    private Integer quantity;
+    private Integer price;
+    private String imageUrl;
 }

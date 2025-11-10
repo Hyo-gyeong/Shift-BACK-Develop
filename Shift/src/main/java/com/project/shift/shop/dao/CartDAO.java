@@ -1,7 +1,12 @@
-/**package com.project.shift.shop.dao;
+package com.project.shift.shop.dao;
 
+import com.project.shift.product.entity.Product;
+import com.project.shift.product.repository.ProductRepository;
 import com.project.shift.shop.dto.CartItemDTO;
-import org.springframework.jdbc.core.JdbcTemplate;
+import com.project.shift.shop.entity.Cart;
+import com.project.shift.shop.repository.CartRepository;
+import com.project.shift.user.entity.UserEntity;
+import com.project.shift.user.repository.UserRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -10,89 +15,66 @@ import java.util.List;
 @Repository
 public class CartDAO {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final CartRepository cartRepository;
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
 
-    public CartDAO(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public CartDAO(CartRepository cartRepository,
+                   UserRepository userRepository,
+                   ProductRepository productRepository) {
+        this.cartRepository = cartRepository;
+        this.userRepository = userRepository;
+        this.productRepository = productRepository;
     }
 
-
+    // SHOP-001 : userId로 장바구니 조회
     public List<CartItemDTO> findByUserId(Long userId) {
-
-        String sql = """
-                SELECT
-                    c.cart_items_id AS cart_id,
-                    c.product_id    AS product_id,
-                    p.product_name  AS product_name,
-                    c.quantity      AS quantity,
-                    c.price         AS price,
-                    NULL AS image_url
-                FROM cart_items c
-                JOIN products p ON c.product_id = p.product_id
-                WHERE c.user_id = ?
-                ORDER BY c.cart_items_id DESC
-                """;
-
-        return jdbcTemplate.query(sql, new Object[]{userId}, (rs, rowNum) -> {
-            CartItemDTO dto = new CartItemDTO();
-            dto.setCartId(rs.getLong("cart_id"));
-            dto.setProductId(rs.getLong("product_id"));
-            dto.setProductName(rs.getString("product_name"));
-            dto.setQuantity(rs.getInt("quantity"));
-            dto.setPrice(rs.getInt("price"));
-            dto.setImageUrl(rs.getString("image_url"));
-            return dto;
-        });
+        List<Cart> carts = cartRepository.findByUser_UserIdOrderByIdDesc(userId);
+        return carts.stream()
+                .map(this::toDto)
+                .toList();
     }
- // ===== SHOP-002: 장바구니에 상품 추가 =====
+
+    // SHOP-002 : 장바구니에 상품 추가
     public CartItemDTO insertCartItem(Long userId, Long productId, int quantity) {
 
-        // 상품 가격 가져오기
-        String priceSql = "SELECT price, product_name FROM products WHERE product_id = ?";
-        CartItemDTO productInfo = jdbcTemplate.queryForObject(
-                priceSql,
-                new Object[]{productId},
-                (rs, rowNum) -> {
-                    CartItemDTO dto = new CartItemDTO();
-                    dto.setPrice(rs.getInt("price"));          // 단가
-                    dto.setProductName(rs.getString("product_name"));
-                    return dto;
-                }
-        );
-        int unitPrice = productInfo.getPrice();
-        int totalPrice = unitPrice * quantity;
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        String insertSql = """
-                INSERT INTO cart_items
-                    (cart_items_id, product_id, user_id, quantity, price)
-                VALUES
-                    (seq_cart.NEXTVAL, ?, ?, ?, ?)
-                """;
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
 
-        jdbcTemplate.update(insertSql,
-                productId,
-                userId,
-                quantity,
-                totalPrice
-        );
+        Cart cart = Cart.builder()
+                .user(user)
+                .product(product)
+                .quantity(quantity)
+                .price(product.getPrice()) 
+                .build();
 
-        // 방금 넣은 cart_items_id 가져오기
-        Long newCartId = jdbcTemplate.queryForObject(
-                "SELECT seq_cart.CURRVAL FROM dual",
-                Long.class
-        );
+        Cart saved = cartRepository.save(cart);
+        return toDto(saved);
+    }
 
-        // 응답 DTO 구성
-        CartItemDTO result = new CartItemDTO();
-        result.setCartId(newCartId);
-        result.setProductId(productId);
-        result.setProductName(productInfo.getProductName());
-        result.setQuantity(quantity);
-        result.setPrice(totalPrice);
-        // 이미지 경로는 null --나중에
-        result.setImageUrl(null);
+    // SHOP-003 : 장바구니 수량 변경
+    public CartItemDTO updateCartItemQuantity(Long cartId, int quantity) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found: " + cartId));
 
-        return result;
+        cart.setQuantity(quantity);
+        Cart saved = cartRepository.save(cart);
+
+        return toDto(saved);
+    }
+
+    // 내부 공통 변환
+    private CartItemDTO toDto(Cart entity) {
+        CartItemDTO dto = new CartItemDTO();
+        dto.setCartId(entity.getId());
+        dto.setProductId(entity.getProduct().getId());
+        dto.setProductName(entity.getProduct().getName());
+        dto.setQuantity(entity.getQuantity());
+        dto.setPrice(entity.getPrice());
+        dto.setImageUrl(null); 
+        return dto;
     }
 }
-*/

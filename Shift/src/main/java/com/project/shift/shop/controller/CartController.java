@@ -4,6 +4,7 @@ import com.project.shift.shop.dto.*;
 import com.project.shift.shop.service.ICartService;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/cart")
 public class CartController {
@@ -14,13 +15,13 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    // ===== SHOP-001 : 장바구니 목록 조회 =====
+    // SHOP-001
     @GetMapping
     public CartResponseDTO getCart(@RequestParam("userId") Long userId) {
         return cartService.getCartByUserId(userId);
     }
 
-    // ===== SHOP-002 : 장바구니 상품 추가 =====
+    // SHOP-002
     @PostMapping
     public CartAddResponseDTO addCartItem(@RequestBody CartAddRequestDTO request) {
 
@@ -37,5 +38,14 @@ public class CartController {
         response.setResult(true);
 
         return response;
+    }
+
+    // SHOP-003 : 장바구니 수량 변경
+    @PostMapping("/{cartId}")
+    public CartUpdateResponseDTO updateCartItem(
+            @PathVariable Long cartId,
+            @RequestBody CartUpdateRequestDTO request
+    ) {
+        return cartService.updateCartItem(cartId, request.getQuantity());
     }
 }
