@@ -81,4 +81,13 @@ public class FriendController {
 		return dto;
 	}
 	
+	@GetMapping("/friends/delete/{friendId}")
+	public void deleteFriend(HttpServletRequest request, @PathVariable long friendId) {
+		// jwt에서 현재 사용자의 PK 추출
+		long userId = jwtService.getAuthUser(request);
+		
+		// 친구 삭제
+		friendService.deleteFriend(userId, friendId);
+	}
+	
 }

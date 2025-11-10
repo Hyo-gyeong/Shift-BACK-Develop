@@ -28,5 +28,9 @@ public class FriendService {
 	public void addFriend(int userId, int friendId) {
 		dao.insertFriend(userId, friendId);
 	}
+	
+	public void deleteFriend(long userId, long friendId) {
+		dao.deleteFriend(userId, friendId);
+	}
 
 }

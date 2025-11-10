@@ -22,5 +22,8 @@ public class FriendDAO {
 		friendRepo.insertFriend(userId, friendId);
 	}
 	
+	public void deleteFriend(long userId, long friendId) {
+		friendRepo.deleteFriend(userId, friendId);
+	}
 	
 }
