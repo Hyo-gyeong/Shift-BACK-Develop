@@ -6,10 +6,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "cart_items") 
+@Table(name = "cart_items")
 @SequenceGenerator(
         name = "SEQ_CART_ITEMS_GENERATOR",
-        sequenceName = "seq_cart_items",  
+        sequenceName = "seq_cart_items",   
         allocationSize = 1
 )
 @Getter
@@ -24,21 +24,20 @@ public class Cart {
     @Column(name = "cart_items_id")
     private Long id;
 
-    // 사용자 정보 (FK: user_id)
+    // user_id FK
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    // 상품 정보 (FK: product_id)
+    // product_id FK
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id")
     private Product product;
 
-    // 수량
-    @Column(nullable = false)
+    @Column(name = "quantity")
     private Integer quantity;
 
-    // 담을 당시 가격
-    @Column(nullable = false)
+    // 담았을 때의 가격
+    @Column(name = "price")
     private Integer price;
 }

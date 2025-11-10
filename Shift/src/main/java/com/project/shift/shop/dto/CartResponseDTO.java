@@ -8,6 +8,5 @@ import java.util.List;
 @Getter
 @Setter
 public class CartResponseDTO {
-
     private List<CartItemDTO> items;
 }

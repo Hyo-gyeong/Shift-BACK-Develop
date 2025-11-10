@@ -14,13 +14,13 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    // SHOP-001 : 장바구니 목록 조회
+    // SHOP-001
     @GetMapping
     public CartResponseDTO getCart(@RequestParam("userId") Long userId) {
         return cartService.getCartByUserId(userId);
     }
 
-    // SHOP-002 : 장바구니 상품 추가
+    // SHOP-002
     @PostMapping
     public CartAddResponseDTO addCartItem(@RequestBody CartAddRequestDTO request) {
 
@@ -38,20 +38,13 @@ public class CartController {
 
         return response;
     }
-    // SHOP-003: 장바구니 수량 변경
+
+    // SHOP-003 : 장바구니 수량 변경
     @PostMapping("/{cartId}")
     public CartUpdateResponseDTO updateCartItem(
             @PathVariable Long cartId,
             @RequestBody CartUpdateRequestDTO request
     ) {
-        CartItemDTO updated = cartService.updateCartQuantity(cartId, request.getQuantity());
-
-        CartUpdateResponseDTO response = new CartUpdateResponseDTO();
-        response.setCartId(updated.getCartId());
-        response.setProductId(updated.getProductId());
-        response.setQuantity(updated.getQuantity());
-        response.setTotalPrice(updated.getPrice());   
-        response.setResult(true);
-        return response;
+        return cartService.updateCartItem(cartId, request.getQuantity());
     }
 }
