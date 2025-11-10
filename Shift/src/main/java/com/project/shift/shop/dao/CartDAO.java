@@ -1,4 +1,4 @@
-package com.project.shift.shop.dao;
+/**package com.project.shift.shop.dao;
 
 import com.project.shift.shop.dto.CartItemDTO;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -6,12 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-/**
- * SHOP-001 : 장바구니 목록 조회 DAO
- * 
- * - userId를 기준으로 cart_items 테이블의 데이터를 조회한다.
- * - Product 테이블을 조인하여 상품명 등 상세 정보를 함께 반환한다.
- */
+
 @Repository
 public class CartDAO {
 
@@ -21,9 +16,7 @@ public class CartDAO {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    /**
-     * 특정 사용자(userId)의 장바구니 목록 조회
-     */
+
     public List<CartItemDTO> findByUserId(Long userId) {
 
         String sql = """
@@ -102,4 +95,4 @@ public class CartDAO {
         return result;
     }
 }
-
+*/

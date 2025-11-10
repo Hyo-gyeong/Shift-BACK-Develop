@@ -1,9 +1,6 @@
 package com.project.shift.shop.controller;
 
-import com.project.shift.shop.dto.CartResponseDTO;
-import com.project.shift.shop.dto.CartItemDTO;
-import com.project.shift.shop.dto.CartAddRequestDTO;
-import com.project.shift.shop.dto.CartAddResponseDTO;
+import com.project.shift.shop.dto.*;
 import com.project.shift.shop.service.ICartService;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +24,7 @@ public class CartController {
     @PostMapping
     public CartAddResponseDTO addCartItem(@RequestBody CartAddRequestDTO request) {
 
-        CartItemDTO saved = cartService.addCartItem(
+        var saved = cartService.addCartItem(
                 request.getUserId(),
                 request.getProductId(),
                 request.getQuantity()
