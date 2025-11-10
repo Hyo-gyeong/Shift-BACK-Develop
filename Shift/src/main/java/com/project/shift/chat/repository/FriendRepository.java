@@ -17,6 +17,6 @@ public interface FriendRepository extends JpaRepository<FriendEntity, Long>{
     
     @Modifying
     @Transactional
-    @Query(value = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (:userId, :friendId)", nativeQuery = true)
+    @Query(value = "INSERT INTO FRIENDS VALUES (SEQ_FRIENDS.NEXTVAL, :userId, :friendId)", nativeQuery = true)
     void insertFriend(@Param("userId") int userId, @Param("friendId") int friendId);
 }
