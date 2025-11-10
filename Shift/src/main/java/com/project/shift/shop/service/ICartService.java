@@ -1,13 +1,22 @@
 package com.project.shift.shop.service;
 
-import com.project.shift.shop.dto.CartResponseDTO;
-import com.project.shift.shop.dto.CartItemDTO;
+import com.project.shift.shop.dto.*;
+
 
 public interface ICartService {
 
-    // SHOP-001: userId로 장바구니 목록 조회
+    // SHOP-001
     CartResponseDTO getCartByUserId(Long userId);
 
-    // SHOP-002: 장바구니에 상품 추가
+    // SHOP-002
     CartItemDTO addCartItem(Long userId, Long productId, Integer quantity);
+
+    // SHOP-003
+    CartUpdateResponseDTO updateCartItem(Long cartId, Integer quantity);
+    
+    // SHOP-004
+    CartDeleteResponseDTO deleteCartItem(Long cartId);
+
+    // SHOP-005
+    CartClearResponseDTO clearCartByUserId(Long userId);
 }

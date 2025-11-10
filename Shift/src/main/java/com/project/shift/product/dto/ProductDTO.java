@@ -24,6 +24,12 @@ public class ProductDTO {
         this.seller = seller;
         this.imageUrls = imageUrls;
     }
+    
+    // (PROD-009) 재고 조회 전용 생성자
+    public ProductDTO(Long productId, int stock) {
+        this.productId = String.valueOf(productId);
+        this.stock = stock;
+    }
 
     // Getter 및 Setter
     public String getProductId() {
