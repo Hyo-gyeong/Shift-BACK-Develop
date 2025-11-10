@@ -10,4 +10,8 @@ public interface ICartService {
 
     // SHOP-002: 장바구니에 상품 추가
     CartItemDTO addCartItem(Long userId, Long productId, Integer quantity);
+    
+    // SHOP-003: 장바구니 수량 변경
+    CartItemDTO updateCartQuantity(Long cartId, Integer quantity);
 }
+
