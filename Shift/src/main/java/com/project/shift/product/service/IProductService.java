@@ -67,4 +67,12 @@ public interface IProductService {
 	 * DAO → Repository → DB 순서로 접근한다.
 	 */
 	List<ImageDTO> getProductImages(Long productId);
+	
+	/**
+     * (PROD-009)
+     * 특정 상품의 재고 수량을 조회한다.
+     * @param productId 상품 ID
+     * @return 상품 ID와 재고 정보가 담긴 DTO
+     */
+    ProductDTO getProductStock(Long productId);
 }

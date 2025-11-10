@@ -62,7 +62,10 @@ public class ProductService implements IProductService {
      */
     @Override
     public ProductDTO getProductDetails(Long productId) {
-        Product product = productDAO.findById(productId); // DAO를 통해 상품 조회
+        Product product = productDAO.findById(productId);
+        if (product == null) {
+            throw new IllegalArgumentException("상품을 찾을 수 없습니다. productId=" + productId);
+        }
         return convertToDTO(product);
     }
 
@@ -177,7 +180,7 @@ public class ProductService implements IProductService {
     }
     
     /**
-     * [PROD-007] 상품 이미지 조회
+     * 상품 이미지 조회	(PROD-007)
      * ----------------------------------------------------------
      * 특정 상품의 이미지(대표/상세 포함)를 조회한다.
      * DAO → Repository → DB 순서로 접근한다.
@@ -198,7 +201,30 @@ public class ProductService implements IProductService {
                         .build())
                 .collect(Collectors.toList());
     }
+    
+    /**
+     * (PROD-009)
+     * 상품 ID를 이용해 해당 상품의 재고 정보를 조회한다.
+     *
+     * 처리 순서:
+     * 1. DAO를 통해 상품 엔티티를 조회한다.
+     * 2. 상품이 존재하지 않으면 IllegalArgumentException 발생.
+     * 3. 존재할 경우, 상품 ID와 재고 수량만 담은 DTO를 생성해 반환한다.
+     *
+     * @param productId 조회할 상품의 ID
+     * @return 상품 ID와 재고 수량이 포함된 ProductDTO
+     */
+    @Override
+    public ProductDTO getProductStock(Long productId) {
+        Product product = productDAO.findById(productId);
+        if (product == null) {
+            throw new IllegalArgumentException("상품을 찾을 수 없습니다. (productId=" + productId + ")");
+        }
 
+        // 엔티티 필드명이 id이므로 getId()로 접근
+        return new ProductDTO(product.getId(), product.getStock());
+    }
+    
     /**
      * Product 엔티티를 ProductDTO로 변환
      */

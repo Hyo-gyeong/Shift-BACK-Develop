@@ -146,4 +146,23 @@ public class ProductController {
         // 조회 결과를 JSON 형태로 반환
         return ResponseEntity.ok(images);
     }
+    
+    /**
+     * 상품 재고 확인 API	(PROD-009)
+     * 특정 상품 ID를 받아 해당 상품의 현재 재고를 반환한다.
+     *
+     * @param productId 상품 ID (PathVariable)
+     * @return 상품 ID와 재고 수량을 담은 ProductDTO
+     *
+     * 예시 요청: GET /products/4/stock
+     * 예시 응답:
+     * {
+     *   "productId": 4,
+     *   "stock": 300
+     * }
+     */
+    @GetMapping("/{productId}/stock")
+    public ResponseEntity<ProductDTO> getProductStock(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.getProductStock(productId));
+    }
 }
