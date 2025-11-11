@@ -23,6 +23,7 @@ public class MessageService {
 	@Autowired
 	ChatroomDAO chatroomDAO;
 	
+	@Transactional
 	public void addMessage(MessageDTO message) {
 		messageDAO.insertMessage(MessageEntity.toEntity(message));
 	}
