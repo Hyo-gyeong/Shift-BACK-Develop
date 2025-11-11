@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.shift.chat.dao.ChatUserDAO;
 import com.project.shift.chat.dto.ChatUserDTO;
@@ -16,6 +17,7 @@ public class ChatUserService {
 	@Autowired
 	ChatUserDAO dao;
 	
+	@Transactional
 	public ChatUserDTO getUserInfo(int id){
 		ChatUserEntity entity = dao.getUserInfo(id);
 		if (entity != null) {
@@ -25,6 +27,7 @@ public class ChatUserService {
 		return null;
 	}
 	
+	@Transactional
 	public List<ChatUserDTO> getUserInfoByIds(List<Integer> userIds){
 		List<ChatUserEntity> entityList = dao.getUserInfoByIds(userIds);
 		List<ChatUserDTO> dtoList = new ArrayList<ChatUserDTO>();
@@ -34,6 +37,7 @@ public class ChatUserService {
 		return dtoList;
 	}
 	
+	@Transactional
 	public ChatUserDTO getUserInfoByPhone(String phone) {
 		ChatUserEntity entity = dao.getUserInfoByPhone(phone);
 		ChatUserDTO dto = ChatUserDTO.toDto(entity);
