@@ -4,6 +4,8 @@ import com.project.shift.shop.entity.Order;
 import com.project.shift.shop.repository.OrderRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
+import java.util.List;
+
 
 @Repository
 public class OrderDAO implements IOrderDAO {
@@ -22,5 +24,10 @@ public class OrderDAO implements IOrderDAO {
     @Override
     public Optional<Order> findById(Long orderId) {
         return orderRepository.findById(orderId);
+    }
+    
+    @Override
+    public List<Order> findBySenderId(Long senderId) {
+        return orderRepository.findBySenderIdOrderByOrderDateDesc(senderId);
     }
 }

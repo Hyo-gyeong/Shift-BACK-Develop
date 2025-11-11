@@ -8,6 +8,11 @@ import com.project.shift.shop.entity.OrderItem;
 import com.project.shift.product.entity.Product;
 import com.project.shift.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import com.project.shift.shop.dto.OrderListDTO;
+import com.project.shift.shop.dto.OrderListResponseDTO;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import java.time.LocalDateTime;
 
@@ -63,7 +68,25 @@ public class OrderService implements IOrderService {
         resp.setOrderDate(saved.getOrderDate());
         resp.setOrderStatus(saved.getOrderStatus());
         resp.setResult(true);
-        resp.setItems(orderDTO.getItems()); // 요청에서 온 아이템 구조는 그대로 돌려줌
+        resp.setItems(orderDTO.getItems());
         return resp;
+    }
+    @Override
+    public OrderListResponseDTO getOrdersByUser(Long userId) {
+        List<Order> orders = orderDAO.findBySenderId(userId);
+
+        List<OrderListDTO> list = orders.stream().map(o -> {
+            OrderListDTO dto = new OrderListDTO();
+            dto.setOrderId(o.getOrderId());
+            dto.setSenderId(o.getSenderId());
+            dto.setReceiverId(o.getReceiverId());
+            dto.setOrderDate(o.getOrderDate());
+            dto.setTotalPrice(o.getTotalPrice());
+            dto.setPointUsed(o.getPointUsed());
+            dto.setCashUsed(o.getCashUsed());
+            return dto;
+        }).collect(Collectors.toList());
+
+        return new OrderListResponseDTO(list);
     }
 }
