@@ -9,9 +9,9 @@ import org.springframework.data.repository.query.Param;
 import com.project.shift.chat.entity.ChatUserEntity;
 
 public interface ChatUserRepository extends JpaRepository<ChatUserEntity, Long>{
-
+	
 	ChatUserEntity findByUserId(int userId);
-
+	
 	@Query("""
 			SELECT u FROM ChatUserEntity u
             WHERE u.userId IN :friendIds

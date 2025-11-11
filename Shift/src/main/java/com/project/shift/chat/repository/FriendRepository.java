@@ -12,11 +12,17 @@ import com.project.shift.chat.entity.FriendEntity;
 import jakarta.transaction.Transactional;
 
 public interface FriendRepository extends JpaRepository<FriendEntity, Long>{
-
+	
     List<FriendEntity> findByUserId(int userId);
-
+    
     @Modifying
     @Transactional
-    @Query(value = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (:userId, :friendId)", nativeQuery = true)
+    @Query(value = "INSERT INTO FRIENDS VALUES (SEQ_FRIENDS.NEXTVAL, :userId, :friendId)", nativeQuery = true)
     void insertFriend(@Param("userId") int userId, @Param("friendId") int friendId);
+    
+    // 친구 삭제
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM FRIENDS WHERE USER_ID = :userId AND FRIEND_ID = :friendId", nativeQuery = true)
+    void deleteFriend(@Param("userId") long userId, @Param("friendId") long friendId);
 }

@@ -33,7 +33,7 @@ public class ChatUserService {
 		}
 		return dtoList;
 	}
-
+	
 	public ChatUserDTO getUserInfoByPhone(String phone) {
 		ChatUserEntity entity = dao.getUserInfoByPhone(phone);
 		ChatUserDTO dto = ChatUserDTO.toDto(entity);

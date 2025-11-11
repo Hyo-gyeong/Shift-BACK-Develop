@@ -3,26 +3,27 @@ package com.project.shift.chat.dao;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.project.shift.chat.entity.FriendEntity;
 import com.project.shift.chat.repository.FriendRepository;
 
-@Service
+@Component
 public class FriendDAO {
 
 	@Autowired
 	FriendRepository friendRepo;
-	
-	public List<FriendEntity> getUserFriends (int userId){
+
+	public List<FriendEntity> getUserFriends(int userId) {
 		return friendRepo.findByUserId(userId);
 	}
-	
+
 	public void insertFriend(int userId, int friendId) {
-		FriendEntity friend = new FriendEntity();
-        friend.setUserId(userId);
-        friend.setFriendId(friendId);
-        friendRepo.save(friend);
+		friendRepo.insertFriend(userId, friendId);
+	}
+	
+	public void deleteFriend(long userId, long friendId) {
+		friendRepo.deleteFriend(userId, friendId);
 	}
 	
 }
