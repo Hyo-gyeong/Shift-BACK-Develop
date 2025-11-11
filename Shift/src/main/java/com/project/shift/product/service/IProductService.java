@@ -1,5 +1,6 @@
 package com.project.shift.product.service;
 
+import com.project.shift.product.dto.ImageDTO;
 import com.project.shift.product.dto.ProductDTO;
 import com.project.shift.product.entity.Product;
 
@@ -35,4 +36,43 @@ public interface IProductService {
 	 * @param product 저장할 상품 객체
 	 */
 	void saveProduct(Product product);
+
+	/** 
+	 * 상품 검색 로직 (PROD-005)
+	*/
+	List<ProductDTO> searchProducts(String keyword);
+	
+	/**
+     * 정렬 조건에 따른 상품 목록 조회. (PROD-006)
+     * 허용값: priceAsc | priceDesc | latest
+     * null/빈값은 latest 처리.
+     */
+    List<ProductDTO> getSortedProducts(String sortType);
+    
+    /**
+     * 카테고리 한정 정렬 조회. (PROD-004 + PROD-006)
+     * 허용값: priceAsc | priceDesc | latest
+     * null/빈값은 latest 처리.
+     *
+     * @param categoryId 카테고리 ID
+     * @param sortType   정렬 타입 문자열
+     * @return 정렬된 상품 DTO 목록
+     */
+    List<ProductDTO> getProductsByCategorySorted(Long categoryId, String sortType);
+
+	/**
+	 * 상품 이미지 조회	(PROD-007)
+	 * ----------------------------------------------------------
+	 * 특정 상품의 이미지(대표/상세 포함)를 조회한다.
+	 * DAO → Repository → DB 순서로 접근한다.
+	 */
+	List<ImageDTO> getProductImages(Long productId);
+	
+	/**
+     * (PROD-009)
+     * 특정 상품의 재고 수량을 조회한다.
+     * @param productId 상품 ID
+     * @return 상품 ID와 재고 정보가 담긴 DTO
+     */
+    ProductDTO getProductStock(Long productId);
 }

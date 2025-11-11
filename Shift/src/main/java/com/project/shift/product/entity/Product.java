@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * products 테이블 매핑
@@ -59,5 +60,19 @@ public class Product {
     // 상품 등록일을 반환하는 getter 메소드 추가
     public Date getRegistrationDate() {
         return this.registrationDate;
+    }
+    
+    // equals와 hashCode 메소드 추가 (중복 방지)
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return Objects.equals(id, product.id) && Objects.equals(name, product.name); // id와 name을 기준으로 중복 판단
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name); // id와 name을 기준으로 해시코드 생성
     }
 }

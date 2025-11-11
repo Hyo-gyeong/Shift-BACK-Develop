@@ -1,27 +1,35 @@
 package com.project.shift.user.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import com.project.shift.user.dto.UserDTO;
+import com.project.shift.user.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project.shift.chat.dto.ChatUserDTO;
-import com.project.shift.chat.service.ChatUserService;
-
-import lombok.extern.slf4j.Slf4j;
-
 @RestController
-@Slf4j
+@RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
-	
-	// 추후 UserService로 변경 예정
-	@Autowired
-	ChatUserService chatUserService;
-	
-	// 전화번호로 사용자 검색 (친구 추가 용도). 추후 ChatUserDTO를 UserDTO로 변경 예정
-	@GetMapping("/users/search/{phone}")
-	public ChatUserDTO searchUser(@PathVariable String phone) {
-		return chatUserService.getUserInfoByPhone(phone);
-	}
-	
+    private final UserService userService;
+
+    @PostMapping
+    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO){
+        try {
+            //서버 회원가입 요청
+            Long userId = userService.join(userDTO);
+
+            //성궁 응답(201 Created)
+            return new ResponseEntity<>("회원가입 성공. 할당된 사용자 ID:" + userId, HttpStatus.CREATED);
+        }catch(IllegalArgumentException e){
+            //클라이언트 오류 응답(409 Conflict)
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }catch(Exception e) {
+            //서버 오류 응답(500 Internal Server Error)
+            return new ResponseEntity<>("회원가입 중 서버 오류 발생", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
