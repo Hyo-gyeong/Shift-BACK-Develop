@@ -29,8 +29,8 @@ public class ChatUserController {
 	@GetMapping("/users/{id}")
 	public ResponseEntity<?> getUserInfo (@PathVariable int id){
 		ChatUserDTO user = chatUserService.getUserInfo(id);
-		log.info("user pk {}", user.getUserId());
 		if (user != null) {
+			log.info("user pk {}", user.getUserId());
             // 유저가 존재하면 200 OK + JSON 반환
             return ResponseEntity.ok(user);
         } else {
