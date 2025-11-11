@@ -28,4 +28,9 @@ public class ChatroomService {
 	public List<Integer> findChatroomIdsForUsers(int fromId, int toId) {
 		return dao.findChatroomIdsForUsers(fromId, toId);
 	}
+	
+	public ChatroomDTO addChatroom(ChatroomDTO dto) {
+		ChatroomEntity entity = dao.insertChatroom(ChatroomEntity.toEntity(dto));
+		return ChatroomDTO.toDto(entity);
+	}
 }
