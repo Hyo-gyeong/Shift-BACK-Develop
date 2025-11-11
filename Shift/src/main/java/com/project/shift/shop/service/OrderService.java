@@ -1,15 +1,15 @@
 package com.project.shift.shop.service;
 
 import com.project.shift.shop.dao.IOrderDAO;
-import com.project.shift.shop.dto.OrderDTO;
-import com.project.shift.shop.dto.OrderItemDTO;
+import com.project.shift.shop.dto.*;
+import com.project.shift.shop.entity.Delivery;
 import com.project.shift.shop.entity.Order;
 import com.project.shift.shop.entity.OrderItem;
 import com.project.shift.product.entity.Product;
 import com.project.shift.product.repository.ProductRepository;
+import com.project.shift.shop.repository.DeliveryRepository;
 import org.springframework.stereotype.Service;
-import com.project.shift.shop.dto.OrderListDTO;
-import com.project.shift.shop.dto.OrderListResponseDTO;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,11 +21,16 @@ public class OrderService implements IOrderService {
 
     private final IOrderDAO orderDAO;
     private final ProductRepository productRepository;
+    private final DeliveryRepository deliveryRepository;
+
 
     public OrderService(IOrderDAO orderDAO,
-                        ProductRepository productRepository) {
+                        ProductRepository productRepository,
+                        DeliveryRepository deliveryRepository) {
         this.orderDAO = orderDAO;
         this.productRepository = productRepository;
+        this.deliveryRepository = deliveryRepository;
+
     }
 
     @Override
@@ -88,5 +93,47 @@ public class OrderService implements IOrderService {
         }).collect(Collectors.toList());
 
         return new OrderListResponseDTO(list);
+    }
+    
+    // SHOP-008
+    @Override
+    public OrderDetailResponseDTO getOrderDetail(Long orderId) {
+        Order order = orderDAO.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 주문이 없습니다. orderId=" + orderId));
+
+        // 아이템 변환
+        List<OrderDetailItemDTO> itemDTOs = order.getOrderItems().stream().map(oi -> {
+            OrderDetailItemDTO dto = new OrderDetailItemDTO();
+            dto.setProductId(oi.getProductId());
+            dto.setQuantity(oi.getQuantity());
+            dto.setItemPrice(oi.getItemPrice());
+
+            // 상품 이름 조회
+            Product product = productRepository.findById(oi.getProductId()).orElse(null);
+            dto.setProductName(product != null ? product.getName() : null);
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        // 결제 정보
+        PaymentDTO paymentDTO = new PaymentDTO(order.getCashUsed(), order.getPointUsed());
+
+        // 배송 정보
+        DeliveryDTO deliveryDTO = deliveryRepository.findByOrder_OrderId(orderId)
+                .map(d -> new DeliveryDTO(d.getDeliveryStatus(), d.getTrackingNumber()))
+                .orElse(null);
+
+        // 최종 응답
+        OrderDetailResponseDTO resp = new OrderDetailResponseDTO();
+        resp.setOrderId(order.getOrderId());
+        resp.setSenderId(order.getSenderId());
+        resp.setReceiverId(order.getReceiverId());
+        resp.setOrderDate(order.getOrderDate());
+        resp.setItems(itemDTOs);
+        resp.setTotalPrice(order.getTotalPrice());
+        resp.setPayment(paymentDTO);
+        resp.setDelivery(deliveryDTO);
+
+        return resp;
     }
 }
