@@ -1,5 +1,7 @@
 package com.project.shift.shop.service;
 
-public interface IOrderService {
+import com.project.shift.shop.dto.OrderDTO;
 
+public interface IOrderService {
+    OrderDTO createOrder(OrderDTO orderDTO);
 }
