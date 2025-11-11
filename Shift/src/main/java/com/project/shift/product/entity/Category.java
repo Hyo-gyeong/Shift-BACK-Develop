@@ -17,7 +17,7 @@ public class Category {
     @Column(name = "CATEGORY_ID")
     private Long categoryId;
 
-    @Column(name = "CATEGORY_NAME")
+	@Column(name = "CATEGORY_NAME", length = 50, nullable = false)
     private String categoryName;
 
     // 기본 생성자

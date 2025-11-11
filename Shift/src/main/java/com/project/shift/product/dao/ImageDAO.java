@@ -10,8 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * 이미지 DAO
- * - EntityManager를 사용해 이미지 데이터 직접 조작
+ * [DAO-001] 이미지 관련 데이터 접근 클래스
+ * ---------------------------------------------------------
+ * - PROD-007 : 상품 이미지 조회
+ * - 대표 이미지 초기화 및 업데이트 기능 포함
+ * ---------------------------------------------------------
+ * ※ EntityManager 직접 사용으로 이미지 상태 조작 지원
  */
 @Repository
 public class ImageDAO implements IImageDAO {
@@ -25,31 +29,31 @@ public class ImageDAO implements IImageDAO {
         this.imageRepository = imageRepository;
     }
 
-    /** 특정 상품의 모든 이미지 조회 */
+    /** [PROD-007] 특정 상품의 모든 이미지 조회 */
     @Override
     public List<Image> findByProductId(Long productId) {
         String query = "SELECT i FROM Image i WHERE i.product.id = :productId";
         return entityManager.createQuery(query, Image.class)
-                            .setParameter("productId", productId)
-                            .getResultList();
+                .setParameter("productId", productId)
+                .getResultList();
     }
 
-    /** 특정 상품의 대표 이미지 초기화 (전부 N으로 변경) */
+    /** 특정 상품의 대표 이미지 초기화 (모두 'N'으로 변경) */
     @Transactional
     public void resetRepresentative(Long productId) {
         String query = "UPDATE Image i SET i.isRepresentative = 'N' WHERE i.product.id = :productId";
         entityManager.createQuery(query)
-                     .setParameter("productId", productId)
-                     .executeUpdate();
+                .setParameter("productId", productId)
+                .executeUpdate();
     }
 
-    /** 특정 이미지의 대표 여부 설정 */
+    /** 특정 이미지 대표 여부 갱신 ('Y' 또는 'N') */
     @Transactional
     public void updateRepresentative(Long imageId, String value) {
         String query = "UPDATE Image i SET i.isRepresentative = :value WHERE i.id = :imageId";
         entityManager.createQuery(query)
-                     .setParameter("value", value)
-                     .setParameter("imageId", imageId)
-                     .executeUpdate();
+                .setParameter("value", value)
+                .setParameter("imageId", imageId)
+                .executeUpdate();
     }
 }

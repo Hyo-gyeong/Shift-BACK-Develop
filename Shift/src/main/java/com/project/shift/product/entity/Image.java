@@ -30,7 +30,7 @@ public class Image {
     private String imageUrl;
 
     /** 대표 이미지 여부 */
-    @Column(name = "IS_REPRESENTATIVE", nullable = false)
+    @Column(name = "IS_REPRESENTATIVE", nullable = false, length = 1)
     private String isRepresentative;  // Y: 대표 이미지, N: 기타 이미지
 
     /**

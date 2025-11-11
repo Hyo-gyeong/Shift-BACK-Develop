@@ -24,7 +24,7 @@ public class Product {
     @Column(name = "PRODUCT_ID")
     private Long id;
 
-    /** 상품명: 길이 150, NOT NULL */
+    /** 상품명: 길이 150, NOT NULL */ 
     @Column(name = "PRODUCT_NAME", nullable = false, length = 150)
     private String name;
 
@@ -41,6 +41,7 @@ public class Product {
     private String seller;
 
     /** 상품 등록일 (등록 시 자동으로 SYSDATE로 설정) */
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "REGISTRATION_DATE", nullable = false, updatable = false)
     private Date registrationDate;
 
