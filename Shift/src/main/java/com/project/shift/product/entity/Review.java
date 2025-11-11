@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.util.Date;
 
+import com.project.shift.user.entity.UserEntity;
+
 /**
  * reviews 테이블 매핑 엔티티 클래스.
  * - 상품에 대한 사용자의 리뷰 정보를 저장.
@@ -17,7 +19,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"product"})
+@ToString(exclude = {"product", "user"})
 public class Review {
 
     /** 리뷰 PK */
@@ -28,8 +30,9 @@ public class Review {
     private Long id;
 
     /** 리뷰 작성자 (Users FK) */
-    @Column(name = "USER_ID", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID", nullable = false)
+    private UserEntity user;
 
     /** 평점 (1~5점) */
     @Column(name = "RATING", nullable = false)
@@ -40,7 +43,7 @@ public class Review {
     private String content;
 
     /** 작성일 (기본값: SYSDATE) */
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "CREATED_DATE", nullable = false, updatable = false)
     private Date createdDate;
 

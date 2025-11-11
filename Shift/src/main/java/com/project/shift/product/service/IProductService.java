@@ -3,76 +3,47 @@ package com.project.shift.product.service;
 import com.project.shift.product.dto.ImageDTO;
 import com.project.shift.product.dto.ProductDTO;
 import com.project.shift.product.entity.Product;
-
 import java.util.List;
 
 /**
- * 상품 관련 서비스 인터페이스.
+ * [I-SERVICE-001] 상품 관련 서비스 인터페이스
+ * ---------------------------------------------------------
+ * - PROD-001 : 전체 상품 목록 조회
+ * - PROD-002 : 상품 상세 조회
+ * - PROD-004 : 카테고리별 상품 조회
+ * - PROD-005 : 상품 검색
+ * - PROD-006 : 상품 정렬
+ * - PROD-007 : 상품 이미지 조회
+ * - PROD-009 : 상품 재고 조회
+ * ---------------------------------------------------------
+ * ※ 금액권(Category_ID = 3)은 모든 일반 조회/검색/정렬에서 제외
  */
 public interface IProductService {
 
-    /**
-     * 전체 상품 목록을 조회하는 메서드. (PROD-001)
-     * @return 상품 목록
-     */
-    List<ProductDTO> getAllProducts(); // 상품 목록 조회 메서드 정의
-    
-    /**
-     * 특정 카테고리에 속한 상품 목록을 조회하는 메서드.
-     * @param categoryId 카테고리 ID 	(PROD-004)
-     * @return 해당 카테고리에 속한 상품 목록
-     */
+    /** [PROD-001] 전체 상품 목록 조회 */
+    List<ProductDTO> getAllProducts();
+
+    /** [PROD-002] 상품 상세 조회 */
+    ProductDTO getProductDetails(Long productId);
+
+    /** [PROD-004] 카테고리별 상품 목록 조회 */
     List<ProductDTO> getProductsByCategory(Long categoryId);
-    
-    /**
-     * 상품 상세 조회 (ID로 조회)
-     * @param productId 상품 ID	(PROD-002)
-     * @return 상품 상세 정보
-     */
-    ProductDTO getProductDetails(Long productId); // 상품 상세 조회 메서드 정의
 
-	/**
-	 * 상품을 저장하는 서비스 메소드입니다. (시퀀스를 사용하여 자동으로 ID 생성)
-	 * @param product 저장할 상품 객체
-	 */
-	void saveProduct(Product product);
+    /** [PROD-005] 상품명 검색 (부분 일치) */
+    List<ProductDTO> searchProducts(String keyword);
 
-	/** 
-	 * 상품 검색 로직 (PROD-005)
-	*/
-	List<ProductDTO> searchProducts(String keyword);
-	
-	/**
-     * 정렬 조건에 따른 상품 목록 조회. (PROD-006)
-     * 허용값: priceAsc | priceDesc | latest
-     * null/빈값은 latest 처리.
-     */
+    /** [PROD-006] 상품 정렬 (가격순/최신순) */
     List<ProductDTO> getSortedProducts(String sortType);
-    
-    /**
-     * 카테고리 한정 정렬 조회. (PROD-004 + PROD-006)
-     * 허용값: priceAsc | priceDesc | latest
-     * null/빈값은 latest 처리.
-     *
-     * @param categoryId 카테고리 ID
-     * @param sortType   정렬 타입 문자열
-     * @return 정렬된 상품 DTO 목록
-     */
+
+    /** [PROD-004 + PROD-006] 카테고리 한정 정렬 상품 조회 */
     List<ProductDTO> getProductsByCategorySorted(Long categoryId, String sortType);
 
-	/**
-	 * 상품 이미지 조회	(PROD-007)
-	 * ----------------------------------------------------------
-	 * 특정 상품의 이미지(대표/상세 포함)를 조회한다.
-	 * DAO → Repository → DB 순서로 접근한다.
-	 */
-	List<ImageDTO> getProductImages(Long productId);
-	
-	/**
-     * (PROD-009)
-     * 특정 상품의 재고 수량을 조회한다.
-     * @param productId 상품 ID
-     * @return 상품 ID와 재고 정보가 담긴 DTO
-     */
+    /** [PROD-007] 상품 이미지 목록 조회 */
+    List<ImageDTO> getProductImages(Long productId);
+
+    /** [PROD-009] 상품 재고 조회 */
     ProductDTO getProductStock(Long productId);
+
+    /** 상품 저장 (시퀀스 기반 자동 ID 생성) */
+    void saveProduct(Product product);
 }

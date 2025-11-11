@@ -1,85 +1,111 @@
 package com.project.shift.product.repository;
 
 import com.project.shift.product.entity.Product;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.util.List;
 
 /**
- * 상품에 대한 CRUD 작업을 처리하는 리포지토리.
+ * [REP-001] 상품 Repository
+ * ---------------------------------------------------------
+ * - 엔티티 필드명(name) 기준
+ * - 공백 포함/무시/유연(가변간격) 검색 통합 지원
+ * ---------------------------------------------------------
  */
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    /**
-     * 카테고리 ID를 기준으로 상품 목록을 조회하는 메서드.
-     * @param categoryId 카테고리 ID	(PROD-004)
-     * @return 해당 카테고리에 속한 상품 목록
-     */
-    List<Product> findByCategory_CategoryId(Long categoryId); // 카테고리의 categoryId를 기준으로 상품 조회
-    
-    /**
-     * 상품명 부분 일치 검색 (대소문자 무시) (PROD-005)
-     */
+    /** [PROD-001] 카테고리 제외 전체 조회 */
+    List<Product> findByCategory_CategoryIdNot(Long excludedCategoryId);
+
+    /** [PROD-001] 카테고리 제외 전체 조회 + 정렬 */
+    List<Product> findByCategory_CategoryIdNot(Long excludedCategoryId, Sort sort);
+
+    /** [PROD-004] 카테고리별 상품 조회 */
+    List<Product> findByCategory_CategoryId(Long categoryId);
+
+    /** [PROD-004 + PROD-006] 카테고리별 정렬 조회 */
+    List<Product> findByCategory_CategoryId(Long categoryId, Sort sort);
+
+    /** [PROD-005] 부분 일치 검색 */
     List<Product> findByNameContainingIgnoreCase(String name);
 
-    /**
-     * 상품명 부분 일치 + 금액권 제외 (카테고리 ID != 3) (PROD-005)
-     */
+    /** [PROD-005] 부분 일치 검색 (금액권 제외) */
     List<Product> findByNameContainingIgnoreCaseAndCategory_CategoryIdNot(String name, Long excludedCategoryId);
 
-    /**
-     * 공백 무시 + 서브시퀀스 매칭 (PROD-005)
-     * ex) keyword="화이트디퓨저" → ".*화.*이.*트.*디.*퓨.*저.*"
-     */
-    @Query(value = """
-        SELECT *
-          FROM PRODUCTS p
-         WHERE REGEXP_LIKE(
-                   REPLACE(LOWER(p.PRODUCT_NAME), ' ', ''),
-                   :pattern
-               )
-        """, nativeQuery = true)
-    List<Product> searchIgnoringSpacesSubsequence(@Param("pattern") String regexPattern);
+    /** [PROD-005] 공백 무시 검색 */
+    @Query("""
+        SELECT p FROM Product p
+        WHERE REPLACE(LOWER(p.name), ' ', '') LIKE LOWER(CONCAT('%', :keyword, '%'))
+    """)
+    List<Product> findByNameIgnoreSpaces(@Param("keyword") String keyword);
 
-    /**
-     * 공백 무시 + 서브시퀀스 매칭 + 금액권 제외 (PROD-005)
-     */
-    @Query(value = """
-        SELECT *
-          FROM PRODUCTS p
-         WHERE p.CATEGORY_ID <> :excluded
-           AND REGEXP_LIKE(
-                   REPLACE(LOWER(p.PRODUCT_NAME), ' ', ''),
-                   :pattern
-               )
-        """, nativeQuery = true)
-    List<Product> searchIgnoringSpacesSubsequenceExcludingCategory(@Param("pattern") String regexPattern,
-                                                                   @Param("excluded") Long excludedCategoryId);
-    
-    /**
-     * 카테고리 제외 전체 목록 (PROD-006)
-     * @param categoryId
-     * @return
-     */
-    List<Product> findByCategory_CategoryIdNot(Long categoryId);
+    /** [PROD-005] 공백 무시 검색 (금액권 제외) */
+    @Query("""
+        SELECT p FROM Product p
+        WHERE p.category.categoryId <> :excludedCategoryId
+          AND REPLACE(LOWER(p.name), ' ', '') LIKE LOWER(CONCAT('%', :keyword, '%'))
+    """)
+    List<Product> findByNameIgnoreSpacesAndCategory_CategoryIdNot(
+            @Param("keyword") String keyword,
+            @Param("excludedCategoryId") Long excludedCategoryId
+    );
 
-    /**
-     *  카테고리 제외 + 정렬 (PROD-006)
-     * @param categoryId
-     * @param sort
-     * @return
-     */
-    List<Product> findByCategory_CategoryIdNot(Long categoryId, Sort sort);
-    
-    /** 
-     * 카테고리 ID로 정렬 가능 조회 (PROD-004 + PROD+006)
-     * @param categoryId
-     * @param sort
-     * @return
-     */
-    List<Product> findByCategory_CategoryId(Long categoryId, Sort sort);
+    /** [PROD-005] 다중 키워드 검색 (AND 조건) */
+    @Query("""
+        SELECT p FROM Product p
+        WHERE (:#{#keywords.length} = 0 OR (
+            LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#keywords[0]}, '%'))
+            AND (:#{#keywords.length} < 2 OR LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#keywords[1]}, '%')))
+            AND (:#{#keywords.length} < 3 OR LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#keywords[2]}, '%')))
+        ))
+    """)
+    List<Product> findByMultipleKeywords(@Param("keywords") String[] keywords);
+
+    /** [PROD-005] 다중 키워드 검색 (금액권 제외) */
+    @Query("""
+        SELECT p FROM Product p
+        WHERE p.category.categoryId <> :excludedCategoryId
+          AND (:#{#keywords.length} = 0 OR (
+            LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#keywords[0]}, '%'))
+            AND (:#{#keywords.length} < 2 OR LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#keywords[1]}, '%')))
+            AND (:#{#keywords.length} < 3 OR LOWER(p.name) LIKE LOWER(CONCAT('%', :#{#keywords[2]}, '%')))
+          ))
+    """)
+    List<Product> findByMultipleKeywordsExcludingCategory(
+            @Param("keywords") String[] keywords,
+            @Param("excludedCategoryId") Long excludedCategoryId
+    );
+
+
+    /* ============================================================
+       ✅ 통합 검색 (공백 포함 + 무시 + 가변간격 일치 모두 처리)
+       ============================================================ */
+
+    /** [PROD-005] 공백 포함/무시/가변간격 통합 검색 */
+    @Query("""
+        SELECT p FROM Product p
+        WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', REPLACE(:keyword, ' ', '%'), '%'))
+           OR REPLACE(LOWER(p.name), ' ', '') LIKE LOWER(CONCAT('%', :normalized, '%'))
+    """)
+    List<Product> searchFlexible(
+            @Param("keyword") String keyword,
+            @Param("normalized") String normalized
+    );
+
+    /** [PROD-005] 공백 포함/무시/가변간격 통합 검색 (금액권 제외) */
+    @Query("""
+        SELECT p FROM Product p
+        WHERE p.category.categoryId <> :excludedCategoryId
+          AND (
+              LOWER(p.name) LIKE LOWER(CONCAT('%', REPLACE(:keyword, ' ', '%'), '%'))
+           OR REPLACE(LOWER(p.name), ' ', '') LIKE LOWER(CONCAT('%', :normalized, '%'))
+          )
+    """)
+    List<Product> searchFlexibleExcludingCategory(
+            @Param("keyword") String keyword,
+            @Param("normalized") String normalized,
+            @Param("excludedCategoryId") Long excludedCategoryId
+    );
 }
