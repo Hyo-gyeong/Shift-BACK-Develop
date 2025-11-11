@@ -16,12 +16,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ChatUserController {
 
+	// 추후 UserService로 변경 예정
 	@Autowired
-	ChatUserService userService;
+	ChatUserService chatUserService;
+
+	// 전화번호로 사용자 검색 (친구 추가 용도). 추후 ChatUserDTO를 UserDTO로 변경 예정
+	@GetMapping("/users/search/{phone}")
+	public ChatUserDTO searchUser(@PathVariable String phone) {
+		return chatUserService.getUserInfoByPhone(phone);
+	}
 	
 	@GetMapping("/users/{id}")
 	public ResponseEntity<?> getUserInfo (@PathVariable int id){
-		ChatUserDTO user = userService.getUserInfo(id);
+		ChatUserDTO user = chatUserService.getUserInfo(id);
 		log.info("user pk {}", user.getUserId());
 		if (user != null) {
             // 유저가 존재하면 200 OK + JSON 반환
