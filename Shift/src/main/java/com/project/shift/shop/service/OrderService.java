@@ -32,7 +32,8 @@ public class OrderService implements IOrderService {
         this.deliveryRepository = deliveryRepository;
 
     }
-
+    
+    // SHOP-006 주문 생성
     @Override
     public OrderDTO createOrder(OrderDTO orderDTO) {
         Order order = new Order();
@@ -76,6 +77,8 @@ public class OrderService implements IOrderService {
         resp.setItems(orderDTO.getItems());
         return resp;
     }
+    
+    // SHOP-007 주문 내역 조회
     @Override
     public OrderListResponseDTO getOrdersByUser(Long userId) {
         List<Order> orders = orderDAO.findBySenderId(userId);
@@ -95,7 +98,7 @@ public class OrderService implements IOrderService {
         return new OrderListResponseDTO(list);
     }
     
-    // SHOP-008
+    // SHOP-008 주문 상세 조회
     @Override
     public OrderDetailResponseDTO getOrderDetail(Long orderId) {
         Order order = orderDAO.findById(orderId)
@@ -136,4 +139,17 @@ public class OrderService implements IOrderService {
 
         return resp;
     }
+    
+    // SHOP-009 결제 요청
+    
+    // SHOP-010 결제 결과 조회
+    
+    // SHOP-011 포인트 사용/적립 내역 조회
+    
+    // SHOP-012 주문 취소
+    
+    // SHOP-016 금액권 주문 생성
+    
+    // SHOP-017 금액권 결제 완료 (포인트 적립)
+    
 }
