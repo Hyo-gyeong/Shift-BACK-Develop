@@ -1,5 +1,6 @@
 package com.project.shift.config;
 
+import com.project.shift.global.AuthEntryPoint;
 import com.project.shift.global.filter.AuthenticationFilter;
 import com.project.shift.user.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,12 @@ public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationFilter authenticationFilter;
+    private final AuthEntryPoint exceptionHandler;
 
-    public SecurityConfig(UserDetailsServiceImpl userDetailsService, AuthenticationFilter authenticationFilter) {
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService, AuthenticationFilter authenticationFilter, AuthEntryPoint exceptionHandler) {
         this.userDetailsService = userDetailsService;
         this.authenticationFilter = authenticationFilter;
+        this.exceptionHandler = exceptionHandler;
     }
 
     @Autowired
@@ -47,10 +50,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/refresh").permitAll() // 토큰 재발급
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll() // 토큰 재발급
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
                         .anyRequest().permitAll()) // 배포 전까지 모두 허용
-                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(exceptionHandler));
         return http.build();
     }
 

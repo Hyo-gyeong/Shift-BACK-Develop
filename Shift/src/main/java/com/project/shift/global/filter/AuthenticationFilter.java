@@ -25,11 +25,18 @@ public class AuthenticationFilter extends OncePerRequestFilter { // 모든 API �
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        Long userId = jwtService.getAuthUser(request);
+        String token = jwtService.extractTokenFromRequest(request);
+        Long userId = null;
+
+        if (token != null) {
+            userId = jwtService.extractUserIdFromValidToken(token);
+        }
+
         if (userId != null) {
             Authentication authentication = new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+
         filterChain.doFilter(request, response);
     }
 }

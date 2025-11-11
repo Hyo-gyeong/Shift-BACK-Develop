@@ -1,6 +1,7 @@
 package com.project.shift.global.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -48,32 +49,46 @@ public class JwtService {
                 .compact();
     }
 
-    // 요청에서 userId 추출
-    public Long getAuthUser(HttpServletRequest request) {
-        String token = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (token != null && token.startsWith(PREFIX)) {
-            return getUserIdFromToken(token.substring(PREFIX.length()));
+    // 헤더에서 토큰 추출
+    public String extractTokenFromRequest(HttpServletRequest request) {
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (header != null && header.startsWith(PREFIX)) {
+            return header.substring(PREFIX.length());
         }
         return null;
     }
 
-    // 토큰에서 userId 추출
-    private Long getUserIdFromToken(String token) {
+    public Long extractUserIdFromValidToken(String token) {
         try {
-            String subject = Jwts.parserBuilder()
+            Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
-            return subject != null ? Long.parseLong(subject) : null;
+                    .getBody();
+            return Long.parseLong(claims.getSubject());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // 만료된 토큰 포함 모든 토큰에서 userId 추출 (재발급 시 사용)
+    public Long extractUserIdFromExpiredValidToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return Long.parseLong(claims.getSubject());
+        } catch (ExpiredJwtException e) {
+            return Long.parseLong(e.getClaims().getSubject());
         } catch (Exception e) {
             return null;
         }
     }
 
     // 토큰 유효성 체크
-    public boolean validateToken(String token) {
+    public boolean isValidToken(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(key)
@@ -94,18 +109,8 @@ public class JwtService {
                     .parseClaimsJws(token)
                     .getBody();
             return TOKEN_TYPE_REFRESH.equals(claims.get("type"));
-        } catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
-    }
-    
-    // 토큰 타입 체크
-    public String getTokenType(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("type", String.class);
     }
 }
