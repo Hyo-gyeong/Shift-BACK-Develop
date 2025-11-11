@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.repository.ChatroomRepository;
 
@@ -20,6 +21,10 @@ public class ChatroomDAO {
 	
 	public List<Integer> findChatroomIdsForUsers(int fromId, int toId) {
 		return chatroomRepo.findChatroomIdsForUsers(fromId, toId);
+	}
+	
+	public ChatroomEntity insertChatroom(ChatroomEntity entity) {
+		return chatroomRepo.save(entity);
 	}
 	
 }
