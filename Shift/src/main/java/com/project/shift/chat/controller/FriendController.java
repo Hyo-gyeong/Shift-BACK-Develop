@@ -54,8 +54,11 @@ public class FriendController {
 	
 	@GetMapping("/friends/search/{phone}")
 	public ChatUserDTO searchFriend(HttpServletRequest request, @PathVariable String phone) {
-		// jwt에서 현재 사용자의 PK 추출
-		long userId = jwtService.getAuthUser(request);
+		// jwt에서 현재 사용자의 토큰 추출
+		String token = jwtService.extractTokenFromRequest(request);
+
+        // 토큰에서 현재 사용자의 PK 추출
+		long userId = jwtService.extractUserIdFromValidToken(token);
 		
 		// 전화번호로 유저를 찾고, 현재 사용자의 친구 목록을 가져옴
 		ChatUserDTO targetDto = chatUserService.getUserInfoByPhone(phone);
@@ -83,8 +86,11 @@ public class FriendController {
 	
 	@GetMapping("/friends/delete/{friendId}")
 	public void deleteFriend(HttpServletRequest request, @PathVariable long friendId) {
-		// jwt에서 현재 사용자의 PK 추출
-		long userId = jwtService.getAuthUser(request);
+        // jwt에서 현재 사용자의 토큰 추출
+        String token = jwtService.extractTokenFromRequest(request);
+
+        // jwt에서 현재 사용자의 PK 추출
+        long userId = jwtService.extractUserIdFromValidToken(token);
 		
 		// 친구 삭제
 		friendService.deleteFriend(userId, friendId);
