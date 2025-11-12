@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
  * ---------------------------------------------------------
  * - PROD-010 : 금액권 페이지 정보 조회
  * - PROD-011 : 금액 입력 및 합계 계산
+ * - SHOP-016 : 금액권 주문 생성
+ * - SHOP-017 : 금액권 결제 완료 (포인트 적립)
  * ---------------------------------------------------------
  * ※ category_id = 3 인 상품을 금액권 템플릿으로 사용
  */
@@ -65,4 +67,9 @@ public class PointService implements IPointService {
                 .withinRange(withinRange)
                 .build();
     }
+    
+    /** [SHOP-016] 금액권 주문 생성 */
+    
+    /** [SHOP-017] 금액권 결제 완료 (포인트 적립) */
+    
 }
