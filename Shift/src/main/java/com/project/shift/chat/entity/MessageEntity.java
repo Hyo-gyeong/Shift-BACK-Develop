@@ -42,11 +42,21 @@ public class MessageEntity {
     @Column(name = "CHATROOM_ID", nullable = false)
     private long chatroomId;
 
-    @Column(name = "IS_FROM_USER", length = 1)
-    private String isFromUser; // 'Y' 또는 'N'
+    @Column(
+        name = "IS_FROM_USER",
+        nullable = false,
+        length = 1,
+        columnDefinition = "CHAR(1)"
+    )
+    private String isFromUser;
 
-    @Column(name = "IS_READ", length = 1)
-    private String isRead; // 'Y' 또는 'N'
+    @Column(
+        name = "IS_READ",
+        nullable = false,
+        length = 1,
+        columnDefinition = "CHAR(1)"
+    )
+    private String isRead;
 
     @Column(name = "SENT_DATE")
     @Temporal(TemporalType.TIMESTAMP)
@@ -55,12 +65,22 @@ public class MessageEntity {
     @Column(name = "MESSAGE_CONTENT", length = 300)
     private String content;
 
-    @Column(name = "IS_GIFT", length = 1)
-    private String isGift; // 'Y' 또는 'N'
+    @Column(
+        name = "IS_GIFT",
+        nullable = false,
+        length = 1,
+        columnDefinition = "CHAR(1)"
+    )
+    private String isGift; // Y / N
 
-    @Column(name = "IS_EMOJI", length = 1)
-    private String isEmoji; // 'Y' 또는 'N'
-    
+    @Column(
+        name = "IS_EMOJI",
+        nullable = false,
+        length = 1,
+        columnDefinition = "CHAR(1)"
+    )
+    private String isEmoji; // Y / N
+
     // DTO -> Entity 변환
     public static MessageEntity toEntity(MessageDTO dto) {
         return MessageEntity.builder()

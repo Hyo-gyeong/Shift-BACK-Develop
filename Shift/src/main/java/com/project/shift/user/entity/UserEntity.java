@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "USERS")
 @SequenceGenerator(
         name = "SEQ_USERS_GENERATOR",
         sequenceName = "seq_users",
@@ -12,16 +12,17 @@ import lombok.*;
 )
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // jpa용 기본 생성자 (외부 직접생성 제한)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_USERS_GENERATOR")
-    @Column(name = "user_id", nullable = false, updatable = false)
+    @Column(name = "USER_ID", nullable = false, updatable = false)
     private Long userId;
 
-    @Column(name = "login_id", nullable = false, unique = true)
+    @Column(name = "LOGIN_ID", nullable = false, unique = true)
     private String loginId;
 
     @Column(nullable = false)
@@ -39,9 +40,13 @@ public class UserEntity {
     @Column
     private Integer points = 0;
 
-    @Column(name = "refresh_token")
+    @Column(name = "REFRESH_TOKEN")
     private String refreshToken;
 
-    @Column(name = "admin_flag", length = 1, columnDefinition = "CHAR(1) DEFAULT 'N'")
+    @Column(
+        name = "ADMIN_FLAG",
+        nullable = false,
+        columnDefinition = "CHAR(1)"
+    )
     private String adminFlag = "N";
 }

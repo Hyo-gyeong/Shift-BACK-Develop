@@ -33,8 +33,13 @@ public class Delivery {
     @Column(name = "DELIVERY_ADDRESS", nullable = false)
     private String deliveryAddress;
 
-    @Column(name = "DELIVERY_STATUS")
-    private String deliveryStatus;
+    @Column(
+        name = "DELIVERY_STATUS",
+        nullable = false,
+        length = 1,
+        columnDefinition = "CHAR(1)"
+    )
+    private String deliveryStatus; // P/S/D/C
 
     @Column(name = "ESTIMATED_DATE")
     private LocalDate estimatedDate;

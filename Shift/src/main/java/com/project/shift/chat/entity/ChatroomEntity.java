@@ -49,15 +49,20 @@ public class ChatroomEntity {
     private String chatroomName;
 
     @Column(name = "CONNECTION_STATUS", length = 2)
-    private String connectionStatus; // 'ON' 또는 'OF'
+    private String connectionStatus; // ON / OF
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "CONNECTION_TIME")
     private Date connectionTime;
 
-    @Column(name = "IS_DARK_MODE", length = 1)
-    private String isDarkMode; // DEFAULT 'N', 'Y' 또는 'N'
-    
+    @Column(
+        name = "IS_DARK_MODE",
+        nullable = false,
+        length = 1,
+        columnDefinition = "CHAR(1)"
+    )
+    private String isDarkMode; // Y / N
+
     // DTO -> Entity 변환
     public static ChatroomEntity toEntity(ChatroomDTO dto) {
         return ChatroomEntity.builder()

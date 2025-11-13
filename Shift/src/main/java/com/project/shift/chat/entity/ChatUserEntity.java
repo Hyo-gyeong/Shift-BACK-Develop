@@ -56,8 +56,12 @@ public class ChatUserEntity {
     @Column(name = "REFRESH_TOKEN")
     private String refreshToken;
 
-    @Column(name = "ADMIN_FLAG", length = 1)
-    private String adminFlag; // DEFAULT 'N', 'Y' 또는 'N'
+    @Column(
+    	    name = "ADMIN_FLAG",
+    	    nullable = false,
+    	    columnDefinition = "CHAR(1)"
+    	)
+    	private String adminFlag;// DEFAULT 'N', 'Y' 또는 'N'
     
     // DTO -> Entity 변환
     public static ChatUserEntity toEntity(ChatUserDTO dto) {

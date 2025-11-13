@@ -7,14 +7,14 @@ import lombok.*;
  * images 테이블 매핑
  */
 @Entity
-@Table(name = "IMAGES")  // 테이블 이름을 대문자로 지정
+@Table(name = "IMAGES")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-@ToString(exclude = {"product"})  // 상품과 이미지를 제외한 toString() 출력
+@ToString(exclude = {"product"})
 public class Image {
 
     /** 이미지 ID */
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_images")
     @SequenceGenerator(name = "seq_images", sequenceName = "seq_images", allocationSize = 1)
     @Column(name = "IMAGE_ID")
@@ -29,14 +29,12 @@ public class Image {
     @Column(name = "IMAGE_URL", nullable = false, length = 100)
     private String imageUrl;
 
-    /** 대표 이미지 여부 */
-    @Column(name = "IS_REPRESENTATIVE", nullable = false, length = 1)
-    private String isRepresentative;  // Y: 대표 이미지, N: 기타 이미지
-
-    /**
-     * 이미지 URL을 반환하는 메소드 추가
-     */
-    public String getImageUrl() {
-        return this.imageUrl;
-    }
+    /** 대표 이미지 여부 (Y/N) */
+    @Column(
+        name = "IS_REPRESENTATIVE",
+        nullable = false,
+        length = 1,
+        columnDefinition = "CHAR(1)"
+    )
+    private String isRepresentative;
 }
