@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
  * ---------------------------------------------------------
  * - PROD-010 : 금액권 정보 조회
  * - PROD-011 : 금액 입력 및 합계 계산
+ * - SHOP-016 : 금액권 주문 생성
+ * - SHOP-017 : 금액권 결제 완료 (포인트 적립)
  * ---------------------------------------------------------
  * Endpoints:
  *  • GET  /products/point
@@ -37,4 +39,9 @@ public class PointController {
     public ResponseEntity<PointCalcDTO> calculatePoint(@RequestBody PointCalcDTO request) {
         return ResponseEntity.ok(pointService.calculatePoint(request));
     }
+    
+    /** [SHOP-016] 금액권 주문 생성 */
+    
+    /** [SHOP-017] 금액권 결제 완료 (포인트 적립) */
+    
 }
