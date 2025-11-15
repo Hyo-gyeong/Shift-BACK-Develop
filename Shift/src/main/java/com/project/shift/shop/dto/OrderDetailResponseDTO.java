@@ -1,7 +1,5 @@
 package com.project.shift.shop.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -10,14 +8,11 @@ public class OrderDetailResponseDTO {
     private Long orderId;
     private Long senderId;
     private Long receiverId;
-
-    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime orderDate;
-
     private List<OrderDetailItemDTO> items;
-    private Integer totalPrice;
+    private int totalPrice;
     private PaymentDTO payment;
-    private DeliveryDTO delivery;
+    private DeliverySimpleDTO delivery;
 
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
@@ -34,12 +29,14 @@ public class OrderDetailResponseDTO {
     public List<OrderDetailItemDTO> getItems() { return items; }
     public void setItems(List<OrderDetailItemDTO> items) { this.items = items; }
 
-    public Integer getTotalPrice() { return totalPrice; }
-    public void setTotalPrice(Integer totalPrice) { this.totalPrice = totalPrice; }
+    public int getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(int totalPrice) { this.totalPrice = totalPrice; }
 
     public PaymentDTO getPayment() { return payment; }
     public void setPayment(PaymentDTO payment) { this.payment = payment; }
 
-    public DeliveryDTO getDelivery() { return delivery; }
-    public void setDelivery(DeliveryDTO delivery) { this.delivery = delivery; }
+    public DeliverySimpleDTO getDelivery() { return delivery; }
+    public void setDelivery(DeliverySimpleDTO delivery) {  // ★ 핵심 수정
+        this.delivery = delivery;
+    }
 }
