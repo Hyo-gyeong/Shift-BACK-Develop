@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,11 +12,13 @@ import com.project.shift.chat.dao.ChatUserDAO;
 import com.project.shift.chat.dto.ChatUserDTO;
 import com.project.shift.chat.entity.ChatUserEntity;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ChatUserService {
 
-	@Autowired
-	ChatUserDAO dao;
+	private final ChatUserDAO dao;
 	
 	@Transactional
 	public ChatUserDTO getUserInfo(int id){

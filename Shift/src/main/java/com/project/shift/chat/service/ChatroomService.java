@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,11 +12,13 @@ import com.project.shift.chat.dao.ChatroomDAO;
 import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.entity.ChatroomEntity;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ChatroomService {
 
-	@Autowired
-	ChatroomDAO dao;
+	private final ChatroomDAO dao;
 	
 	@Transactional
 	public List<ChatroomDTO> getUserChatrooms(int userId){

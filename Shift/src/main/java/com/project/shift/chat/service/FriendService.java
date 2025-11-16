@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,11 +12,13 @@ import com.project.shift.chat.dao.FriendDAO;
 import com.project.shift.chat.dto.FriendDTO;
 import com.project.shift.chat.entity.FriendEntity;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class FriendService {
 
-	@Autowired
-	FriendDAO dao;
+	private final FriendDAO dao;
 	
 	@Transactional
 	public List<FriendDTO> getUserFriends(int userId){
