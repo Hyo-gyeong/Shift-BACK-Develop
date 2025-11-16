@@ -3,6 +3,8 @@ package com.project.shift.shop.service;
 import com.project.shift.shop.dto.OrderDTO;
 import com.project.shift.shop.dto.OrderListResponseDTO;
 import com.project.shift.shop.dto.OrderDetailResponseDTO;
+import com.project.shift.shop.dto.OrderCancelResponseDTO;
+
 
 
 
@@ -20,6 +22,8 @@ public interface IOrderService {
     // SHOP-011 포인트 사용/적립 내역 조회
     
     // SHOP-012 주문 취소
+    OrderCancelResponseDTO cancelOrder(Long orderId);
+
     
     // SHOP-016 금액권 주문 생성
     

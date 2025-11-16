@@ -2,6 +2,7 @@ package com.project.shift.shop.controller;
 
 import com.project.shift.shop.dto.OrderDTO;
 import com.project.shift.shop.dto.OrderListResponseDTO;
+import com.project.shift.shop.dto.OrderCancelResponseDTO;
 import com.project.shift.shop.dto.OrderDetailResponseDTO;
 import com.project.shift.shop.service.IOrderService;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,11 @@ public class OrderController {
     // SHOP-011 포인트 사용/적립 내역 조회
     
     // SHOP-012 주문 취소
-    
+    @PutMapping("/orders/{orderId}/cancel")
+    public ResponseEntity<OrderCancelResponseDTO> cancelOrder(@PathVariable("orderId") Long orderId) {
+        OrderCancelResponseDTO response = orderService.cancelOrder(orderId);
+        return ResponseEntity.ok(response);
+    }
     // SHOP-016 금액권 주문 생성
     
     // SHOP-017 금액권 결제 완료 (포인트 적립)

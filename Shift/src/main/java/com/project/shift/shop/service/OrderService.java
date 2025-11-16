@@ -9,6 +9,8 @@ import com.project.shift.product.entity.Product;
 import com.project.shift.product.repository.ProductRepository;
 import com.project.shift.shop.repository.DeliveryRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 
 import java.util.List;
@@ -147,7 +149,22 @@ public class OrderService implements IOrderService {
     // SHOP-011 포인트 사용/적립 내역 조회
     
     // SHOP-012 주문 취소
-    
+    @Override
+    @Transactional
+    public OrderCancelResponseDTO cancelOrder(Long orderId) {
+        Order order = orderDAO.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다. order_id=" + orderId));
+
+        // 배송 전 상태만 취소 
+        if (!"P".equals(order.getOrderStatus())) {
+            
+            return new OrderCancelResponseDTO(orderId, false);
+        }
+
+        order.setOrderStatus("C");
+
+        return new OrderCancelResponseDTO(orderId, true);
+    }
     // SHOP-016 금액권 주문 생성
     
     // SHOP-017 금액권 결제 완료 (포인트 적립)
