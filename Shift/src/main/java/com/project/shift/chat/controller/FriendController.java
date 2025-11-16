@@ -2,7 +2,6 @@ package com.project.shift.chat.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,20 +15,17 @@ import com.project.shift.chat.service.FriendService;
 import com.project.shift.global.jwt.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Slf4j
+@RequiredArgsConstructor
 public class FriendController {
 	
-	@Autowired
-	JwtService jwtService;
-	
-	@Autowired
-    FriendService friendService;
-	
-	@Autowired
-	ChatUserService chatUserService;
+	private final JwtService jwtService;
+	private final FriendService friendService;
+	private final ChatUserService chatUserService;
 
 	// 사용자와 친구인 사용자의 PK 목록 반환
 	@GetMapping("/friends/user/{userId}")

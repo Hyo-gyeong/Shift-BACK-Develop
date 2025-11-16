@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -21,23 +20,20 @@ import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.service.ChatroomService;
 import com.project.shift.chat.service.MessageService;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @Slf4j
+@RequiredArgsConstructor
 public class ChatController {
-	@Autowired
-    private MessageService messageService;
-	@Autowired
-	private ChatroomService chatroomService;
-	
+	private final MessageService messageService;
+	private final ChatroomService chatroomService;
 	private final SimpMessagingTemplate messagingTemplate;
-	// 채팅방별 접속자 관리
+	
+	// 채팅방별 접속자 관리, private final 이지만 주입 대상에서는 제외됨
     private final Map<String, Set<Integer>> roomUsers = new HashMap<>();
     
-    public ChatController(SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
-    }
 
 	@MessageMapping("/send/{roomId}")
     public MessageDTO sendMessage(@DestinationVariable String roomId, @Payload MessageDTO message) {
