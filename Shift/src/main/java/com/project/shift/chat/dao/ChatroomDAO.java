@@ -2,18 +2,19 @@ package com.project.shift.chat.dao;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.repository.ChatroomRepository;
 
+import lombok.RequiredArgsConstructor;
+
 
 @Component
+@RequiredArgsConstructor  // final 필드에 대한 생성자 자동 생성 (Autowired 대체)
 public class ChatroomDAO {
 
-	@Autowired
-	ChatroomRepository chatroomRepo;
+	private final ChatroomRepository chatroomRepo;
 
 	public List<ChatroomEntity> getUserChatrooms(int userId) {
 		return chatroomRepo.findByFromUserId(userId);

@@ -6,13 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.project.shift.chat.entity.FriendEntity;
+import com.project.shift.chat.repository.ChatroomRepository;
 import com.project.shift.chat.repository.FriendRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class FriendDAO {
 
-	@Autowired
-	FriendRepository friendRepo;
+	private final FriendRepository friendRepo;
 
 	public List<FriendEntity> getUserFriends(int userId) {
 		return friendRepo.findByUserId(userId);
