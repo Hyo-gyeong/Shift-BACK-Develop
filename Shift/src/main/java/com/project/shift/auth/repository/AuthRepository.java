@@ -14,8 +14,6 @@ public interface AuthRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByUserId(Long userId);
 
-    Optional<UserEntity> findByRefreshToken(String refreshToken);
-
     @Modifying
     @Query(value = "UPDATE UserEntity u SET u.refreshToken = NULL WHERE u.userId = :userId")
     void updateRefreshTokenById(Long userId);
