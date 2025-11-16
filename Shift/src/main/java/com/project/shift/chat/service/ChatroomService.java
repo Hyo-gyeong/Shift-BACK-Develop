@@ -3,8 +3,6 @@ package com.project.shift.chat.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +18,7 @@ public class ChatroomService {
 
 	private final ChatroomDAO dao;
 	
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<ChatroomDTO> getUserChatrooms(int userId){
 		List<ChatroomEntity> entityList = dao.getUserChatrooms(userId);
 		List<ChatroomDTO> dtoList = new ArrayList<ChatroomDTO>();
@@ -30,7 +28,7 @@ public class ChatroomService {
 		return dtoList;
 	}
 	
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<Integer> findChatroomIdsForUsers(int fromId, int toId) {
 		return dao.findChatroomIdsForUsers(fromId, toId);
 	}

@@ -3,8 +3,6 @@ package com.project.shift.chat.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +18,7 @@ public class FriendService {
 
 	private final FriendDAO dao;
 	
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<FriendDTO> getUserFriends(int userId){
 		List<FriendEntity> entityList = dao.getUserFriends(userId);
 		List<FriendDTO> dtoList = new ArrayList<FriendDTO>();
