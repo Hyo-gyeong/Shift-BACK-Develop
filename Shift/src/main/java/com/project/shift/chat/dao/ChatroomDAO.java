@@ -34,10 +34,12 @@ public class ChatroomDAO {
 	}
 	
 	public boolean deleteById(long chatroomId) {
+		// 채팅방이 존재하면 삭제
 		if (chatroomRepo.existsById(chatroomId)) {
 	        chatroomRepo.deleteById(chatroomId);
 	        return true;
 	    }
+		// 채팅방이 없으면 삭제 불가
 	    return false;
 	}
 	
