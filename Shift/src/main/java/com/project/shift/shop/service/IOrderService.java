@@ -16,7 +16,8 @@ public interface IOrderService {
     PaymentResponseDTO requestPayment(PaymentRequestDTO requestDTO);
 
     // SHOP-010 결제 결과 조회
-    
+    PaymentResultDTO getPaymentResult(Long orderId);
+
     // SHOP-011 포인트 사용/적립 내역 조회
     
     // SHOP-012 주문 취소
