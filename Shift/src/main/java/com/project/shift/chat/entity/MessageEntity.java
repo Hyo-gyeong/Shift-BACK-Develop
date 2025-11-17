@@ -26,6 +26,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MessageEntity {
     
+	@Id
     @GeneratedValue(
         strategy = GenerationType.SEQUENCE,
         generator = "SEQ_MESSAGES"
@@ -35,8 +36,6 @@ public class MessageEntity {
         sequenceName = "SEQ_MESSAGES",
         allocationSize = 1
     )
-    
-    @Id
     @Column(name = "MESSAGE_ID")
     private long messageId;
 
