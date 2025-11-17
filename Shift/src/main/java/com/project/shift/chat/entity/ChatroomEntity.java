@@ -39,40 +39,19 @@ public class ChatroomEntity {
     @Column(name = "CHATROOM_ID")
     private long chatroomId;
 
-    @Column(name = "FROM_USER_ID")
-    private long fromUserId;
+    @Column(name = "LAST_MSG_CONTENT")
+    private String lastMsgContent;
 
-    @Column(name = "TO_USER_ID")
-    private long toUserId;
-
-    @Column(name = "CHATROOM_NAME")
-    private String chatroomName;
-
-    @Column(name = "CONNECTION_STATUS", length = 2)
-    private String connectionStatus; // ON / OF
-
+    @Column(name = "LAST_MSG_DATE")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "CONNECTION_TIME")
-    private Date connectionTime;
-
-    @Column(
-        name = "IS_DARK_MODE",
-        nullable = false,
-        length = 1,
-        columnDefinition = "CHAR(1)"
-    )
-    private String isDarkMode; // Y / N
+    private Date lastMsgDate;
 
     // DTO -> Entity 변환
     public static ChatroomEntity toEntity(ChatroomDTO dto) {
         return ChatroomEntity.builder()
                 .chatroomId(dto.getChatroomId())
-                .fromUserId(dto.getFromUserId())
-                .toUserId(dto.getToUserId())
-                .chatroomName(dto.getChatroomName())
-                .connectionStatus(dto.getConnectionStatus())
-                .connectionTime(dto.getConnectionTime())
-                .isDarkMode(dto.getIsDarkMode())
+                .lastMsgContent(dto.getLastMsgContent())
+                .lastMsgDate(dto.getLastMsgDate())
                 .build();
     }
 
