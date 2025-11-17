@@ -2,6 +2,8 @@ package com.project.shift.chat.entity;
 
 import java.util.Date;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.project.shift.chat.dto.MessageDTO;
 
 import jakarta.persistence.Column;
@@ -46,7 +48,7 @@ public class MessageEntity {
     private long userId;
 
     @Column(name = "SEND_DATE")
-    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date sendDate;
 
     @Column(name = "CONTENT", length = 300, columnDefinition = "CHAR(300)")
