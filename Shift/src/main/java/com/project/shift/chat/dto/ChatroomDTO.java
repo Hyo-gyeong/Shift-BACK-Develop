@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
@@ -18,13 +19,18 @@ import lombok.NoArgsConstructor;
 public class ChatroomDTO {
 
     private long chatroomId;
+    @Setter
     private long fromUserId;
+    @Setter
     private long toUserId;
+    @Setter
     private String chatroomName;
+    @Setter
     private String connectionStatus; // 'ON' 또는 'OF'
-
+    @Setter
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date connectionTime;
+    @Setter
     private String isDarkMode; // 'Y' 또는 'N'
 
     // Entity -> DTO 변환

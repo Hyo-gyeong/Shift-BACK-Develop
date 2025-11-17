@@ -7,12 +7,15 @@ import org.springframework.stereotype.Component;
 
 import com.project.shift.chat.entity.ChatUserEntity;
 import com.project.shift.chat.repository.ChatUserRepository;
+import com.project.shift.chat.repository.ChatroomRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class ChatUserDAO {
 
-	@Autowired
-	ChatUserRepository chatUserRepo;
+	private final ChatUserRepository chatUserRepo;
 
 	public ChatUserEntity getUserInfo(int id) {
 		return chatUserRepo.findByUserId(id);

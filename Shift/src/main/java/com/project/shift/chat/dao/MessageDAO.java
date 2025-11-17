@@ -6,13 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.project.shift.chat.entity.MessageEntity;
+import com.project.shift.chat.repository.ChatroomRepository;
 import com.project.shift.chat.repository.MessageRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class MessageDAO {
 
-	@Autowired
-	MessageRepository messageRepo;
+	private final MessageRepository messageRepo;
 
 	public void insertMessage(MessageEntity entity) {
 		messageRepo.save(entity);
