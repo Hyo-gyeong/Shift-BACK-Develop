@@ -14,6 +14,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.shift.chat.dto.MessageDTO;
@@ -26,7 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-public class ChatController {
+@RequestMapping("/messages")
+public class MessageController {
 	private final MessageService messageService;
 	private final ChatroomService chatroomService;
 	private final SimpMessagingTemplate messagingTemplate;
@@ -92,7 +94,7 @@ public class ChatController {
     }
 	
 	// 채팅기록 불러오기
-	@PostMapping("/chatroom/chat-history")
+	@PostMapping("/history")
 	public List<MessageDTO> getChatHistory(@RequestBody Map<String, Object> payload) {
 		int fromId = Integer.parseInt(payload.get("fromId").toString());
 	    int toId = Integer.parseInt(payload.get("toId").toString());
