@@ -1,9 +1,6 @@
 package com.project.shift.shop.service;
 
-import com.project.shift.shop.dto.OrderDTO;
-import com.project.shift.shop.dto.OrderListResponseDTO;
-import com.project.shift.shop.dto.OrderDetailResponseDTO;
-import com.project.shift.shop.dto.OrderCancelResponseDTO;
+import com.project.shift.shop.dto.*;
 
 
 
@@ -16,7 +13,8 @@ public interface IOrderService {
     OrderDetailResponseDTO getOrderDetail(Long orderId);
     
     // SHOP-009 결제 요청
-    
+    PaymentResponseDTO requestPayment(PaymentRequestDTO requestDTO);
+
     // SHOP-010 결제 결과 조회
     
     // SHOP-011 포인트 사용/적립 내역 조회

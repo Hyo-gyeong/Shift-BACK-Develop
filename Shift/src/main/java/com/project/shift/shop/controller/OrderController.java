@@ -1,9 +1,6 @@
 package com.project.shift.shop.controller;
 
-import com.project.shift.shop.dto.OrderDTO;
-import com.project.shift.shop.dto.OrderListResponseDTO;
-import com.project.shift.shop.dto.OrderCancelResponseDTO;
-import com.project.shift.shop.dto.OrderDetailResponseDTO;
+import com.project.shift.shop.dto.*;
 import com.project.shift.shop.service.IOrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +37,11 @@ public class OrderController {
     }
     
     // SHOP-009 결제 요청
-    
+    @PostMapping("/payments")
+    public ResponseEntity<PaymentResponseDTO> requestPayment(@RequestBody PaymentRequestDTO request) {
+        PaymentResponseDTO response = orderService.requestPayment(request);
+        return ResponseEntity.ok(response);
+    }
     // SHOP-010 결제 결과 조회
     
     // SHOP-011 포인트 사용/적립 내역 조회

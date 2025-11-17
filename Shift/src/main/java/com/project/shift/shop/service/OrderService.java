@@ -6,8 +6,11 @@ import com.project.shift.shop.entity.Delivery;
 import com.project.shift.shop.entity.Order;
 import com.project.shift.shop.entity.OrderItem;
 import com.project.shift.product.entity.Product;
+import com.project.shift.user.entity.UserEntity;
 import com.project.shift.product.repository.ProductRepository;
 import com.project.shift.shop.repository.DeliveryRepository;
+import com.project.shift.shop.repository.OrderRepository;
+import com.project.shift.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,14 +27,20 @@ public class OrderService implements IOrderService {
     private final IOrderDAO orderDAO;
     private final ProductRepository productRepository;
     private final DeliveryRepository deliveryRepository;
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
 
 
     public OrderService(IOrderDAO orderDAO,
                         ProductRepository productRepository,
-                        DeliveryRepository deliveryRepository) {
+                        DeliveryRepository deliveryRepository, 
+                        OrderRepository orderRepository,
+                        UserRepository userRepository) {
         this.orderDAO = orderDAO;
         this.productRepository = productRepository;
         this.deliveryRepository = deliveryRepository;
+        this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
 
     }
     
@@ -143,7 +152,68 @@ public class OrderService implements IOrderService {
     }
     
     // SHOP-009 결제 요청
-    
+    @Override
+    @Transactional
+    public PaymentResponseDTO requestPayment(PaymentRequestDTO requestDTO) {
+
+        // 1) 주문 조회
+        Order order = orderRepository.findById(requestDTO.getOrderId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        // 2) 금액/포인트 검증
+        int amount = requestDTO.getAmount();
+        if (amount <= 0) {
+            throw new IllegalArgumentException("결제 금액은 0보다 커야 합니다.");
+        }
+
+        Integer rawPointUsed = requestDTO.getPointUsed();
+        int pointUsed = (rawPointUsed == null ? 0 : rawPointUsed);
+        if (pointUsed < 0) {
+            throw new IllegalArgumentException("포인트 사용 금액은 음수가 될 수 없습니다.");
+        }
+
+        int cashAmount = amount - pointUsed;
+        if (cashAmount < 0) {
+            throw new IllegalArgumentException("포인트 사용 금액이 결제 금액을 초과했습니다.");
+        }
+
+        // 주문 금액과 결제 금액 일치 여부
+        if (!order.getTotalPrice().equals(amount)) {
+            throw new IllegalArgumentException("결제 금액이 주문 금액과 일치하지 않습니다.");
+        }
+
+        // 3) sender 포인트 확인
+        UserEntity sender = userRepository.findById(order.getSenderId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        int currentPoints = (sender.getPoints() == null ? 0 : sender.getPoints());
+        if (pointUsed > currentPoints) {
+            throw new IllegalArgumentException("보유 포인트가 부족합니다.");
+        }
+
+        // 4) 포인트 차감 + 주문 업데이트
+        int remainPoints = currentPoints - pointUsed;
+
+        sender.setPoints(remainPoints);
+        userRepository.save(sender);
+
+        order.setPointUsed(pointUsed);
+        order.setCashUsed(cashAmount);
+        order.setRemainPoints(remainPoints);
+        // 결제 완료 상태를 따로 안 두면 orderStatus는 그대로 'P' 유지
+        orderRepository.save(order);
+
+        // 5) 응답 DTO 구성
+        PaymentResponseDTO response = new PaymentResponseDTO();
+        response.setOrderId(order.getOrderId());
+        response.setCashAmount(cashAmount);
+        response.setPointUsed(pointUsed);
+        response.setStatus("SUCCESS");
+        response.setApprovedAt(LocalDateTime.now());
+
+        return response;
+    }
+
     // SHOP-010 결제 결과 조회
     
     // SHOP-011 포인트 사용/적립 내역 조회
