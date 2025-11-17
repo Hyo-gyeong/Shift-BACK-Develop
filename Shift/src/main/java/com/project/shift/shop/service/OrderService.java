@@ -124,8 +124,8 @@ public class OrderService implements IOrderService {
         PaymentDTO paymentDTO = new PaymentDTO(order.getCashUsed(), order.getPointUsed());
 
         // 배송 정보
-        DeliveryDTO deliveryDTO = deliveryRepository.findByOrder_OrderId(orderId)
-                .map(d -> new DeliveryDTO(d.getDeliveryStatus(), d.getTrackingNumber()))
+        DeliverySimpleDTO deliveryDTO = deliveryRepository.findByOrder_OrderId(orderId)
+                .map(d -> new DeliverySimpleDTO(d.getDeliveryStatus(), d.getTrackingNumber()))
                 .orElse(null);
 
         // 최종 응답
