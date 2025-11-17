@@ -4,7 +4,6 @@ import java.util.Date;
 
 import com.project.shift.chat.entity.MessageEntity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

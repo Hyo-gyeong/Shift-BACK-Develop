@@ -1,10 +1,5 @@
 package com.project.shift.chat.entity;
 
-import java.util.Date;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
-import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.dto.ReplyEmoticonDTO;
 
 import jakarta.persistence.Column;
