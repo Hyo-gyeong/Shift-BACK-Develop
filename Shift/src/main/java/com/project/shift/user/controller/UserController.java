@@ -22,7 +22,7 @@ public class UserController {
             //서버 회원가입 요청
             Long userId = userService.join(userDTO);
 
-            //성궁 응답(201 Created)
+            //성공 응답(201 Created)
             return new ResponseEntity<>("회원가입 성공. 할당된 사용자 ID:" + userId, HttpStatus.CREATED);
         }catch(IllegalArgumentException e){
             //클라이언트 오류 응답(409 Conflict)

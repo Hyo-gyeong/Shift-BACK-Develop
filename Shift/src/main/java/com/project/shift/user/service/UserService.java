@@ -5,16 +5,18 @@ import com.project.shift.user.dto.UserDTO;
 import com.project.shift.user.entity.UserEntity;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final IUserDAO userDAO;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public Long join(UserDTO userDTO) {
-
+        validateTermsAgreement(userDTO); //약관 동의 검증
         validateDuplicateUser(userDTO);
         validatePassword(userDTO);
 
@@ -23,42 +25,65 @@ public class UserService {
 
         return savedEntity.getUserId();
     }
+    private void validateTermsAgreement(UserDTO userDTO) {
+        if(userDTO.getTermsAgreed() == null || !userDTO.getTermsAgreed()) {
+            throw new IllegalArgumentException("이용약관에 동의해야 합니다.");
+        }
+    }
 
-        private void validateDuplicateUser(UserDTO userDTO){
-            //아이디 중복 검증
-            if (userDAO.existsByLoginId(userDTO.getLoginId())) {
-                throw new IllegalArgumentException("이미 사용중인 아이디 입니다.");
-            }
-            //연락처 중복 검증
-            if (userDAO.existsByPhone(userDTO.getPhone())) {
-                throw new IllegalArgumentException("이미 사용중인 연락처 입니다.");
-            }
+    private void validateDuplicateUser(UserDTO userDTO){
+        //아이디 중복 검증
+        if (userDAO.existsByLoginId(userDTO.getLoginId())) {
+            throw new IllegalArgumentException("이미 사용중인 아이디 입니다.");
+        }
+        //연락처 중복 검증
+        if (userDAO.existsByPhone(userDTO.getPhone())) {
+            throw new IllegalArgumentException("이미 사용중인 연락처 입니다.");
+        }
+    }
+
+    private void validatePassword(UserDTO userDTO) {
+        //비밀번호 보안 규칙 검증
+        String password = userDTO.getPassword();
+
+        // 1. null 체크 추가
+        if(password == null || password.isEmpty()) {
+            throw new IllegalArgumentException("비밀번호를 입력해야 합니다.");
         }
 
-        private void validatePassword(UserDTO userDTO) {
-            //비밀번호 보안 규칙 검증
-            String password = userDTO.getPassword();
-            boolean isValid = password.length() >= 8 &&
-                    password.matches(".*[A-Z].*") &&     // 대문자 포함
-                    password.matches(".*[a-z].*") &&     // 소문자 포함
-                    password.matches(".*\\d.*") &&       // 숫자 포함
-                    password.matches(".*[!@#$%^&*()].*"); // 특수문자 포함
-
-            if (!isValid) {
-                throw new IllegalArgumentException(
-                        "비밀번호는 최소 8자 이상이어야 하며, 대문자, 소문자, 숫자, 특수문자를 포함해야 합니다.");
-            }
+        // 2. 길이 검증 (8자 이상 24자 이하)
+        if(password.length() < 8 || password.length() > 24) {
+            throw new IllegalArgumentException(
+                    "비밀번호는 8자 이상 24자 이하로 설정해야 합니다.");
         }
 
-        //DTO를 Entitiy로 변환 및 암호화된 비밀번호 설정
-        private UserEntity convertToEntity(UserDTO userDTO) {
-            return UserEntity.builder()
-                    .loginId(userDTO.getLoginId())
-                    .password(userDTO.getPassword())
-                    .name(userDTO.getName())
-                    .phone(userDTO.getPhone())
-                    .address(userDTO.getAddress())
-                    .adminFlag("N")
-                    .build();
+        // 3. 허용 문자 검증
+        if (!password.matches("^[A-Za-z0-9!@#$%^&*()]+$")) {
+            throw new IllegalArgumentException(
+                    "비밀번호는 영문, 숫자, 특수문자만 사용할 수 있습니다.");
+        }
+
+        //4. 복잡도 검증
+        boolean isValid = password.matches(".*[A-Z].*") &&     // 대문자 포함
+                          password.matches(".*[a-z].*") &&     // 소문자 포함
+                          password.matches(".*\\d.*") &&       // 숫자 포함
+                          password.matches(".*[!@#$%^&*()].*"); // 특수문자 포함
+
+        if (!isValid) {
+            throw new IllegalArgumentException(
+                    "비밀번호는 대문자, 소문자, 숫자, 특수문자를 각각 최소1개 이상 포함해야 합니다.");
+        }
+    }
+
+    //DTO를 Entitiy로 변환 및 암호화된 비밀번호 설정
+    private UserEntity convertToEntity(UserDTO userDTO) {
+        return UserEntity.builder()
+                .loginId(userDTO.getLoginId())
+                .password(passwordEncoder.encode(userDTO.getPassword()))
+                .name(userDTO.getName())
+                .phone(userDTO.getPhone())
+                .address(userDTO.getAddress())
+                .adminFlag("N")
+                .build();
     }
 }
