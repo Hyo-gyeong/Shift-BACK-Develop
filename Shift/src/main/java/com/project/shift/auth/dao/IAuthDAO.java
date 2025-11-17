@@ -9,4 +9,6 @@ public interface IAuthDAO {
     UserEntity getUserById(Long userId);
 
     void updateUser(UserEntity userEntity);
+
+    void updateRefreshToken(Long userId);
 }

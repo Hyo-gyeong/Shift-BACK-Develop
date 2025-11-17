@@ -1,13 +1,14 @@
 package com.project.shift.auth.controller;
 
-import com.project.shift.auth.dto.LoginResponseDTO;
 import com.project.shift.auth.dto.LoginRequestDTO;
+import com.project.shift.auth.dto.LoginResponseDTO;
 import com.project.shift.auth.dto.RefreshTokenRequestDTO;
 import com.project.shift.auth.service.AuthService;
-import com.project.shift.global.jwt.JwtService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -52,6 +53,12 @@ public class AuthController {
         if (loginId.length() > 20) {
             throw new IllegalArgumentException("[SYSTEM] 아이디 길이가 너무 깁니다.");
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        authService.logout();
+        return ResponseEntity.ok(Map.of("message", "로그아웃이 정상적으로 처리되었습니다."));
     }
 
     // Access 토큰 재발급 기능

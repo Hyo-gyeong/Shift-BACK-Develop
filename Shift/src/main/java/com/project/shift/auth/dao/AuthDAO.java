@@ -30,4 +30,9 @@ public class AuthDAO implements IAuthDAO{
     public void updateUser(UserEntity userEntity) {
         authRepository.save(userEntity);
     }
+
+    @Override
+    public void updateRefreshToken(Long userId) {
+        authRepository.updateRefreshTokenById(userId);
+    }
 }

@@ -1,8 +1,8 @@
 package com.project.shift.auth.service;
 
 import com.project.shift.auth.dao.AuthDAO;
-import com.project.shift.auth.dto.LoginResponseDTO;
 import com.project.shift.auth.dto.LoginRequestDTO;
+import com.project.shift.auth.dto.LoginResponseDTO;
 import com.project.shift.global.jwt.JwtService;
 import com.project.shift.user.entity.UserEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +59,19 @@ public class AuthService {
         log.info("[AUTH] 리프레시 토큰 갱신 완료 UserId: {}", userId);
 
         return new LoginResponseDTO(accessToken, refreshToken);
+    }
+
+    @Transactional
+    public void logout() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+        
+        log.info("[AUTH] 로그아웃 시작 UserId: {}", userId);
+        
+        // DB의 리프레시 토큰 삭제
+        authDao.updateRefreshToken(userId);
+
+        log.info("[AUTH] 로그아웃 완료 UserId: {}", userId);
     }
 
     // 토큰 재발급
@@ -120,5 +133,4 @@ public class AuthService {
 
         return foundUser;
     }
-
 }
