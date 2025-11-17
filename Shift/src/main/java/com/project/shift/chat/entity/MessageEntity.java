@@ -25,8 +25,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class MessageEntity {
-
-    @Id
+    
     @GeneratedValue(
         strategy = GenerationType.SEQUENCE,
         generator = "SEQ_MESSAGES"
@@ -36,62 +35,40 @@ public class MessageEntity {
         sequenceName = "SEQ_MESSAGES",
         allocationSize = 1
     )
+    
+    @Id
     @Column(name = "MESSAGE_ID")
     private long messageId;
 
-    @Column(name = "CHATROOM_ID", nullable = false)
+    @Column(name = "CHATROOM_ID")
     private long chatroomId;
+    
+    @Column(name = "USER_ID", nullable = false)
+    private long userId;
 
-    @Column(
-        name = "IS_FROM_USER",
-        nullable = false,
-        length = 1,
-        columnDefinition = "CHAR(1)"
-    )
-    private String isFromUser;
-
-    @Column(
-        name = "IS_READ",
-        nullable = false,
-        length = 1,
-        columnDefinition = "CHAR(1)"
-    )
-    private String isRead;
-
-    @Column(name = "SENT_DATE")
+    @Column(name = "SEND_DATE")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date sentDate;
+    private Date sendDate;
 
-    @Column(name = "MESSAGE_CONTENT", length = 300)
+    @Column(name = "CONTENT", length = 300, columnDefinition = "CHAR(300)")
     private String content;
-
-    @Column(
-        name = "IS_GIFT",
-        nullable = false,
-        length = 1,
-        columnDefinition = "CHAR(1)"
-    )
-    private String isGift; // Y / N
-
-    @Column(
-        name = "IS_EMOJI",
-        nullable = false,
-        length = 1,
-        columnDefinition = "CHAR(1)"
-    )
-    private String isEmoji; // Y / N
+    
+    @Column(name = "IS_GIFT", length = 1, columnDefinition = "CHAR(1) default 'N'")
+    private String isGift;
+    
+    @Column(name = "UNREAD_COUNT")
+    private int unreadCount;
 
     // DTO -> Entity 변환
     public static MessageEntity toEntity(MessageDTO dto) {
         return MessageEntity.builder()
                 .messageId(dto.getMessageId())
                 .chatroomId(dto.getChatroomId())
-                .isFromUser(dto.getIsFromUser())
-                .isRead(dto.getIsRead())
-                .sentDate(dto.getSentDate())
+                .userId(dto.getUserId())
+                .sendDate(dto.getSendDate())
                 .content(dto.getContent())
                 .isGift(dto.getIsGift())
-                .isEmoji(dto.getIsEmoji())
+                .unreadCount(dto.getUnreadCount())
                 .build();
     }
 
