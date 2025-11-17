@@ -23,7 +23,9 @@ public interface IOrderService {
     // SHOP-012 주문 취소
     OrderCancelResponseDTO cancelOrder(Long orderId);
 
-    
+    // SHOP-013 환불 요청
+    RefundResponseDTO requestRefund(RefundRequestDTO requestDTO);
+
     // SHOP-016 금액권 주문 생성
     
     // SHOP-017 금액권 결제 완료 (포인트 적립)

@@ -298,6 +298,73 @@ public class OrderService implements IOrderService {
 
         return new OrderCancelResponseDTO(orderId, true);
     }
+    
+    // SHOP-013 환불 요청
+    @Override
+    @Transactional
+    public RefundResponseDTO requestRefund(RefundRequestDTO requestDTO) {
+
+        // 1) 주문 조회
+        Order order = orderRepository.findById(requestDTO.getOrderId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        // 2) 상태 체크: 결제 완료(S)인 주문만 환불 가능
+        if (!"S".equals(order.getOrderStatus())) {
+            throw new IllegalArgumentException("결제 완료된 주문만 환불할 수 있습니다.");
+        }
+
+        // 3) 실제 결제 금액(현금 + 포인트) 계산
+        int cashUsed = (order.getCashUsed() == null ? 0 : order.getCashUsed());
+        int pointUsed = (order.getPointUsed() == null ? 0 : order.getPointUsed());
+        int paidTotal = cashUsed + pointUsed;
+
+        // 4) 요청 amount 검증 (전체환불만 허용)
+        Integer requestedAmount = requestDTO.getAmount();
+        if (requestedAmount == null || requestedAmount <= 0) {
+            throw new IllegalArgumentException("환불 금액은 0보다 커야 합니다.");
+        }
+        if (!requestedAmount.equals(paidTotal)) {
+            throw new IllegalArgumentException("환불 금액이 결제 금액과 일치하지 않습니다.");
+        }
+
+        // 5) sender 포인트 환불 처리 (결제 때 사용한 포인트를 다시 적립)
+        UserEntity sender = userRepository.findById(order.getSenderId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        int currentPoints = sender.getPoints() == null ? 0 : sender.getPoints();
+        int pointRefunded = pointUsed;
+        int cashRefunded = cashUsed;
+
+        int newPoints = currentPoints + pointRefunded;
+        sender.setPoints(newPoints);
+        userRepository.save(sender);
+
+        // 6) 주문 상태 변경 (C: 취소/환불 완료)
+        order.setOrderStatus("C");
+        order.setRemainPoints(newPoints);
+        orderRepository.save(order);
+
+        // 7) 배송 상태 변경
+        deliveryRepository.findByOrder_OrderId(order.getOrderId())
+                .ifPresent(delivery -> {                   
+                    if (!"C".equals(delivery.getDeliveryStatus())) {
+                        delivery.setDeliveryStatus("C");   
+                        deliveryRepository.save(delivery);
+                    }
+                });
+        
+        // 8) 응답 DTO 구성
+        RefundResponseDTO resp = new RefundResponseDTO();
+        resp.setOrderId(order.getOrderId());
+        resp.setCashRefunded(cashRefunded);
+        resp.setPointRefunded(pointRefunded);
+        resp.setStatus("REFUNDED");
+        resp.setRefundedAt(LocalDateTime.now());
+        resp.setResult(true);
+
+        return resp;
+    }
+    
     // SHOP-016 금액권 주문 생성
     
     // SHOP-017 금액권 결제 완료 (포인트 적립)
