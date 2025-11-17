@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.shift.chat.dto.ChatroomDTO;
@@ -21,17 +22,18 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/chatrooms")
 public class ChatroomController {
 	
 	private final ChatroomService chatroomService;
 	
-	@GetMapping("chatrooms/user/{userId}")
+	@GetMapping("/users/{userId}")
 	public List<ChatroomDTO> getUserChatroomList(@PathVariable int userId){
 		List<ChatroomDTO> chatrooms = chatroomService.getUserChatrooms(userId);
 		return chatrooms;
 	}
 	
-	@PostMapping("chatroom/create")
+	@PostMapping("/create")
 	public ChatroomDTO createChatroom(@RequestBody ChatroomDTO payload) {
 		long fromUserId = payload.getFromUserId();
 		long toUserId = payload.getToUserId();
@@ -48,7 +50,7 @@ public class ChatroomController {
 		return createdChatroom;
 	}
 	
-	@DeleteMapping("/chatroom/{roomId}")
+	@DeleteMapping("/delete/{roomId}")
 	public ResponseEntity<?> deleteChatroom(@PathVariable int roomId) {
 	    try {
 	        boolean deleted = chatroomService.deleteChatroom(roomId);

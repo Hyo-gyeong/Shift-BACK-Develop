@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.shift.chat.dto.ChatUserDTO;
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@RequestMapping("/friends")
 public class FriendController {
 	
 	private final JwtService jwtService;
@@ -28,7 +30,7 @@ public class FriendController {
 	private final ChatUserService chatUserService;
 
 	// 사용자와 친구인 사용자의 PK 목록 반환
-	@GetMapping("/friends/user/{userId}")
+	@GetMapping("/user/{userId}")
     public List<FriendDTO> sendMessage(@PathVariable String userId) {
 		log.info("UserId {}", userId);
 		int userPK = Integer.parseInt(userId);
@@ -40,7 +42,7 @@ public class FriendController {
     }
 	
 	// 친구 pk 리스트를 가지고 친구 정보 반환 - user를 사용하더라도 도메인에 맞게 FriendController에서 구현
-	@PostMapping("/friends/info")
+	@PostMapping("/info")
 	public List<ChatUserDTO> getFriendsInfo(@RequestBody List<Integer> friendPKList){
 		log.info(friendPKList.toString());
 		List<ChatUserDTO> user = chatUserService.getUserInfoByIds(friendPKList);
@@ -48,7 +50,7 @@ public class FriendController {
 		return user;
 	}
 	
-	@GetMapping("/friends/search/{phone}")
+	@GetMapping("/search/{phone}")
 	public ChatUserDTO searchFriend(HttpServletRequest request, @PathVariable String phone) {
 		// jwt에서 현재 사용자의 토큰 추출
 		String token = jwtService.extractTokenFromRequest(request);
@@ -70,7 +72,7 @@ public class FriendController {
 		return null;
 	}
 	
-	@PostMapping("/friends/insert")
+	@PostMapping("/insert")
 	public ChatUserDTO addFriend(@RequestBody FriendDTO friendInfo) {
 		int userId = Long.valueOf(friendInfo.getUserId()).intValue();
 		int friendId = Long.valueOf(friendInfo.getFriendId()).intValue();
@@ -80,7 +82,7 @@ public class FriendController {
 		return dto;
 	}
 	
-	@GetMapping("/friends/delete/{friendId}")
+	@GetMapping("/delete/{friendId}")
 	public void deleteFriend(HttpServletRequest request, @PathVariable long friendId) {
         // jwt에서 현재 사용자의 토큰 추출
         String token = jwtService.extractTokenFromRequest(request);
