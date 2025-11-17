@@ -13,6 +13,9 @@ import com.project.shift.shop.repository.OrderRepository;
 import com.project.shift.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 
 
 
@@ -156,39 +159,60 @@ public class OrderService implements IOrderService {
     @Transactional
     public PaymentResponseDTO requestPayment(PaymentRequestDTO requestDTO) {
 
-        // 1) 주문 조회
+    	  // 1) 주문 조회
         Order order = orderRepository.findById(requestDTO.getOrderId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "존재하지 않는 주문입니다."
+                ));
 
         // 2) 금액/포인트 검증
         int amount = requestDTO.getAmount();
         if (amount <= 0) {
-            throw new IllegalArgumentException("결제 금액은 0보다 커야 합니다.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "결제 금액은 0보다 커야 합니다."
+            );
         }
 
         Integer rawPointUsed = requestDTO.getPointUsed();
         int pointUsed = (rawPointUsed == null ? 0 : rawPointUsed);
         if (pointUsed < 0) {
-            throw new IllegalArgumentException("포인트 사용 금액은 음수가 될 수 없습니다.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "포인트 사용 금액은 음수가 될 수 없습니다."
+            );
         }
 
         int cashAmount = amount - pointUsed;
         if (cashAmount < 0) {
-            throw new IllegalArgumentException("포인트 사용 금액이 결제 금액을 초과했습니다.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "포인트 사용 금액이 결제 금액을 초과했습니다."
+            );
         }
 
         // 주문 금액과 결제 금액 일치 여부
         if (!order.getTotalPrice().equals(amount)) {
-            throw new IllegalArgumentException("결제 금액이 주문 금액과 일치하지 않습니다.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "결제 금액이 주문 금액과 일치하지 않습니다."
+            );
         }
 
         // 3) sender 포인트 확인
         UserEntity sender = userRepository.findById(order.getSenderId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "존재하지 않는 사용자입니다."
+                ));
 
         int currentPoints = (sender.getPoints() == null ? 0 : sender.getPoints());
         if (pointUsed > currentPoints) {
-            throw new IllegalArgumentException("보유 포인트가 부족합니다.");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "보유 포인트가 부족합니다."
+            );
         }
 
         // 4) 포인트 차감 + 주문 업데이트
@@ -200,7 +224,7 @@ public class OrderService implements IOrderService {
         order.setPointUsed(pointUsed);
         order.setCashUsed(cashAmount);
         order.setRemainPoints(remainPoints);
-        // 결제 완료 상태를 따로 안 두면 orderStatus는 그대로 'P' 유지
+        order.setOrderStatus("S"); // 결제 성공 상태
         orderRepository.save(order);
 
         // 5) 응답 DTO 구성
@@ -215,7 +239,46 @@ public class OrderService implements IOrderService {
     }
 
     // SHOP-010 결제 결과 조회
-    
+    @Override
+    @Transactional(readOnly = true)
+    public PaymentResultDTO getPaymentResult(Long orderId) {
+
+    	Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "존재하지 않는 주문입니다."
+                ));
+
+        Integer cashUsed = order.getCashUsed() == null ? 0 : order.getCashUsed();
+        Integer pointUsed = order.getPointUsed() == null ? 0 : order.getPointUsed();
+
+        String statusCode = order.getOrderStatus(); // P / S / C
+        String status;
+        LocalDateTime approvedAt = null;
+
+        switch (statusCode) {
+            case "S":
+                status = "SUCCESS";
+                approvedAt = order.getOrderDate();   
+                break;
+            case "C":
+                status = "CANCELED";
+                break;
+            case "P":
+            default:
+                status = "PENDING";
+                break;
+        }
+
+        PaymentResultDTO dto = new PaymentResultDTO();
+        dto.setOrderId(order.getOrderId());
+        dto.setCashAmount(cashUsed);
+        dto.setPointUsed(pointUsed);
+        dto.setStatus(status);
+        dto.setApprovedAt(approvedAt);
+
+        return dto;
+    }
     // SHOP-011 포인트 사용/적립 내역 조회
     
     // SHOP-012 주문 취소

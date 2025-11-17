@@ -43,7 +43,11 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
     // SHOP-010 결제 결과 조회
-    
+    @GetMapping("/payments/{orderId}")
+    public ResponseEntity<PaymentResultDTO> getPaymentResult(@PathVariable Long orderId) {
+        PaymentResultDTO response = orderService.getPaymentResult(orderId);
+        return ResponseEntity.ok(response);
+    }
     // SHOP-011 포인트 사용/적립 내역 조회
     
     // SHOP-012 주문 취소
