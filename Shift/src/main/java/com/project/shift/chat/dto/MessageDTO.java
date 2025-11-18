@@ -44,5 +44,16 @@ public class MessageDTO {
                 .unreadCount(entity.getUnreadCount())
                 .build();
     }
+    
+    // 채팅방 생성시 사용할 생성자
+    MessageDTO(long chatroomId, long userId, Date sendDate,
+    			String content, String isGift, int unreadCount){
+    	this.chatroomId = chatroomId;
+    	this.userId = userId;
+    	this.sendDate = sendDate;
+    	this.content = content;
+    	this.isGift = isGift;
+    	this.unreadCount = unreadCount;
+    }
 
 }

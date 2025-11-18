@@ -31,4 +31,10 @@ public class ChatroomDTO {
                 .build();
     }
     
+    // 채팅방 생성시 사용할 생성자
+    ChatroomDTO(String lastMsgContent, Date lastMsgDate){
+    	this.lastMsgContent = lastMsgContent;
+    	this.lastMsgDate = lastMsgDate;
+    }
+    
 }

@@ -23,6 +23,8 @@ public class ChatroomUserDTO {
     private String chatroomName;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastConnectionTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createdTime;
     private String connectionStatus;
     private String isDarkMode;
     
@@ -34,9 +36,23 @@ public class ChatroomUserDTO {
                 .userId(entity.getUserId())
                 .chatroomName(entity.getChatroomName())
                 .lastConnectionTime(entity.getLastConnectionTime())
+                .createdTime(entity.getCreatedTime())
                 .connectionStatus(entity.getConnectionStatus())
                 .isDarkMode(entity.getIsDarkMode())
                 .build();
+    }
+    
+    // 채팅방 생성시 사용할 생성자
+    ChatroomUserDTO(long chatroomId, long userId, String chatroomName,
+    				Date lastConnectionTime, Date createdTime, String connectionStatus,
+    				String isDarkMode){
+    	this.chatroomId = chatroomId;
+        this.userId = userId;
+        this.chatroomName = chatroomName;
+        this.lastConnectionTime = lastConnectionTime;
+        this.createdTime = createdTime;
+        this.connectionStatus = connectionStatus;
+        this.isDarkMode = isDarkMode;
     }
     
 }
