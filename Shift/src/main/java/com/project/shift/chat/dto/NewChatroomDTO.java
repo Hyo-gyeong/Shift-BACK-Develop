@@ -11,8 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class NewChatroomDTO {
 
-    private ChatroomDTO chatroomDTO;
-    private MessageDTO messageDTO;
-    private ChatroomUserDTO chatroomUserDTO;
+    private ChatroomDTO chatroom;
+    private MessageDTO message;
+    private ChatroomUserDTO sender;
+    private ChatroomUserDTO receiver;
     
 }
