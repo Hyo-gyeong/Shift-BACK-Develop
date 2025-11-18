@@ -56,6 +56,15 @@ public class OrderController {
         OrderCancelResponseDTO response = orderService.cancelOrder(orderId);
         return ResponseEntity.ok(response);
     }
+    
+    // SHOP-013 환불 요청
+    @PostMapping("/refunds")
+    public ResponseEntity<RefundResponseDTO> requestRefund(@RequestBody RefundRequestDTO requestDTO) {
+        RefundResponseDTO response = orderService.requestRefund(requestDTO);
+        return ResponseEntity.ok(response);
+    }
+
+    
     // SHOP-016 금액권 주문 생성
     @PostMapping("/orders/point")
     public ResponseEntity<PointOrderResponseDTO> createPointOrder(
