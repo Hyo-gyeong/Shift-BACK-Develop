@@ -2,6 +2,7 @@ package com.project.shift.user.service;
 
 import com.project.shift.user.dao.IUserDAO;
 import com.project.shift.user.dto.UserDTO;
+import com.project.shift.user.dto.LoginIdRequestDTO;
 import com.project.shift.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -27,13 +28,14 @@ public class UserService {
 
         return savedEntity.getUserId();
     }
+
     private void validateTermsAgreement(UserDTO userDTO) {
-        if(userDTO.getTermsAgreed() == null || !userDTO.getTermsAgreed()) {
+        if (userDTO.getTermsAgreed() == null || !userDTO.getTermsAgreed()) {
             throw new IllegalArgumentException("이용약관에 동의해야 합니다.");
         }
     }
 
-    private void validateDuplicateUser(UserDTO userDTO){
+    private void validateDuplicateUser(UserDTO userDTO) {
         //아이디 중복 검증
         if (userDAO.existsByLoginId(userDTO.getLoginId())) {
             throw new IllegalArgumentException("이미 사용중인 아이디 입니다.");
@@ -49,12 +51,12 @@ public class UserService {
         String password = userDTO.getPassword();
 
         // 1. null 체크 추가
-        if(password == null || password.isEmpty()) {
+        if (password == null || password.isEmpty()) {
             throw new IllegalArgumentException("비밀번호를 입력해야 합니다.");
         }
 
         // 2. 길이 검증 (8자 이상 24자 이하)
-        if(password.length() < 8 || password.length() > 24) {
+        if (password.length() < 8 || password.length() > 24) {
             throw new IllegalArgumentException(
                     "비밀번호는 8자 이상 24자 이하로 설정해야 합니다.");
         }
@@ -67,9 +69,9 @@ public class UserService {
 
         //4. 복잡도 검증
         boolean isValid = password.matches(".*[A-Z].*") &&     // 대문자 포함
-                          password.matches(".*[a-z].*") &&     // 소문자 포함
-                          password.matches(".*\\d.*") &&       // 숫자 포함
-                          password.matches(".*[!@#$%^&*()].*"); // 특수문자 포함
+                password.matches(".*[a-z].*") &&     // 소문자 포함
+                password.matches(".*\\d.*") &&       // 숫자 포함
+                password.matches(".*[!@#$%^&*()].*"); // 특수문자 포함
 
         if (!isValid) {
             throw new IllegalArgumentException(
@@ -137,5 +139,33 @@ public class UserService {
                 .address(userEntity.getAddress())
                 .points(userEntity.getPoints())
                 .build();
+    }
+
+    // 아이디 찾기
+    @Transactional(readOnly = true)
+    public String findId(LoginIdRequestDTO loginIdRequestDTO) {
+        validateDTO(loginIdRequestDTO);
+
+        UserEntity userEntity = userDAO.findByNameAndPhone(loginIdRequestDTO.name(), loginIdRequestDTO.phone())
+                .orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
+
+        return maskLoginId(userEntity.getLoginId());
+    }
+
+    private String maskLoginId(String loginId) {
+        // loginId의 반절만 마스킹 처리
+        int length = loginId.length();
+        int maskLength = length / 2;
+        return loginId.substring(0, length - maskLength) +
+                "*".repeat(maskLength);
+    }
+
+    private void validateDTO(LoginIdRequestDTO userFindDTO) {
+        if (userFindDTO.name() == null || userFindDTO.name().isBlank()) {
+            throw new IllegalArgumentException("[SYSTEM] 이름은 필수 입력 항목입니다.");
+        }
+        if (userFindDTO.phone() == null || userFindDTO.phone().isBlank()) {
+            throw new IllegalArgumentException("[SYSTEM] 연락처는 필수 입력 항목입니다.");
+        }
     }
 }
