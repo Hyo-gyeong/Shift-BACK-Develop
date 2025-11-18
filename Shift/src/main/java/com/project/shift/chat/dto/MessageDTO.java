@@ -7,12 +7,11 @@ import com.project.shift.chat.entity.MessageEntity;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,6 +26,7 @@ public class MessageDTO {
     private long messageId;
     private long chatroomId;
     private long userId;
+    @Setter
     private Date sendDate;
     private String content;
     private String isGift;
@@ -46,11 +46,8 @@ public class MessageDTO {
     }
     
     // 채팅방 생성시 사용할 생성자
-    MessageDTO(long chatroomId, long userId, Date sendDate,
-    			String content, String isGift, int unreadCount){
-    	this.chatroomId = chatroomId;
+    MessageDTO(long userId, String content, String isGift, int unreadCount){
     	this.userId = userId;
-    	this.sendDate = sendDate;
     	this.content = content;
     	this.isGift = isGift;
     	this.unreadCount = unreadCount;

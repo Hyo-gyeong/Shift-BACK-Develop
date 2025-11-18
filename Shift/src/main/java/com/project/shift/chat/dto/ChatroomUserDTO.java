@@ -43,14 +43,10 @@ public class ChatroomUserDTO {
     }
     
     // 채팅방 생성시 사용할 생성자
-    ChatroomUserDTO(long chatroomId, long userId, String chatroomName,
-    				Date lastConnectionTime, Date createdTime, String connectionStatus,
-    				String isDarkMode){
-    	this.chatroomId = chatroomId;
+    ChatroomUserDTO(long userId, String chatroomName,
+    				String connectionStatus, String isDarkMode){
         this.userId = userId;
         this.chatroomName = chatroomName;
-        this.lastConnectionTime = lastConnectionTime;
-        this.createdTime = createdTime;
         this.connectionStatus = connectionStatus;
         this.isDarkMode = isDarkMode;
     }
