@@ -3,10 +3,12 @@ package com.project.shift.user.service;
 import com.project.shift.user.dao.IUserDAO;
 import com.project.shift.user.dto.UserDTO;
 import com.project.shift.user.entity.UserEntity;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -75,7 +77,7 @@ public class UserService {
         }
     }
 
-    //DTO를 Entitiy로 변환 및 암호화된 비밀번호 설정
+    //DTO를 Entity로 변환 및 암호화된 비밀번호 설정
     private UserEntity convertToEntity(UserDTO userDTO) {
         return UserEntity.builder()
                 .loginId(userDTO.getLoginId())
@@ -84,6 +86,56 @@ public class UserService {
                 .phone(userDTO.getPhone())
                 .address(userDTO.getAddress())
                 .adminFlag("N")
+                .build();
+    }
+
+    // 로그인 ID로 본인 정보 조회
+    @Transactional(readOnly = true)
+    public UserDTO getUserInfo() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+
+        //DB에서 회원 조회
+        UserEntity userEntity = userDAO.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        //비밀번호 제외하고 DTO로 변환하여 반환
+        return UserDTO.builder()
+                .userId(userEntity.getUserId())
+                .loginId(userEntity.getLoginId())
+                .name(userEntity.getName())
+                .phone(userEntity.getPhone())
+                .address(userEntity.getAddress())
+                .points(userEntity.getPoints())
+                .build();
+    }
+
+    // 로그인 ID로 본인 정보 수정
+    @Transactional
+    public UserDTO updateUserInfo(UserDTO userDTO) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+
+        //DB에서 회원 조회
+        UserEntity userEntity = userDAO.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        // 연락처 변경 시 중복 검증
+        if (!userEntity.getPhone().equals(userDTO.getPhone())
+                && userDAO.existsByPhone(userDTO.getPhone())) {
+            throw new IllegalArgumentException("이미 사용중인 연락처 입니다.");
+        }
+
+        //회원 정보 수정(Entity 업데이트)
+        userEntity.updateInfo(userDTO.getName(), userDTO.getPhone(), userDTO.getAddress());
+
+        return UserDTO.builder()
+                .userId(userEntity.getUserId())
+                .loginId(userEntity.getLoginId())
+                .name(userEntity.getName())
+                .phone(userEntity.getPhone())
+                .address(userEntity.getAddress())
+                .points(userEntity.getPoints())
                 .build();
     }
 }

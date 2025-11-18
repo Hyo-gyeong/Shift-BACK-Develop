@@ -2,6 +2,9 @@ package com.project.shift.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "USERS")
@@ -10,6 +13,7 @@ import lombok.*;
         sequenceName = "seq_users",
         allocationSize = 1
 )
+@SQLRestriction("DELETED_AT IS NULL") //DELETED_AT이 NULL인 값만 조회하도록 설정
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,7 +35,7 @@ public class UserEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String phone;
 
     @Column
@@ -44,9 +48,19 @@ public class UserEntity {
     private String refreshToken;
 
     @Column(
-        name = "ADMIN_FLAG",
-        nullable = false,
-        columnDefinition = "CHAR(1)"
+            name = "ADMIN_FLAG",
+            nullable = false,
+            columnDefinition = "CHAR(1)"
     )
     private String adminFlag = "N";
+
+    @Column(name = "DELETED_AT")
+    private Timestamp deletedAt;
+
+    //수정 가능 필드만 메서드로 제공
+    public void updateInfo(String name, String phone, String address) {
+        this.name = name;
+        this.phone = phone;
+        this.address = address;
+    }
 }

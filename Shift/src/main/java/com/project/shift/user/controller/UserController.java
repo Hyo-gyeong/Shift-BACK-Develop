@@ -5,10 +5,7 @@ import com.project.shift.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
@@ -31,5 +28,20 @@ public class UserController {
             //서버 오류 응답(500 Internal Server Error)
             return new ResponseEntity<>("회원가입 중 서버 오류 발생", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    // 본인 정보 조회
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getMyInfo() {
+        UserDTO user = userService.getUserInfo();
+        return ResponseEntity.ok(user);
+    }
+
+    // 본인 정보 수정
+    @PutMapping("/info")
+    public ResponseEntity<UserDTO> updateMyInfo(
+            @RequestBody UserDTO userDTO) {
+        UserDTO updatedUser = userService.updateUserInfo(userDTO);
+        return ResponseEntity.ok(updatedUser);
     }
 }
