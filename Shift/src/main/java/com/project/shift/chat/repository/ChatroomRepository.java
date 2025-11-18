@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.project.shift.chat.entity.ChatroomEntity;
 
@@ -17,4 +18,18 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
            "		OR (c.fromUserId = :toId AND c.toUserId = :fromId)")
     List<Integer> findChatroomIdsForUsers(int fromId, int toId);
     
+    // SHOP-016 : senderId 기준으로 receiverId 조회
+    @Query("""
+            SELECT 
+                CASE 
+                    WHEN c.fromUserId = :senderId THEN c.toUserId
+                    ELSE c.fromUserId 
+                END
+            FROM ChatroomEntity c
+            WHERE c.id = :chatroomId
+        """)
+        Long findReceiverIdByChatroom(
+                @Param("chatroomId") Long chatroomId,
+                @Param("senderId") Long senderId
+        );
 }
