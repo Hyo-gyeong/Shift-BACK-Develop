@@ -32,16 +32,16 @@ public class ReplyEmoticonEntity {
         sequenceName = "SEQ_REPLY_EMOTICONS",
         allocationSize = 1
     )
-    @Column(name = "REPLY_EMOTICON_ID")
+    @Column(name = "REPLY_EMOTICON_ID", nullable = false)
     private long replyEmoticonId;
 
-    @Column(name = "MESSAGE_ID")
+    @Column(name = "MESSAGE_ID", nullable = false)
     private long messageId;
 
     @Column(name = "USER_ID")
     private long userId;
     
-    @Column(name = "TYPE", length = 1, columnDefinition = "CHAR(3)")
+    @Column(name = "TYPE", nullable = false, length = 3)
     private String type;
     
     // DTO -> Entity 변환

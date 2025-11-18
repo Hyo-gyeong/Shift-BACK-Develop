@@ -36,26 +36,26 @@ public class MessageEntity {
         sequenceName = "SEQ_MESSAGES",
         allocationSize = 1
     )
-    @Column(name = "MESSAGE_ID")
+    @Column(name = "MESSAGE_ID", nullable = false)
     private long messageId;
 
-    @Column(name = "CHATROOM_ID")
+    @Column(name = "CHATROOM_ID", nullable = false)
     private long chatroomId;
     
-    @Column(name = "USER_ID", nullable = false)
+    @Column(name = "USER_ID")
     private long userId;
 
     @Column(name = "SEND_DATE")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date sendDate;
 
-    @Column(name = "CONTENT", length = 300, columnDefinition = "CHAR(300)")
+    @Column(name = "CONTENT", nullable = false, length = 300)
     private String content;
     
-    @Column(name = "IS_GIFT", length = 1, columnDefinition = "CHAR(1) default 'N'")
+    @Column(name = "IS_GIFT", nullable = false, length = 1, columnDefinition = "CHAR(1) default 'N'")
     private String isGift;
     
-    @Column(name = "UNREAD_COUNT")
+    @Column(name = "UNREAD_COUNT", nullable = false)
     private int unreadCount;
 
     // DTO -> Entity 변환
