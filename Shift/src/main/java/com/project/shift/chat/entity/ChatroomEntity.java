@@ -36,7 +36,7 @@ public class ChatroomEntity {
         sequenceName = "SEQ_CHATROOMS",
         allocationSize = 1
     )
-    @Column(name = "CHATROOM_ID")
+    @Column(name = "CHATROOM_ID", nullable = false)
     private Long chatroomId;
 
     @Column(name = "LAST_MSG_CONTENT")

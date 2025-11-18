@@ -36,26 +36,30 @@ public class ChatroomUserEntity {
         sequenceName = "SEQ_CHATROOM_USERS",
         allocationSize = 1
     )
-    @Column(name = "CHATROOM_USERS_ID")
+    @Column(name = "CHATROOM_USERS_ID", nullable = false)
     private long chatroomUserId;
     
-    @Column(name = "CHATROOM_ID")
+    @Column(name = "CHATROOM_ID", nullable = false)
     private long chatroomId;
     
     @Column(name = "USER_ID")
     private long userId;
 
-    @Column(name = "CHATROOM_NAME", length = 30, columnDefinition = "CHAR(30)")
+    @Column(name = "CHATROOM_NAME", length = 30)
     private String chatroomName;
 
     @Column(name = "LAST_CONNECTION_TIME")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastConnectionTime;
+    
+    @Column(name = "CREATED_TIME")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createdTime;
 
-    @Column(name = "CONNECTION_STATUS", length = 2, columnDefinition = "CHAR(2)")
+    @Column(name = "CONNECTION_STATUS", nullable = false, length = 2)
     private String connectionStatus;
 
-    @Column(name = "IS_DARK_MODE", length = 1, columnDefinition = "CHAR(1) default 'N'")
+    @Column(name = "IS_DARK_MODE", nullable = false, length = 1, columnDefinition = "CHAR(1) default 'N'")
     private String isDarkMode;
     
     // DTO -> Entity 변환
@@ -66,6 +70,7 @@ public class ChatroomUserEntity {
                 .userId(dto.getUserId())
                 .chatroomName(dto.getChatroomName())
                 .lastConnectionTime(dto.getLastConnectionTime())
+                .createdTime(dto.getCreatedTime())
                 .connectionStatus(dto.getConnectionStatus())
                 .isDarkMode(dto.getIsDarkMode())
                 .build();
