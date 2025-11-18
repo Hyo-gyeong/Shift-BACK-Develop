@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  *  • POST /products/point/calc
  */
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/products/point")
 public class PointController {
 
     private final IPointService pointService;
@@ -29,13 +29,13 @@ public class PointController {
     }
 
     /** [PROD-010] 금액권 페이지 기본 정보 조회 */
-    @GetMapping("/point")
+    @GetMapping
     public ResponseEntity<PointDTO> getPointPageInfo() {
         return ResponseEntity.ok(pointService.getPointPageInfo());
     }
 
     /** [PROD-011] 금액 입력 및 합계 계산 */
-    @PostMapping("/point/calc")
+    @PostMapping("/calc")
     public ResponseEntity<PointCalcDTO> calculatePoint(@RequestBody PointCalcDTO request) {
         return ResponseEntity.ok(pointService.calculatePoint(request));
     }

@@ -1,22 +1,20 @@
 package com.project.shift.shop.service;
 
-import com.project.shift.shop.dao.IOrderDAO;
+import com.project.shift.shop.dao.*;
 import com.project.shift.shop.dto.*;
-import com.project.shift.shop.entity.Delivery;
-import com.project.shift.shop.entity.Order;
-import com.project.shift.shop.entity.OrderItem;
-import com.project.shift.product.entity.Product;
-import com.project.shift.user.entity.UserEntity;
-import com.project.shift.product.repository.ProductRepository;
-import com.project.shift.shop.repository.DeliveryRepository;
-import com.project.shift.shop.repository.OrderRepository;
-import com.project.shift.user.repository.UserRepository;
+import com.project.shift.shop.entity.*;
+import com.project.shift.shop.repository.*;
+import com.project.shift.chat.entity.*;
+import com.project.shift.chat.repository.*;
+import com.project.shift.product.entity.*;
+import com.project.shift.product.dao.*;
+import com.project.shift.product.repository.*;
+import com.project.shift.user.entity.*;
+import com.project.shift.user.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
-
 
 
 import java.util.List;
@@ -32,20 +30,25 @@ public class OrderService implements IOrderService {
     private final DeliveryRepository deliveryRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-
+    private final ChatroomRepository chatroomRepository;
+    private final IPointDAO pointDAO;
 
     public OrderService(IOrderDAO orderDAO,
-                        ProductRepository productRepository,
-                        DeliveryRepository deliveryRepository, 
-                        OrderRepository orderRepository,
-                        UserRepository userRepository) {
-        this.orderDAO = orderDAO;
-        this.productRepository = productRepository;
-        this.deliveryRepository = deliveryRepository;
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
+            ProductRepository productRepository,
+            DeliveryRepository deliveryRepository,
+            OrderRepository orderRepository,
+            UserRepository userRepository,
+            ChatroomRepository chatroomRepository,
+            IPointDAO pointDAO) {
 
-    }
+	this.orderDAO = orderDAO;
+	this.productRepository = productRepository;
+	this.deliveryRepository = deliveryRepository;
+	this.orderRepository = orderRepository;
+	this.userRepository = userRepository;
+	this.chatroomRepository = chatroomRepository;
+	this.pointDAO = pointDAO;
+	}
     
     // SHOP-006 주문 생성
     @Override
@@ -294,7 +297,7 @@ public class OrderService implements IOrderService {
             return new OrderCancelResponseDTO(orderId, false);
         }
 
-        order.setOrderStatus("C");
+        order.setOrderStatus("C");  // 취소
 
         return new OrderCancelResponseDTO(orderId, true);
     }
@@ -366,7 +369,112 @@ public class OrderService implements IOrderService {
     }
     
     // SHOP-016 금액권 주문 생성
-    
+    @Override
+    @Transactional
+    public PointOrderResponseDTO createPointOrder(PointOrderRequestDTO requestDTO) {
+
+        Long senderId = requestDTO.getSenderId();
+        Long chatroomId = requestDTO.getChatroomId();
+        Long categoryId = requestDTO.getCategoryId();   // categoryId=3
+        Integer amount = requestDTO.getAmount();
+
+        // 1) 채팅방 조회 및 receiverId 계산
+        ChatroomEntity chatroom = chatroomRepository.findById(chatroomId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+
+        Long receiverId;
+        if (chatroom.getFromUserId().equals(senderId)) {
+            receiverId = chatroom.getToUserId();
+        } else if (chatroom.getToUserId().equals(senderId)) {
+            receiverId = chatroom.getFromUserId();
+        } else {
+            throw new IllegalArgumentException("해당 채팅방에 senderId가 존재하지 않습니다.");
+        }
+
+        // 2) 금액권 카테고리 검증
+        if (!categoryId.equals(3L)) {
+            throw new IllegalArgumentException("금액권 카테고리가 아닙니다. categoryId=3 필요");
+        }
+
+        // 3) 금액권 상품 조회(category_id=3)
+        Product pointProduct = pointDAO.findPointTemplate();
+        if (pointProduct == null) {
+            throw new IllegalStateException("금액권(product) 상품이 존재하지 않습니다.");
+        }
+
+        Long productId = pointProduct.getId();
+
+        // 4) 주문 생성
+        Order order = new Order();
+        order.setSenderId(senderId);
+        order.setReceiverId(receiverId);
+        order.setOrderDate(LocalDateTime.now());
+        order.setOrderStatus("P");
+        order.setTotalPrice(amount);
+        order.setCashUsed(amount);
+        order.setPointUsed(0);
+
+        // 5) 주문 상세 추가
+        OrderItem item = new OrderItem();
+        item.setProductId(productId);
+        item.setQuantity(1);
+        item.setItemPrice(amount);
+
+        order.addItem(item);
+
+        Order saved = orderDAO.save(order);
+
+        // 6) 응답 생성
+        PointOrderResponseDTO res = new PointOrderResponseDTO();
+        res.setOrderId(saved.getOrderId());
+        res.setSenderId(senderId);
+        res.setReceiverId(receiverId);
+        res.setChatroomId(chatroomId);
+        res.setAmount(amount);
+        res.setStatus("P");
+        res.setResult(true);
+
+        return res;
+    }
+
     // SHOP-017 금액권 결제 완료 (포인트 적립)
-    
+    @Override
+    @Transactional
+    public PointOrderCompleteDTO completePointOrder(Long orderId, Long chatroomId) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        // 🔒 이미 완료된 주문이면 중복 적립 차단
+        if (!"P".equals(order.getOrderStatus())) {
+            throw new IllegalStateException("이미 결제가 완료된 주문입니다.");
+        }
+
+        Long receiverId = order.getReceiverId();
+        Integer price = order.getTotalPrice();
+
+        UserEntity receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        int before = receiver.getPoints() == null ? 0 : receiver.getPoints();
+        int after = before + price;
+
+        receiver.setPoints(after);
+        userRepository.save(receiver);
+
+        // 주문 상태 변경
+        order.setOrderStatus("S");
+        order.setRemainPoints(after);
+        orderRepository.save(order);
+
+        PointOrderCompleteDTO dto = new PointOrderCompleteDTO();
+        dto.setOrderId(orderId);
+        dto.setChatroomId(chatroomId);
+        dto.setReceiverId(receiverId);
+        dto.setAddedPoints(price);
+        dto.setUpdatedTotalPoints(after);
+        dto.setResult(true);
+
+        return dto;
+    }
 }

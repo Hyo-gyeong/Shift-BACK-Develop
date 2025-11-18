@@ -37,13 +37,13 @@ public class ChatroomEntity {
         allocationSize = 1
     )
     @Column(name = "CHATROOM_ID")
-    private long chatroomId;
+    private Long chatroomId;
 
     @Column(name = "FROM_USER_ID")
-    private long fromUserId;
+    private Long fromUserId;
 
     @Column(name = "TO_USER_ID")
-    private long toUserId;
+    private Long toUserId;
 
     @Column(name = "CHATROOM_NAME")
     private String chatroomName;
