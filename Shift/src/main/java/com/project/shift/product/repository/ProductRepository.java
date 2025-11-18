@@ -108,4 +108,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("normalized") String normalized,
             @Param("excludedCategoryId") Long excludedCategoryId
     );
+    
+    @Query("SELECT p.category.categoryId FROM Product p WHERE p.id = :productId")
+    Long findCategoryIdByProductId(@Param("productId") Long productId);
+
 }

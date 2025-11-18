@@ -16,14 +16,15 @@ public interface IOrderService {
     PaymentResponseDTO requestPayment(PaymentRequestDTO requestDTO);
 
     // SHOP-010 결제 결과 조회
-    
+    PaymentResultDTO getPaymentResult(Long orderId);
+
     // SHOP-011 포인트 사용/적립 내역 조회
     
     // SHOP-012 주문 취소
     OrderCancelResponseDTO cancelOrder(Long orderId);
 
-    
     // SHOP-016 금액권 주문 생성
-    
+    PointOrderResponseDTO createPointOrder(PointOrderRequestDTO requestDTO);
     // SHOP-017 금액권 결제 완료 (포인트 적립)
+    PointOrderCompleteDTO completePointOrder(Long orderId, Long chatroomId);
 }

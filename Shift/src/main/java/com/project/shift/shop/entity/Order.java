@@ -40,9 +40,9 @@ public class Order {
     @Column(name = "CASH_USED", nullable = false)
     private Integer cashUsed = 0;
 
-    @Column(name = "ORDER_STATUS", nullable = false)
-    private String orderStatus = "P"; 
-
+    @Column(name = "ORDER_STATUS", nullable = false, columnDefinition = "VARCHAR2(2)")
+    private String orderStatus = "P";
+    
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
