@@ -30,4 +30,14 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long>{
 			""")
 	List<MessageEntity> findByChatroomId(@Param("chatroomId") long chatroomId,
 										 @Param("createdDateTime") Date createdDateTime);
+
+	// 마지막 접속 시간 이후의 메시지 읽음 처리
+	@Query(value = """
+			UPDATE MessageEntity m
+			SET m.unreadCount = m.unreadCount-1
+			WHERE m.chatroomId = :chatroomId AND
+				  m.sendDate >= :lastConnectionTime
+			""")
+	void markMessagesAsRead(@Param("chatroomId") long chatroomId, @Param("lastConnectionTime") Date lastConnectionTime);
+	
 }
