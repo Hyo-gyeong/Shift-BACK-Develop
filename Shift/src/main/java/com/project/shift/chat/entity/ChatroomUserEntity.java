@@ -37,7 +37,7 @@ public class ChatroomUserEntity {
         allocationSize = 1
     )
     @Column(name = "CHATROOM_USERS_ID", nullable = false)
-    private long chatroomUserId;
+    private long chatroomUsersId;
     
     @Column(name = "CHATROOM_ID", nullable = false)
     private long chatroomId;
@@ -65,7 +65,6 @@ public class ChatroomUserEntity {
     // DTO -> Entity 변환
     public static ChatroomUserEntity toEntity(ChatroomUserDTO dto) {
         return ChatroomUserEntity.builder()
-                .chatroomUserId(dto.getChatroomId())
                 .chatroomId(dto.getChatroomId())
                 .userId(dto.getUserId())
                 .chatroomName(dto.getChatroomName())

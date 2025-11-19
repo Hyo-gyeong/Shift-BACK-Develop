@@ -49,7 +49,6 @@ public class ChatroomEntity {
     // DTO -> Entity 변환
     public static ChatroomEntity toEntity(ChatroomDTO dto) {
         return ChatroomEntity.builder()
-                .chatroomId(dto.getChatroomId())
                 .lastMsgContent(dto.getLastMsgContent())
                 .lastMsgDate(dto.getLastMsgDate())
                 .build();
