@@ -6,30 +6,27 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.project.shift.chat.dto.ChatroomListProjection;
 import com.project.shift.chat.entity.ChatroomEntity;
 
 public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 
-	List<ChatroomEntity> findByFromUserId(int userId);
-	
-	// 두 사용자가 서로 대화하는 방의 ID 조회(사용자별로 chatroomId가 다름)
-    @Query("SELECT c.id FROM ChatroomEntity c " +
-           "WHERE (c.fromUserId = :fromId AND c.toUserId = :toId) " +
-           "		OR (c.fromUserId = :toId AND c.toUserId = :fromId)")
-    List<Integer> findChatroomIdsForUsers(int fromId, int toId);
-    
-    // SHOP-016 : senderId 기준으로 receiverId 조회
-    @Query("""
-            SELECT 
-                CASE 
-                    WHEN c.fromUserId = :senderId THEN c.toUserId
-                    ELSE c.fromUserId 
-                END
-            FROM ChatroomEntity c
-            WHERE c.id = :chatroomId
-        """)
-        Long findReceiverIdByChatroom(
-                @Param("chatroomId") Long chatroomId,
-                @Param("senderId") Long senderId
-        );
+	// 채팅방 목록 조회
+	@Query(value = """
+			select
+				cu.chatroom_users_id as chatroomUsersId,
+				cu.chatroom_id as chatroomId,
+				cu.chatroom_name as chatroomName,
+				cu.last_connection_time as lastConnectionTime,
+				cu.connection_status as connectionStatus,
+				cu.created_time as createdTime,
+				cu.is_dark_mode as isDarkMode,
+				c.last_msg_content as lastMsgContent,
+				c.last_msg_date as lastMsgDate
+			from chatrooms c, chatroom_users cu
+			where c.chatroom_id = cu.chatroom_id
+				and cu.user_id = :userId
+			""", nativeQuery = true)
+	List<ChatroomListProjection> findChatroomsByUserId(@Param("userId") long userId);
+
 }
