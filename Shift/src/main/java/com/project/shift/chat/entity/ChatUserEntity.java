@@ -1,5 +1,9 @@
 package com.project.shift.chat.entity;
 
+import java.sql.Timestamp;
+
+import org.hibernate.annotations.SQLRestriction;
+
 import com.project.shift.chat.dto.ChatUserDTO;
 
 import jakarta.persistence.Column;
@@ -16,6 +20,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="USERS")
+@SQLRestriction("DELETED_AT IS NULL")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -58,6 +63,9 @@ public class ChatUserEntity {
 
     @Column(name = "ADMIN_FLAG", nullable = false, length = 1, columnDefinition = "CHAR(1)")
     private String adminFlag;// DEFAULT 'N', 'Y' 또는 'N'
+    
+    @Column(name = "DELETED_AT")
+    private Timestamp deletedAt;
     
     // DTO -> Entity 변환
     public static ChatUserEntity toEntity(ChatUserDTO dto) {
