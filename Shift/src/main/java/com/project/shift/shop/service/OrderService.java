@@ -52,12 +52,13 @@ public class OrderService implements IOrderService {
     
     // SHOP-006 주문 생성
     @Override
+    @Transactional
     public OrderDTO createOrder(OrderDTO orderDTO) {
         Order order = new Order();
         order.setSenderId(orderDTO.getSenderId());
         order.setReceiverId(orderDTO.getReceiverId());
         order.setOrderDate(LocalDateTime.now());
-        order.setOrderStatus("P"); // DDL에서 P/C로 관리
+        order.setOrderStatus("P"); // DDL에서 P/S/C로 관리
 
         int totalPrice = 0;
 
@@ -117,6 +118,7 @@ public class OrderService implements IOrderService {
     
     // SHOP-008 주문 상세 조회
     @Override
+    @Transactional(readOnly = true)
     public OrderDetailResponseDTO getOrderDetail(Long orderId) {
         Order order = orderDAO.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 주문이 없습니다. orderId=" + orderId));
@@ -163,7 +165,7 @@ public class OrderService implements IOrderService {
     public PaymentResponseDTO requestPayment(PaymentRequestDTO requestDTO) {
 
     	  // 1) 주문 조회
-        Order order = orderRepository.findById(requestDTO.getOrderId())
+        Order order = orderDAO.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "존재하지 않는 주문입니다."
@@ -228,7 +230,7 @@ public class OrderService implements IOrderService {
         order.setCashUsed(cashAmount);
         order.setRemainPoints(remainPoints);
         order.setOrderStatus("S"); // 결제 성공 상태
-        orderRepository.save(order);
+        orderDAO.save(order);
 
         // 5) 응답 DTO 구성
         PaymentResponseDTO response = new PaymentResponseDTO();
@@ -298,6 +300,8 @@ public class OrderService implements IOrderService {
         }
 
         order.setOrderStatus("C");  // 취소
+        
+        orderDAO.save(order);
 
         return new OrderCancelResponseDTO(orderId, true);
     }
@@ -308,7 +312,7 @@ public class OrderService implements IOrderService {
     public RefundResponseDTO requestRefund(RefundRequestDTO requestDTO) {
 
         // 1) 주문 조회
-        Order order = orderRepository.findById(requestDTO.getOrderId())
+        Order order = orderDAO.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
         // 2) 상태 체크: 결제 완료(S)인 주문만 환불 가능
@@ -345,7 +349,7 @@ public class OrderService implements IOrderService {
         // 6) 주문 상태 변경 (C: 취소/환불 완료)
         order.setOrderStatus("C");
         order.setRemainPoints(newPoints);
-        orderRepository.save(order);
+        orderDAO.save(order);
 
         // 7) 배송 상태 변경
         deliveryRepository.findByOrder_OrderId(order.getOrderId())

@@ -33,9 +33,16 @@ public class UserDAO implements IUserDAO {
         return userRepository.existsByPhone(phone);
     }
 
-    /** 사용자 ID로 조회 (리뷰 작성자 이름 확인용) */
+    /**
+     * 사용자 ID로 조회 (리뷰 작성자 이름 확인용)
+     */
     @Override
     public Optional<UserEntity> findById(Long userId) {
         return userRepository.findById(userId);
+    }
+
+    @Override
+    public Optional<UserEntity> findByNameAndPhone(String name, String phone) {
+        return userRepository.findByNameAndPhone(name, phone);
     }
 }
