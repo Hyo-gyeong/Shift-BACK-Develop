@@ -386,14 +386,14 @@ public class OrderService implements IOrderService {
         ChatroomEntity chatroom = chatroomRepository.findById(chatroomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
 
-        Long receiverId;
-        if (chatroom.getFromUserId().equals(senderId)) {
-            receiverId = chatroom.getToUserId();
-        } else if (chatroom.getToUserId().equals(senderId)) {
-            receiverId = chatroom.getFromUserId();
-        } else {
-            throw new IllegalArgumentException("해당 채팅방에 senderId가 존재하지 않습니다.");
-        }
+        Long receiverId = (long) 1;
+//        if (chatroom.getFromUserId().equals(senderId)) {
+//            receiverId = chatroom.getToUserId();
+//        } else if (chatroom.getToUserId().equals(senderId)) {
+//            receiverId = chatroom.getFromUserId();
+//        } else {
+//            throw new IllegalArgumentException("해당 채팅방에 senderId가 존재하지 않습니다.");
+//        }
 
         // 2) 금액권 카테고리 검증
         if (!categoryId.equals(3L)) {

@@ -1,14 +1,13 @@
 package com.project.shift.chat.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.project.shift.chat.dao.ChatUserDAO;
-import com.project.shift.chat.dto.ChatUserDTO;
+import com.project.shift.chat.dao.FriendDAO;
+import com.project.shift.chat.dto.ChatUserSearchResultDTO;
 import com.project.shift.chat.entity.ChatUserEntity;
+import com.project.shift.chat.exception.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,32 +15,26 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChatUserService {
 
-	private final ChatUserDAO dao;
+	private final ChatUserDAO chatUserDAO;
+	private final FriendDAO friendDAO;
 	
 	@Transactional(readOnly = true)
-	public ChatUserDTO getUserInfo(int id){
-		ChatUserEntity entity = dao.getUserInfo(id);
-		if (entity != null) {
-			ChatUserDTO dto = ChatUserDTO.toDto(entity);
-			return dto;
+	public ChatUserSearchResultDTO searchUserByPhone(long userId, String phone) {
+		ChatUserEntity entity = chatUserDAO.getUserInfoByPhone(phone);
+		if (entity == null) {
+	        throw new UserNotFoundException("해당 전화번호의 사용자를 찾을 수 없습니다.");
 		}
-		return null;
+		// 검색된 사용자와의 친구여부 포함하여 반환
+		long friendId = entity.getUserId();
+		boolean ifFriend = friendDAO.checkIfFriend(userId, friendId);
+		
+		return ChatUserSearchResultDTO.builder()
+				.ifFriend(ifFriend)
+				.userId(entity.getUserId())
+				.loginId(entity.getLoginId())
+				.name(entity.getName())
+				.phone(entity.getPhone())
+				.build();
 	}
 	
-	@Transactional(readOnly = true)
-	public List<ChatUserDTO> getUserInfoByIds(List<Integer> userIds){
-		List<ChatUserEntity> entityList = dao.getUserInfoByIds(userIds);
-		List<ChatUserDTO> dtoList = new ArrayList<ChatUserDTO>();
-		for (ChatUserEntity e : entityList) {
-			dtoList.add(ChatUserDTO.toFriendUserDTO(e));
-		}
-		return dtoList;
-	}
-	
-	@Transactional(readOnly = true)
-	public ChatUserDTO getUserInfoByPhone(String phone) {
-		ChatUserEntity entity = dao.getUserInfoByPhone(phone);
-		ChatUserDTO dto = ChatUserDTO.toDto(entity);
-		return dto;
-	}
 }

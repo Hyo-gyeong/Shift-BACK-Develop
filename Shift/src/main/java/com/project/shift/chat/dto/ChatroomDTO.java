@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
@@ -17,8 +18,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ChatroomDTO {
 
+	@Setter
     private long chatroomId;
     private String lastMsgContent;
+    @Setter
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastMsgDate;
 
@@ -29,6 +32,11 @@ public class ChatroomDTO {
                 .lastMsgContent(entity.getLastMsgContent())
                 .lastMsgDate(entity.getLastMsgDate())
                 .build();
+    }
+    
+    // 채팅방 생성시 사용할 생성자
+    ChatroomDTO(String lastMsgContent){
+    	this.lastMsgContent = lastMsgContent;
     }
     
 }

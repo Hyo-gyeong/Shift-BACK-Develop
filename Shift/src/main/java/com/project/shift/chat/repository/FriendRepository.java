@@ -7,22 +7,27 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.project.shift.chat.dto.FriendInfoDTO;
 import com.project.shift.chat.entity.FriendEntity;
 
 import jakarta.transaction.Transactional;
 
 public interface FriendRepository extends JpaRepository<FriendEntity, Long>{
 	
-    List<FriendEntity> findByUserId(int userId);
-    
-    @Modifying
-    @Transactional
-    @Query(value = "INSERT INTO FRIENDS VALUES (SEQ_FRIENDS.NEXTVAL, :userId, :friendId)", nativeQuery = true)
-    void insertFriend(@Param("userId") int userId, @Param("friendId") int friendId);
-    
-    // 친구 삭제
-    @Modifying
-    @Transactional
-    @Query(value = "DELETE FROM FRIENDS WHERE USER_ID = :userId AND FRIEND_ID = :friendId", nativeQuery = true)
-    void deleteFriend(@Param("userId") long userId, @Param("friendId") long friendId);
+	// 친구 목록(이름, 아이디 포함) 반환
+	@Query(value = """
+			select
+				f.friendship_id as friendshipId,
+				f.friend_id as friendId,
+				u.name,
+				u.login_id as loginId
+			from friends f, users u
+			where f.friend_id = u.user_id
+				and f.user_id = :userId
+				and u.deleted_at is null
+			""", nativeQuery = true)
+	List<FriendInfoDTO> getFriendsList(@Param("userId") long userId);
+
+	boolean existsByUserIdAndFriendId(long userId, long friendId);
+
 }

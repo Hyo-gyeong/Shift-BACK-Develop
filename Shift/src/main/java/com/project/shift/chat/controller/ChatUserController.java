@@ -1,15 +1,15 @@
 package com.project.shift.chat.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project.shift.chat.dto.ChatUserDTO;
+import com.project.shift.chat.dto.ChatUserSearchResultDTO;
 import com.project.shift.chat.service.ChatUserService;
+import com.project.shift.global.jwt.JwtService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,26 +19,18 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/chat/users")
 public class ChatUserController {
 
-	// 추후 UserService로 변경 예정
 	private final ChatUserService chatUserService;
+	private final JwtService jwtService;
 
-	// 전화번호로 사용자 검색 (친구 추가 용도). 추후 ChatUserDTO를 UserDTO로 변경 예정
+	// 전화번호로 사용자 검색 및 친구여부 반환
 	@GetMapping("/search/{phone}")
-	public ChatUserDTO searchUser(@PathVariable String phone) {
-		return chatUserService.getUserInfoByPhone(phone);
+	public ChatUserSearchResultDTO searchUser(HttpServletRequest request, @PathVariable String phone) {
+		// jwt에서 현재 사용자의 토큰 추출
+		String token = jwtService.extractTokenFromRequest(request);
+        // 토큰에서 현재 사용자의 PK 추출
+		long userId = jwtService.extractUserIdFromValidToken(token);
+				
+		return chatUserService.searchUserByPhone(userId, phone);		
 	}
 	
-	@GetMapping("/{id}")
-	public ResponseEntity<?> getUserInfo (@PathVariable int id){
-		ChatUserDTO user = chatUserService.getUserInfo(id);
-		if (user != null) {
-			log.info("user pk {}", user.getUserId());
-            // 유저가 존재하면 200 OK + JSON 반환
-            return ResponseEntity.ok(user);
-        } else {
-            // 유저가 없으면 404 Not Found + 메시지 반환
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                 .body("User not found");
-        }
-	}
 }

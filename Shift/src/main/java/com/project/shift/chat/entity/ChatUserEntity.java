@@ -1,5 +1,9 @@
 package com.project.shift.chat.entity;
 
+import java.sql.Timestamp;
+
+import org.hibernate.annotations.SQLRestriction;
+
 import com.project.shift.chat.dto.ChatUserDTO;
 
 import jakarta.persistence.Column;
@@ -16,6 +20,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name="USERS")
+@SQLRestriction("DELETED_AT IS NULL")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,30 +43,29 @@ public class ChatUserEntity {
     @Column(name = "LOGIN_ID", unique = true)
     private String loginId;
 
-    @Column(name = "PASSWORD")
+    @Column(name = "PASSWORD", length = 100)
     private String password;
 
-    @Column(name = "NAME")
+    @Column(name = "NAME", length = 20)
     private String name;
 
-    @Column(name = "PHONE", unique = true)
+    @Column(name = "PHONE", length = 20, unique = true)
     private String phone;
 
-    @Column(name = "ADDRESS")
+    @Column(name = "ADDRESS", length = 200)
     private String address;
 
     @Column(name = "POINTS")
     private int points; // DEFAULT 0
 
-    @Column(name = "REFRESH_TOKEN")
+    @Column(name = "REFRESH_TOKEN", length = 255)
     private String refreshToken;
 
-    @Column(
-    	    name = "ADMIN_FLAG",
-    	    nullable = false,
-    	    columnDefinition = "CHAR(1)"
-    	)
-    	private String adminFlag;// DEFAULT 'N', 'Y' 또는 'N'
+    @Column(name = "ADMIN_FLAG", nullable = false, length = 1, columnDefinition = "CHAR(1)")
+    private String adminFlag;// DEFAULT 'N', 'Y' 또는 'N'
+    
+    @Column(name = "DELETED_AT")
+    private Timestamp deletedAt;
     
     // DTO -> Entity 변환
     public static ChatUserEntity toEntity(ChatUserDTO dto) {

@@ -1,6 +1,5 @@
 package com.project.shift.chat.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -8,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.project.shift.chat.dao.FriendDAO;
 import com.project.shift.chat.dto.FriendDTO;
+import com.project.shift.chat.dto.FriendInfoDTO;
 import com.project.shift.chat.entity.FriendEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -16,26 +16,24 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FriendService {
 
-	private final FriendDAO dao;
-	
-	@Transactional(readOnly = true)
-	public List<FriendDTO> getUserFriends(int userId){
-		List<FriendEntity> entityList = dao.getUserFriends(userId);
-		List<FriendDTO> dtoList = new ArrayList<FriendDTO>();
-		for (FriendEntity e : entityList) {
-			dtoList.add(FriendDTO.toDto(e));
-		}
-		return dtoList;
-	}
-	
-	@Transactional
-	public void addFriend(int userId, int friendId) {
-		dao.insertFriend(userId, friendId);
-	}
-	
-	@Transactional
-	public void deleteFriend(long userId, long friendId) {
-		dao.deleteFriend(userId, friendId);
-	}
+//	private final FriendDAO dao;
+//	
+//	@Transactional(readOnly = true)
+//	public List<FriendInfoDTO> getUserFriends(long userId){
+//		return dao.getUserFriends(userId);
+//	}
+//	
+//	@Transactional
+//	public void addFriendship(FriendDTO dto) {
+//		FriendEntity entity = FriendEntity.toEntity(dto);
+//		dao.saveFriendship(entity);
+//		return;
+//	}
+//	
+//	@Transactional
+//	public boolean deleteFriend(long friendshipId) {
+//		// 삭제된 행이 있으면 true 반환
+//		return dao.deleteFriend(friendshipId);
+//	}
 
 }

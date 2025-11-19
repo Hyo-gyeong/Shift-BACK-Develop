@@ -7,12 +7,11 @@ import com.project.shift.chat.entity.MessageEntity;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -25,11 +24,17 @@ public class MessageDTO {
 	private MessageType type;
 	
     private long messageId;
+    @Setter
     private long chatroomId;
+    @Setter
     private long userId;
+    @Setter
     private Date sendDate;
+    @Setter
     private String content;
+    @Setter
     private String isGift;
+    @Setter
     private int unreadCount;
 
     // Entity -> DTO 변환

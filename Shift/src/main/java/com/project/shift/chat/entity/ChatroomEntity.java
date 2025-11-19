@@ -36,7 +36,7 @@ public class ChatroomEntity {
         sequenceName = "SEQ_CHATROOMS",
         allocationSize = 1
     )
-    @Column(name = "CHATROOM_ID")
+    @Column(name = "CHATROOM_ID", nullable = false)
     private Long chatroomId;
 
     @Column(name = "LAST_MSG_CONTENT")
@@ -49,7 +49,6 @@ public class ChatroomEntity {
     // DTO -> Entity 변환
     public static ChatroomEntity toEntity(ChatroomDTO dto) {
         return ChatroomEntity.builder()
-                .chatroomId(dto.getChatroomId())
                 .lastMsgContent(dto.getLastMsgContent())
                 .lastMsgDate(dto.getLastMsgDate())
                 .build();
