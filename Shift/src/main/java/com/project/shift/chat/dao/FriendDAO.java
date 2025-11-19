@@ -26,6 +26,7 @@ public class FriendDAO {
 
 	public void saveFriendship(FriendEntity entity) {
 		friendRepo.save(entity);
+		return;
 	}
 	
 	public boolean deleteFriend(long friendshipId) {
