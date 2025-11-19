@@ -33,6 +33,54 @@ public class UserController {
         }
     }
 
+    // 연락처 중복 확인
+    @PostMapping("/check/phone")
+    public ResponseEntity<?> checkPhone(@RequestBody Map<String, String> request) {
+        try {
+            String phone = request.get("phone");
+            boolean isDuplicate = userService.isPhoneAvailable(phone);
+            return ResponseEntity.ok(Map.of(
+                    "available", !isDuplicate,
+                    "message", isDuplicate ? "이미 사용중인 연락처입니다." : "사용 가능한 연락처입니다."
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // 아이디 중복 확인
+    @PostMapping("/check")
+    public ResponseEntity<?> checkLoginId(@RequestBody Map<String, String> request) {
+        try {
+            String loginId = request.get("loginId");
+            boolean isDuplicate = userService.isLoginIdAvailable(loginId);
+            return ResponseEntity.ok(Map.of(
+                    "available", !isDuplicate,
+                    "message", isDuplicate ? "이미 사용중인 아이디입니다." : "사용 가능한 아이디입니다."
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // 비밀번호 보안 규칙 검증
+    @PostMapping("/check/pw-rule")
+    public ResponseEntity<?> checkPasswordRule(@RequestBody Map<String, String> request) {
+        try {
+            String password = request.get("password");
+            userService.validatePasswordRule(password);
+            return ResponseEntity.ok(Map.of(
+                    "valid", true,
+                    "message", "사용 가능한 비밀번호입니다."
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "valid", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
     // 본인 정보 조회
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getMyInfo() {

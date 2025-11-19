@@ -19,9 +19,8 @@ public class UserService {
 
     @Transactional
     public Long join(UserDTO userDTO) {
+        validateName(userDTO);  //사용자 이름 검증
         validateTermsAgreement(userDTO); //약관 동의 검증
-        validateDuplicateUser(userDTO);
-        validatePassword(userDTO);
 
         UserEntity userEntity = convertToEntity(userDTO);
         UserEntity savedEntity = userDAO.save(userEntity);
@@ -29,53 +28,85 @@ public class UserService {
         return savedEntity.getUserId();
     }
 
+    //사용자 이름 검증
+    private void validateName(UserDTO userDTO) {
+        if (userDTO.getName() == null || userDTO.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("이름을 입력해야 합니다.");
+        }
+
+        if (userDTO.getName().length() < 2 || userDTO.getName().length() > 6) {
+            throw new IllegalArgumentException("이름은 2자 이상 6자 이하로 입력해야 합니다.");
+        }
+
+        if (!userDTO.getName().matches("^[가-힣\\s]+$")) {
+            throw new IllegalArgumentException("이름은 한글만 사용할 수 있습니다.");
+        }
+    }
+
+    // 아이디 중복 확인 - 사용 가능 여부 반환
+    public boolean isLoginIdAvailable(String loginId) {
+        if (loginId == null || loginId.trim().isEmpty()) {
+            throw new IllegalArgumentException("아이디를 입력해주세요.");
+        }
+
+        if (loginId.length() < 4 || loginId.length() > 20) {
+            throw new IllegalArgumentException("아이디는 4자 이상 20자 이하로 설정해야 합니다.");
+        }
+
+        if (!loginId.matches("^[A-Za-z0-9]+$")) {
+            throw new IllegalArgumentException("아이디는 영문과 숫자만 사용할 수 있습니다.");
+        }
+
+        if (loginId.toLowerCase().startsWith("deleted")) {
+            throw new IllegalArgumentException("'deleted'로 시작하는 ID는 사용할 수 없습니다.");
+        }
+
+        return userDAO.existsByLoginId(loginId);
+    }
+
+    //약관 동의 검증
     private void validateTermsAgreement(UserDTO userDTO) {
         if (userDTO.getTermsAgreed() == null || !userDTO.getTermsAgreed()) {
             throw new IllegalArgumentException("이용약관에 동의해야 합니다.");
         }
     }
 
-    private void validateDuplicateUser(UserDTO userDTO) {
-        //아이디 중복 검증
-        if (userDAO.existsByLoginId(userDTO.getLoginId())) {
-            throw new IllegalArgumentException("이미 사용중인 아이디 입니다.");
+    // 연락처 중복 확인 - 사용 가능 여부 반환
+    public boolean isPhoneAvailable(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            throw new IllegalArgumentException("연락처를 입력해주세요.");
         }
-        //연락처 중복 검증
-        if (userDAO.existsByPhone(userDTO.getPhone())) {
-            throw new IllegalArgumentException("이미 사용중인 연락처 입니다.");
+
+        if (!phone.matches("^[0-9]{11}$")) {
+            throw new IllegalArgumentException("연락처는 11자리 숫자만 입력 가능합니다.");
         }
+
+        return userDAO.existsByPhone(phone);
     }
 
-    private void validatePassword(UserDTO userDTO) {
-        //비밀번호 보안 규칙 검증
-        String password = userDTO.getPassword();
 
-        // 1. null 체크 추가
+    // 비밀번호 보안 규칙 검증
+    public void validatePasswordRule(String password) {
         if (password == null || password.isEmpty()) {
             throw new IllegalArgumentException("비밀번호를 입력해야 합니다.");
         }
 
-        // 2. 길이 검증 (8자 이상 24자 이하)
         if (password.length() < 8 || password.length() > 24) {
-            throw new IllegalArgumentException(
-                    "비밀번호는 8자 이상 24자 이하로 설정해야 합니다.");
+            throw new IllegalArgumentException("비밀번호는 8자 이상 24자 이하로 설정해야 합니다.");
         }
 
-        // 3. 허용 문자 검증
         if (!password.matches("^[A-Za-z0-9!@#$%^&*()]+$")) {
-            throw new IllegalArgumentException(
-                    "비밀번호는 영문, 숫자, 특수문자만 사용할 수 있습니다.");
+            throw new IllegalArgumentException("비밀번호는 영문, 숫자, 특수문자만 사용할 수 있습니다.");
         }
 
-        //4. 복잡도 검증
-        boolean isValid = password.matches(".*[A-Z].*") &&     // 대문자 포함
-                password.matches(".*[a-z].*") &&     // 소문자 포함
-                password.matches(".*\\d.*") &&       // 숫자 포함
-                password.matches(".*[!@#$%^&*()].*"); // 특수문자 포함
+        boolean hasUpperCase = password.matches(".*[A-Z].*");
+        boolean hasLowerCase = password.matches(".*[a-z].*");
+        boolean hasDigit = password.matches(".*[0-9].*");
+        boolean hasSpecialChar = password.matches(".*[!@#$%^&*()].*");
 
-        if (!isValid) {
+        if (!hasUpperCase || !hasLowerCase || !hasDigit || !hasSpecialChar) {
             throw new IllegalArgumentException(
-                    "비밀번호는 대문자, 소문자, 숫자, 특수문자를 각각 최소1개 이상 포함해야 합니다.");
+                    "비밀번호는 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 이상 포함해야 합니다.");
         }
     }
 
