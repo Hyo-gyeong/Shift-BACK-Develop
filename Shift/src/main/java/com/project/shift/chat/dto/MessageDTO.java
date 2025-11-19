@@ -24,12 +24,17 @@ public class MessageDTO {
 	private MessageType type;
 	
     private long messageId;
+    @Setter
     private long chatroomId;
+    @Setter
     private long userId;
     @Setter
     private Date sendDate;
+    @Setter
     private String content;
+    @Setter
     private String isGift;
+    @Setter
     private int unreadCount;
 
     // Entity -> DTO 변환
@@ -43,14 +48,6 @@ public class MessageDTO {
                 .isGift(entity.getIsGift())
                 .unreadCount(entity.getUnreadCount())
                 .build();
-    }
-    
-    // 채팅방 생성시 사용할 생성자
-    MessageDTO(long userId, String content, String isGift, int unreadCount){
-    	this.userId = userId;
-    	this.content = content;
-    	this.isGift = isGift;
-    	this.unreadCount = unreadCount;
     }
 
 }
