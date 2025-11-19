@@ -2,11 +2,10 @@ package com.project.shift.chat.dao;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.project.shift.chat.dto.FriendInfoDTO;
 import com.project.shift.chat.entity.FriendEntity;
-import com.project.shift.chat.repository.ChatroomRepository;
 import com.project.shift.chat.repository.FriendRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -17,16 +16,26 @@ public class FriendDAO {
 
 	private final FriendRepository friendRepo;
 
-	public List<FriendEntity> getUserFriends(int userId) {
-		return friendRepo.findByUserId(userId);
-	}
-
-	public void insertFriend(int userId, int friendId) {
-		friendRepo.insertFriend(userId, friendId);
+	public boolean checkIfFriend(long userId, long friendId) {
+		return friendRepo.existsByUserIdAndFriendId(userId, friendId);
 	}
 	
-	public void deleteFriend(long userId, long friendId) {
-		friendRepo.deleteFriend(userId, friendId);
+	public List<FriendInfoDTO> getUserFriends(long userId) {
+		return friendRepo.getFriendsList(userId);
+	}
+
+	public void saveFriendship(FriendEntity entity) {
+		friendRepo.save(entity);
+	}
+	
+	public boolean deleteFriend(long friendshipId) {
+		// 친구 관계가 존재하면 삭제
+		if (friendRepo.existsById(friendshipId)) {
+			friendRepo.deleteById(friendshipId);
+			return true;
+		}
+		// 친구 관계가 없으면 삭제 불가
+		return false;
 	}
 	
 }
