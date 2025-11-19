@@ -12,7 +12,6 @@ import com.project.shift.chat.dao.MessageDAO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.MessageDTO;
-import com.project.shift.chat.dto.MessageUserDTO;
 import com.project.shift.chat.entity.MessageEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,7 @@ public class MessageService {
 		messageDAO.saveMessage(MessageEntity.toEntity(message));
 	}
 	
-	// 채팅방 최초 생성 시간 이후 모든 채팅방 메시지 반환
+	// 채팅방 최초 접속 시간 이후 모든 채팅방 메시지 반환
 	@Transactional(readOnly = true)
 	public List<MessageDTO> getMessageHistory(ChatroomListDTO dto){
 		long chatroomId = dto.getChatroomId();
@@ -45,22 +44,21 @@ public class MessageService {
 	
 	// 채팅 메시지 전송시 메시지 DB에 저장 및 브로드캐스팅
 	@Transactional
-	public void sendAndSaveMessage(MessageUserDTO dto) {
-		MessageDTO messageDTO = dto.getMessageDTO();
-		ChatroomUserDTO chatroomUserDTO = dto.getChatroomUserDTO();
-		
+	public void sendAndSaveMessage(MessageDTO messageDTO, ChatroomUserDTO userDTO) {		
 		switch (messageDTO.getType()) {
 	        case JOIN :
-	        	messageDTO.setContent(messageDTO.getUserId() + "님이 입장했습니다.");
-	        	// 채팅방 최초 생성 시간부터 접속 직전까지의 모든 메시지 읽음 처리
-	        	// 채팅방 접속 상태로 변경하는 로직 호출
+	        	// 접속 상태 ON으로 세팅
+	        	userDTO.setConnectionStatus("ON");
+	        	// 채팅방 최초 생성 시간 이후 모든 메시지 읽음 처리
+	        	messageDAO.markMessagesAsRead(messageDTO.getChatroomId(), userDTO.getLastConnectionTime());
 	            break;	
 	        case LEAVE :
-	        	messageDTO.setContent(messageDTO.getUserId() + "님이 퇴장했습니다.");
-	            // 미접속 상태로 변경하는 로직 호출
-	            // 채팅방 마지막 접속 시간 변경하는 로직 호출
+	            // 접속 상태 OF로 세팅
+	        	userDTO.setConnectionStatus("OF");
+	        	// 채팅방 마지막 접속 시간을 현재 시간으로 변경
+	        	userDTO.setLastConnectionTime(new Date());
 	            break;
-	        case CHAT :
+			case CHAT :
 	        	// 메시지를 DB에 저장하는 로직 호출
 	        	messageDAO.saveMessage(MessageEntity.toEntity(messageDTO));
 	        	break;
@@ -72,7 +70,7 @@ public class MessageService {
 		messageBroadCasting(messageDTO);
 	}
 	
-	public void messageBroadCasting(MessageDTO messageDTO) {
+	private void messageBroadCasting(MessageDTO messageDTO) {
 		try {
 			messagingTemplate.convertAndSend("/sub/messages/" + messageDTO.getChatroomId(), messageDTO);
 		} catch(Exception e) {
