@@ -133,4 +133,10 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    @DeleteMapping
+    public ResponseEntity<?> withdrawUser() {
+        userService.withdrawUser();
+        return ResponseEntity.ok("회원 탈퇴가 성공적으로 처리되었습니다.");
+    }
 }

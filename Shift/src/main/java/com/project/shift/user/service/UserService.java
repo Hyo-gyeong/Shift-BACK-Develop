@@ -1,21 +1,32 @@
 package com.project.shift.user.service;
 
+import com.project.shift.chat.dao.FriendDAO;
+import com.project.shift.shop.dao.CartDAO;
+import com.project.shift.shop.dao.ICartDAO;
 import com.project.shift.user.dao.IUserDAO;
 import com.project.shift.user.dto.UserDTO;
 import com.project.shift.user.dto.LoginIdRequestDTO;
 import com.project.shift.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final String DELETED_USER_PREFIX = "deleted_";
+
     private final IUserDAO userDAO;
     private final PasswordEncoder passwordEncoder;
+    private final CartDAO cartDAO;
+    // private final FriendDAO  friendDAO;
 
     @Transactional
     public Long join(UserDTO userDTO) {
@@ -199,5 +210,31 @@ public class UserService {
         if (userFindDTO.phone() == null || userFindDTO.phone().isBlank()) {
             throw new IllegalArgumentException("[SYSTEM] 연락처는 필수 입력 항목입니다.");
         }
+    }
+
+
+    @Transactional
+    public void withdrawUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        long userId = Long.parseLong(auth.getName());
+
+        log.info("[USER] 회원 탈퇴 시작 {}", userId);
+
+        UserEntity user = userDAO.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자 없음"));
+
+        user.setLoginId(DELETED_USER_PREFIX + user.getUserId());
+        user.setPhone(null);
+
+        user.setDeletedAt(new Timestamp(System.currentTimeMillis()));
+
+        user.setRefreshToken(null);
+        user.setName("탈퇴한 사용자");
+
+        userDAO.save(user);
+
+        cartDAO.clearCartByUserId(userId);
+        // friendDAO.deleteAllFriends(userId); // 채팅 기능 정리 후 추가 예정
+        log.info("[USER] 회원 탈퇴 완료 {}", userId);
     }
 }
