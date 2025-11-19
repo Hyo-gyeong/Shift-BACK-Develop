@@ -16,8 +16,8 @@ import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.MessageDTO;
-import com.project.shift.chat.dto.NewChatroomDTO;
-import com.project.shift.chat.entity.ChatroomEntity;
+import com.project.shift.chat.dto.MessageUserDTO;
+import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.service.ChatroomService;
 import com.project.shift.chat.service.ChatroomUserService;
 import com.project.shift.chat.service.MessageService;
@@ -44,30 +44,18 @@ public class ChatroomController {
 	
 	// 새로운 채팅방 추가 및 메시지 DB저장 & 브로드캐스팅
 	@PostMapping
-	public void addChatroom(@RequestBody NewChatroomDTO payload) {
-		ChatroomDTO chatroom = payload.getChatroom();
-	    MessageDTO message = payload.getMessage();
-	    ChatroomUserDTO sender = payload.getSender();
-	    ChatroomUserDTO receiver = payload.getReceiver();
-//	    MessageUserDTO messageUserDTO = new MessageUserDTO().builder()
-//	    								.messageDTO(message)
-//	    								.chatroomUserDTO(sender)
-//	    								.build();
+	public void addChatroom(@RequestBody MessageWithSenderDTO payload) {		
+	    // 채팅방 생성 (Chatrooms) 및 생성된 채팅방 pk 반환
+		// 내부 로직에 객체간 동일한 시간 설정 포함됨
+		long newChatroomId = chatroomService.addChatroom(payload);
+		// 새로 생성된 채팅방 pk MessageDTO에 세팅
+		payload.getMessage().setChatroomId(newChatroomId);
+		
+		// 두 사용자의 새로운 채팅방 정보 추가 (ChatroomUsers)
+	    chatroomUserService.addChatroomUsers(payload, newChatroomId);
 	    
-	    // 채팅방 생성 (Chatrooms)
-	    ChatroomDTO savedChatroom  = chatroomService.addChatroom(chatroom);
-	    log.info("채팅방 생성 완료");
-	    long newChatroomId = savedChatroom.getChatroomId();
-	    // 생성된 채팅방 pk 가져오기
-	    log.info("생성된 채팅방 pk {}", newChatroomId);
-	    // 두 사용자의 새로운 채팅방 정보 추가 (ChatroomUsers)
-	    System.out.println(sender.toString());
-	    chatroomUserService.addChatroomUser(sender, newChatroomId);
-	    log.info("sender 채팅방 정보 생성 완료");
-	    chatroomUserService.addChatroomUser(receiver, newChatroomId);
-	    log.info("receiver 채팅방 정보 생성 완료");
 	    // 메시지 DB저장 & 브로드캐스팅
-//	    messageService.sendAndSaveMessage(messageUserDTO);
+	    messageService.sendAndSaveMessage(payload.getMessage(), payload.getSender());
 	    return;
 	}
 	
