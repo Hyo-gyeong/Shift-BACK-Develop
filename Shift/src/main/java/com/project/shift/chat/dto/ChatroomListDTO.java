@@ -16,15 +16,19 @@ import lombok.Setter;
 @Builder
 public class ChatroomListDTO {
 
+	private long chatroomUsersId;
     private long chatroomId;
     private String lastMsgContent;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastMsgDate;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastConnectionTime;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createdTime;
     private String connectionStatus;
     private String isDarkMode;
     private String chatroomName;
     @Setter
     private int unreadCount;
+    
 }

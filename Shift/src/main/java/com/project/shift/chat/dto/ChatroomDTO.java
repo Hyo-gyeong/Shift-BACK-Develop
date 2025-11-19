@@ -18,6 +18,7 @@ import lombok.Setter;
 @Builder
 public class ChatroomDTO {
 
+	@Setter
     private long chatroomId;
     private String lastMsgContent;
     @Setter
