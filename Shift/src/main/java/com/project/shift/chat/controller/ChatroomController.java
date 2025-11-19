@@ -16,7 +16,6 @@ import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.MessageDTO;
-import com.project.shift.chat.dto.MessageUserDTO;
 import com.project.shift.chat.dto.NewChatroomDTO;
 import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.service.ChatroomService;
@@ -50,10 +49,10 @@ public class ChatroomController {
 	    MessageDTO message = payload.getMessage();
 	    ChatroomUserDTO sender = payload.getSender();
 	    ChatroomUserDTO receiver = payload.getReceiver();
-	    MessageUserDTO messageUserDTO = new MessageUserDTO().builder()
-	    								.messageDTO(message)
-	    								.chatroomUserDTO(sender)
-	    								.build();
+//	    MessageUserDTO messageUserDTO = new MessageUserDTO().builder()
+//	    								.messageDTO(message)
+//	    								.chatroomUserDTO(sender)
+//	    								.build();
 	    
 	    // 채팅방 생성 (Chatrooms)
 	    ChatroomDTO savedChatroom  = chatroomService.addChatroom(chatroom);
