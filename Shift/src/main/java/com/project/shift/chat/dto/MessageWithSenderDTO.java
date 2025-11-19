@@ -4,16 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NewChatroomDTO {
+public class MessageWithSenderDTO {
 
-    private ChatroomDTO chatroom;
     private MessageDTO message;
     private ChatroomUserDTO sender;
-    private ChatroomUserDTO receiver;
-    
+    private long receiverId;
+    private String senderName;
 }
