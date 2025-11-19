@@ -26,8 +26,8 @@ public class MessageController {
 	private final MessageService messageService;
     
 	@MessageMapping("/send")
-    public void sendMessage(@Payload MessageUserDTO message) {
-		messageService.sendAndSaveMessage(message);
+    public void sendMessage(@Payload MessageUserDTO dto) {
+		messageService.sendAndSaveMessage(dto.getMessageDTO(), dto.getChatroomUserDTO());
     }
 	
 	// 채팅방 최초 생성 시간 이후의 채팅 메시지 기록 반환
