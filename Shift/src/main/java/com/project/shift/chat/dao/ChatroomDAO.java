@@ -4,8 +4,10 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.project.shift.chat.dto.ChatroomListProjection;
 import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.repository.ChatroomRepository;
+import com.project.shift.chat.repository.MessageRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,21 +17,18 @@ import lombok.RequiredArgsConstructor;
 public class ChatroomDAO {
 
 	private final ChatroomRepository chatroomRepo;
+	private final MessageRepository messageRepo;
 
-	public List<ChatroomEntity> getUserChatrooms(int userId) {
-		return chatroomRepo.findByFromUserId(userId);
+	public List<ChatroomListProjection> getUserChatrooms(long userId) {
+		return chatroomRepo.findChatroomsByUserId(userId);
 	}
 	
-	public List<Integer> findChatroomIdsForUsers(int fromId, int toId) {
-		return chatroomRepo.findChatroomIdsForUsers(fromId, toId);
+	public int countUnreadMessages(long chatroomId, long userId) {
+		return messageRepo.countUnreadMessages(chatroomId, userId);
 	}
 	
-	public ChatroomEntity insertChatroom(ChatroomEntity entity) {
-	    // 이미 존재하는 채팅방은 저장(덮어쓰기)불가
-	    if (chatroomRepo.existsById(entity.getChatroomId())) {
-	        throw new IllegalStateException("Chatroom already exists with ID: " + entity.getChatroomId());
-	    }
-	    // 채팅방 생성
+	public ChatroomEntity saveChatroom(ChatroomEntity entity) {
+		// PK null이면 새 엔티티로 판단 → save
 	    return chatroomRepo.save(entity);
 	}
 	
