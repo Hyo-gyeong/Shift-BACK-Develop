@@ -10,6 +10,8 @@ import com.project.shift.chat.dao.ChatroomDAO;
 import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomListProjection;
+import com.project.shift.chat.dto.MessageDTO;
+import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.entity.ChatroomEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -53,18 +55,18 @@ public class ChatroomService {
     }
 	
 	@Transactional
-	public ChatroomDTO addChatroom(ChatroomDTO chatroom) {
-		// 메시지 전송 시간 세팅
-		chatroom.setLastMsgDate(new Date());
-		
+	public long addChatroom(MessageWithSenderDTO dto) {
+		// 채팅방을 만들면서 전송한 메시지를 이용해서 채팅방 생성
+		ChatroomDTO newChatroom = new ChatroomDTO();
+		// 채팅방 생성 시간, 메시지 전송 시간, 채팅방에 전송된 최신 메시지 전송 시간 동일하게 세팅
+		setTimestamps(dto, newChatroom);
+		newChatroom.setLastMsgContent(dto.getMessage().getContent());
+				
 		// 저장 후 DB에서 생성된 PK 가져오기
-		ChatroomEntity entity = ChatroomEntity.toEntity(chatroom);
+		ChatroomEntity entity = ChatroomEntity.toEntity(newChatroom);
 	    ChatroomEntity savedEntity = dao.saveChatroom(entity);
 	    
-	    // DTO에 PK 세팅
-	    chatroom.setChatroomId(savedEntity.getChatroomId());
-	    
-	    return chatroom;
+	    return savedEntity.getChatroomId();
 	}
 	
 	// 특정 채팅방에 참여한 모든 사용자, 특정 채팅방 정보 전체 삭제됨
@@ -72,5 +74,15 @@ public class ChatroomService {
 	public boolean deleteChatroom(long chatroomId) {
 		// 삭제된 행이 있으면 true 반환
 		return dao.deleteById(chatroomId);
+	}
+	
+	// 채팅방 생성 시간, 메시지 전송 시간, 채팅방에 전송된 최신 메시지 전송 시간 동일하게 세팅
+	private void setTimestamps(MessageWithSenderDTO payload, ChatroomDTO chatroomDTO) {
+		Date now = new Date();
+		payload.getMessage().setSendDate(now);
+		payload.getSender().setCreatedTime(now);
+		chatroomDTO.setLastMsgDate(now);
+		// 채팅방 최초 생성시 해당 시점 이후의 채팅을 읽음처리 하기 위한 기준
+		payload.getSender().setLastConnectionTime(now);
 	}
 }
