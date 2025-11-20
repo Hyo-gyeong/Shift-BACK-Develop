@@ -2,9 +2,11 @@ package com.project.shift.auth.controller;
 
 import com.project.shift.auth.dto.LoginRequestDTO;
 import com.project.shift.auth.dto.LoginResponseDTO;
-import com.project.shift.auth.dto.RefreshTokenRequestDTO;
 import com.project.shift.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,13 +28,19 @@ public class AuthController {
 
     // 로그인 기능
     @PostMapping("/login")
-    public ResponseEntity<?> userLogin(@RequestBody LoginRequestDTO loginDto) {
-        log.info("[AUTH] 로그인 시도 User ID: {}", loginDto.loginId());
-        idValidate(loginDto.loginId());
-        passwordValidate(loginDto.password());
-        LoginResponseDTO response = authService.login(loginDto);
-        log.info("[AUTH] 로그인 성공 User ID: {}", loginDto.loginId());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> userLogin(@RequestBody LoginRequestDTO request, HttpServletResponse response) {
+        log.info("[AUTH] 로그인 시도 User ID: {}", request.loginId());
+        // 기본 검증
+        idValidate(request.loginId());
+        passwordValidate(request.password());
+
+        LoginResponseDTO tokens = authService.login(request);
+        log.info("[AUTH] 로그인 성공 User ID: {}", request.loginId());
+
+        ResponseCookie cookie = createRefreshTokenCookie(tokens.refreshToken());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.ok(Map.of("accessToken", tokens.accessToken()));
     }
 
     // 비밀번호 기본 검증
@@ -58,18 +66,54 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         authService.logout();
-        return ResponseEntity.ok(Map.of("message", "로그아웃이 정상적으로 처리되었습니다."));
+
+        // 로그아웃 시 쿠키 삭제
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .path("/")
+                .maxAge(0) // 즉시 만료
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(Map.of("message", "로그아웃이 정상적으로 처리되었습니다."));
     }
 
     // Access 토큰 재발급 기능
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponseDTO> refreshToken(@RequestHeader(HEADER) String authorizationHeader,
-                                                         @RequestBody RefreshTokenRequestDTO refreshDto) {
+    public ResponseEntity<?> refreshToken(@RequestHeader(value = HEADER, required = false) String authorizationHeader,
+                                          @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        // 쿠키 유효성 검사
+        if (refreshToken == null) {
+            throw new IllegalArgumentException("[SYSTEM] 리프레시 토큰이 존재하지 않습니다.");
+        }
+
+        // 헤더 유효성 검사
+        if (authorizationHeader == null || !authorizationHeader.startsWith(TOKEN_HEADER)) {
+            throw new IllegalArgumentException("[SYSTEM] Access Token이 올바르지 않습니다.");
+        }
+
+        // 헤더에서 토큰 추출
         String accessToken = authorizationHeader.replace(TOKEN_HEADER, "");
-        String refreshToken = refreshDto.refreshToken();
 
-        LoginResponseDTO response = authService.refresh(accessToken, refreshToken);
+        // 토큰 재발급 서비스 호출
+        LoginResponseDTO tokens = authService.refresh(accessToken, refreshToken);
 
-        return ResponseEntity.ok(response);
+        // 새로운 리프레시 토큰 쿠키 생성
+        ResponseCookie newRefreshCookie = createRefreshTokenCookie(tokens.refreshToken());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, newRefreshCookie.toString())
+                .body(Map.of("accessToken", tokens.accessToken()));
+    }
+
+    // 리프레시 토큰 쿠키 생성
+    private ResponseCookie createRefreshTokenCookie(String refreshToken) {
+        return ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true) // JavaScript에서 접근 불가
+                .secure(false)
+                .path("/") // 모든 경로에서 접근 가능
+                .maxAge(7 * 24 * 60 * 60) // 7일
+                .sameSite("Lax") // CSRF 방어
+                .build();
     }
 }
