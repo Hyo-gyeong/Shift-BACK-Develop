@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.entity.MessageEntity;
 import com.project.shift.chat.repository.MessageRepository;
 
@@ -22,6 +23,10 @@ public class MessageDAO {
 
 	public List<MessageEntity> getMessageHistory(long chatroomId, Date createdDateTime) {
 		return messageRepo.findByChatroomId(chatroomId, createdDateTime);
+	}
+	
+	public void markMessagesAsRead(long chatroomId, Date lastConnectionTime) {
+		messageRepo.markMessagesAsRead(chatroomId, lastConnectionTime);
 	}
 		
 }

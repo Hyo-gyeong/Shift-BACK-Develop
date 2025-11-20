@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.project.shift.chat.dao.ChatroomUserDAO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
+import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.entity.ChatroomUserEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -19,13 +20,23 @@ public class ChatroomUserService {
 	
 	// 특정 채팅방에 참여
 	@Transactional
-	public void addChatroomUser(ChatroomUserDTO dto, long chatroomId) {
-		dto.setCreatedTime(new Date());
-		// 마지막 접속시간은 기본값으로 처음 생성 시간과 동일하게 세팅
-		dto.setLastConnectionTime(new Date());
-		dto.setChatroomId(chatroomId);
-		ChatroomUserEntity entity = ChatroomUserEntity.toEntity(dto);
-		dao.addChatroomUser(entity);
+	public void addChatroomUsers(MessageWithSenderDTO dto, long chatroomId) {
+		// 채팅 생성자 생성 후 저장
+		ChatroomUserDTO sender = dto.getSender();		
+		sender.setChatroomId(chatroomId);
+		sender.setConnectionStatus("ON");
+		dao.addChatroomUser(ChatroomUserEntity.toEntity(sender));
+		
+		// 채팅 수신자 생성 후 저장
+		ChatroomUserDTO receiver = ChatroomUserDTO.builder()
+									.chatroomId(chatroomId)
+									.connectionStatus("OF")
+									.userId(dto.getReceiverId())
+									.isDarkMode("N")
+									.chatroomName(dto.getSenderName()+"님과의 채팅")
+									.build();
+		dao.addChatroomUser(ChatroomUserEntity.toEntity(receiver));
+		return;
 	}
 	
 	// 특정 채팅방에서 나가기 (상대방 데이터 보존)

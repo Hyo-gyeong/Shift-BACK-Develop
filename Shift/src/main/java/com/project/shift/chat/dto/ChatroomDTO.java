@@ -13,15 +13,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ChatroomDTO {
 
-	@Setter
     private long chatroomId;
     private String lastMsgContent;
-    @Setter
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastMsgDate;
 
