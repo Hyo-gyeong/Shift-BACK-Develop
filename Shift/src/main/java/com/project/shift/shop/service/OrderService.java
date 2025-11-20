@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-
+import static com.project.shift.global.security.CurrentUser.getUserIdOrNull;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,47 +55,59 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public OrderDTO createOrder(OrderDTO orderDTO) {
-        Order order = new Order();
-        order.setSenderId(orderDTO.getSenderId());
-        order.setReceiverId(orderDTO.getReceiverId());
-        order.setOrderDate(LocalDateTime.now());
-        order.setOrderStatus("P"); // DDL에서 P/S/C로 관리
+    	   Long uid = getUserIdOrNull();
+    	    if (uid != null) {
+    	        orderDTO.setSenderId(uid); 
+    	    }
 
-        int totalPrice = 0;
+    	    if (orderDTO.getSenderId() == null) {
+    	        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 후 주문할 수 있습니다.");
+    	    }
+    	    if (orderDTO.getReceiverId() == null) {
+    	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "receiverId가 필요합니다.");
+    	    }
+    	    if (orderDTO.getItems() == null || orderDTO.getItems().isEmpty()) {
+    	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "주문 항목이 비어 있습니다.");
+    	    }
 
-        // items에 대해서 DB에서 가격 가져오기
-        for (OrderItemDTO itemDTO : orderDTO.getItems()) {
-            Product product = productRepository.findById(itemDTO.getProductId())
-                    .orElseThrow(() ->
-                            new IllegalArgumentException("존재하지 않는 상품입니다. product_id=" + itemDTO.getProductId()));
+    	    Order order = new Order();
+    	    order.setSenderId(orderDTO.getSenderId());
+    	    order.setReceiverId(orderDTO.getReceiverId());
+    	    order.setOrderDate(LocalDateTime.now());
+    	    order.setOrderStatus("P"); // 결제 전(P)
 
-            int unitPrice = product.getPrice(); // DB 가격
-            int linePrice = unitPrice * itemDTO.getQuantity();
-            totalPrice += linePrice;
+    	    int totalPrice = 0;
 
-            OrderItem orderItem = new OrderItem();
-            orderItem.setProductId(itemDTO.getProductId());
-            orderItem.setQuantity(itemDTO.getQuantity());
-            orderItem.setItemPrice(unitPrice);  // 주문상세에도 저장
-            order.addItem(orderItem);
-        }
+    	    for (OrderItemDTO itemDTO : orderDTO.getItems()) {
+    	        Product product = productRepository.findById(itemDTO.getProductId())
+    	                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다. product_id=" + itemDTO.getProductId()));
 
-        order.setTotalPrice(totalPrice);
+    	        int unitPrice = product.getPrice();        // 상품 현재가
+    	        int linePrice = unitPrice * itemDTO.getQuantity();
+    	        totalPrice += linePrice;
 
-        Order saved = orderDAO.save(order);
+    	        OrderItem orderItem = new OrderItem();
+    	        orderItem.setProductId(itemDTO.getProductId());
+    	        orderItem.setQuantity(itemDTO.getQuantity());
+    	        orderItem.setItemPrice(unitPrice);         // 단가 저장 
+    	        order.addItem(orderItem);
+    	    }
 
-        // 응답 DTO
-        OrderDTO resp = new OrderDTO();
-        resp.setOrderId(saved.getOrderId());
-        resp.setSenderId(saved.getSenderId());
-        resp.setReceiverId(saved.getReceiverId());
-        resp.setTotalPrice(saved.getTotalPrice());
-        resp.setOrderDate(saved.getOrderDate());
-        resp.setOrderStatus(saved.getOrderStatus());
-        resp.setResult(true);
-        resp.setItems(orderDTO.getItems());
-        return resp;
-    }
+    	    order.setTotalPrice(totalPrice);
+
+    	    Order saved = orderDAO.save(order);
+
+    	    OrderDTO resp = new OrderDTO();
+    	    resp.setOrderId(saved.getOrderId());
+    	    resp.setSenderId(saved.getSenderId());
+    	    resp.setReceiverId(saved.getReceiverId());
+    	    resp.setTotalPrice(saved.getTotalPrice());
+    	    resp.setOrderDate(saved.getOrderDate());
+    	    resp.setOrderStatus(saved.getOrderStatus());
+    	    resp.setResult(true);
+    	    resp.setItems(orderDTO.getItems());
+    	    return resp;
+    	}
     
     // SHOP-007 주문 내역 조회
     @Override
@@ -120,32 +133,31 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional(readOnly = true)
     public OrderDetailResponseDTO getOrderDetail(Long orderId) {
+    	Long uid = getUserIdOrNull();
         Order order = orderDAO.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 주문이 없습니다. orderId=" + orderId));
 
-        // 아이템 변환
+        if (uid != null && !order.getSenderId().equals(uid)) {
+            throw new AccessDeniedException("본인 주문만 조회할 수 있습니다.");
+        }
+
         List<OrderDetailItemDTO> itemDTOs = order.getOrderItems().stream().map(oi -> {
             OrderDetailItemDTO dto = new OrderDetailItemDTO();
             dto.setProductId(oi.getProductId());
             dto.setQuantity(oi.getQuantity());
             dto.setItemPrice(oi.getItemPrice());
 
-            // 상품 이름 조회
             Product product = productRepository.findById(oi.getProductId()).orElse(null);
             dto.setProductName(product != null ? product.getName() : null);
-
             return dto;
         }).collect(Collectors.toList());
 
-        // 결제 정보
         PaymentDTO paymentDTO = new PaymentDTO(order.getCashUsed(), order.getPointUsed());
 
-        // 배송 정보
         DeliverySimpleDTO deliveryDTO = deliveryRepository.findByOrder_OrderId(orderId)
                 .map(d -> new DeliverySimpleDTO(d.getDeliveryStatus(), d.getTrackingNumber()))
                 .orElse(null);
 
-        // 최종 응답
         OrderDetailResponseDTO resp = new OrderDetailResponseDTO();
         resp.setOrderId(order.getOrderId());
         resp.setSenderId(order.getSenderId());
@@ -155,7 +167,6 @@ public class OrderService implements IOrderService {
         resp.setTotalPrice(order.getTotalPrice());
         resp.setPayment(paymentDTO);
         resp.setDelivery(deliveryDTO);
-
         return resp;
     }
     
@@ -163,83 +174,52 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public PaymentResponseDTO requestPayment(PaymentRequestDTO requestDTO) {
+    	Long uid = getUserIdOrNull();
 
-    	  // 1) 주문 조회
         Order order = orderDAO.findById(requestDTO.getOrderId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "존재하지 않는 주문입니다."
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."));
 
-        // 2) 금액/포인트 검증
+        if (uid != null && !order.getSenderId().equals(uid)) {
+            throw new AccessDeniedException("본인 주문만 결제할 수 있습니다.");
+        }
+
         int amount = requestDTO.getAmount();
-        if (amount <= 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "결제 금액은 0보다 커야 합니다."
-            );
-        }
+        if (amount <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "결제 금액은 0보다 커야 합니다.");
 
-        Integer rawPointUsed = requestDTO.getPointUsed();
-        int pointUsed = (rawPointUsed == null ? 0 : rawPointUsed);
-        if (pointUsed < 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "포인트 사용 금액은 음수가 될 수 없습니다."
-            );
-        }
+        int pointUsed = (requestDTO.getPointUsed() == null ? 0 : requestDTO.getPointUsed());
+        if (pointUsed < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "포인트 사용 금액은 음수가 될 수 없습니다.");
 
         int cashAmount = amount - pointUsed;
-        if (cashAmount < 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "포인트 사용 금액이 결제 금액을 초과했습니다."
-            );
-        }
+        if (cashAmount < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "포인트 사용 금액이 결제 금액을 초과했습니다.");
 
-        // 주문 금액과 결제 금액 일치 여부
         if (!order.getTotalPrice().equals(amount)) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "결제 금액이 주문 금액과 일치하지 않습니다."
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "결제 금액이 주문 금액과 일치하지 않습니다.");
         }
 
-        // 3) sender 포인트 확인
         UserEntity sender = userRepository.findById(order.getSenderId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "존재하지 않는 사용자입니다."
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
         int currentPoints = (sender.getPoints() == null ? 0 : sender.getPoints());
         if (pointUsed > currentPoints) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "보유 포인트가 부족합니다."
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다.");
         }
 
-        // 4) 포인트 차감 + 주문 업데이트
         int remainPoints = currentPoints - pointUsed;
-
         sender.setPoints(remainPoints);
         userRepository.save(sender);
 
         order.setPointUsed(pointUsed);
         order.setCashUsed(cashAmount);
         order.setRemainPoints(remainPoints);
-        order.setOrderStatus("S"); // 결제 성공 상태
+        order.setOrderStatus("S"); // 결제 완료
         orderDAO.save(order);
 
-        // 5) 응답 DTO 구성
         PaymentResponseDTO response = new PaymentResponseDTO();
         response.setOrderId(order.getOrderId());
         response.setCashAmount(cashAmount);
         response.setPointUsed(pointUsed);
         response.setStatus("SUCCESS");
         response.setApprovedAt(LocalDateTime.now());
-
         return response;
     }
 
@@ -247,12 +227,14 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional(readOnly = true)
     public PaymentResultDTO getPaymentResult(Long orderId) {
+    	Long uid = getUserIdOrNull();
 
-    	Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "존재하지 않는 주문입니다."
-                ));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."));
+
+        if (uid != null && !order.getSenderId().equals(uid)) {
+            throw new AccessDeniedException("본인 주문만 조회할 수 있습니다.");
+        }
 
         Integer cashUsed = order.getCashUsed() == null ? 0 : order.getCashUsed();
         Integer pointUsed = order.getPointUsed() == null ? 0 : order.getPointUsed();
@@ -264,7 +246,7 @@ public class OrderService implements IOrderService {
         switch (statusCode) {
             case "S":
                 status = "SUCCESS";
-                approvedAt = order.getOrderDate();   
+                approvedAt = order.getOrderDate();
                 break;
             case "C":
                 status = "CANCELED";
@@ -281,7 +263,6 @@ public class OrderService implements IOrderService {
         dto.setPointUsed(pointUsed);
         dto.setStatus(status);
         dto.setApprovedAt(approvedAt);
-
         return dto;
     }
     // SHOP-011 포인트 사용/적립 내역 조회
@@ -290,18 +271,40 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public OrderCancelResponseDTO cancelOrder(Long orderId) {
+    	Long uid = getUserIdOrNull();
+
         Order order = orderDAO.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다. order_id=" + orderId));
 
-        // 배송 전 상태만 취소 
+        if (uid != null && !order.getSenderId().equals(uid)) {
+            throw new AccessDeniedException("본인 주문만 취소할 수 있습니다.");
+        }
+
+        // 결제 전(P)만 취소 가능
         if (!"P".equals(order.getOrderStatus())) {
-            
             return new OrderCancelResponseDTO(orderId, false);
         }
 
-        order.setOrderStatus("C");  // 취소
-        
+        // 배송 상태가 이미 진행 중이면 취소 불가
+        var deliveryOpt = deliveryRepository.findByOrder_OrderId(orderId);
+        if (deliveryOpt.isPresent()) {
+            String ds = deliveryOpt.get().getDeliveryStatus(); // P,S,D,C
+            if (!"P".equals(ds)) {
+                return new OrderCancelResponseDTO(orderId, false);
+            }
+        }
+
+        // 주문 취소
+        order.setOrderStatus("C");
         orderDAO.save(order);
+
+        // 배송 레코드가 있다면 함께 취소 표기
+        deliveryOpt.ifPresent(d -> {
+            if (!"C".equals(d.getDeliveryStatus())) {
+                d.setDeliveryStatus("C");
+                deliveryRepository.save(d);
+            }
+        });
 
         return new OrderCancelResponseDTO(orderId, true);
     }

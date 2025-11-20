@@ -4,6 +4,8 @@ import com.project.shift.shop.dto.*;
 import com.project.shift.shop.service.IOrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import static com.project.shift.global.security.CurrentUser.getUserIdOrNull;
+
 
 @RestController
 @RequestMapping
@@ -18,15 +20,18 @@ public class OrderController {
     // SHOP-006 주문 생성
     @PostMapping("/orders")
     public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO request) {
-        OrderDTO result = orderService.createOrder(request);
-        return ResponseEntity.ok(result);
+    	  Long uid = getUserIdOrNull();
+          if (uid != null) request.setSenderId(uid); 
+          return ResponseEntity.ok(orderService.createOrder(request));
     }
     
     //SHOP-007 주문 내역 조회
     @GetMapping("/orders")
-    public ResponseEntity<OrderListResponseDTO> getOrders(@RequestParam("userId") Long userId) {
-        OrderListResponseDTO response = orderService.getOrdersByUser(userId);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<OrderListResponseDTO> getOrders(@RequestParam(value="userId", required=false) Long userId) {
+        Long uid = getUserIdOrNull();
+        Long effectiveUserId = uid != null ? uid : userId;
+        if (effectiveUserId == null) throw new IllegalArgumentException("userId가 필요합니다. (JWT 또는 파라미터)");
+        return ResponseEntity.ok(orderService.getOrdersByUser(effectiveUserId));
     }
     
     // SHOP-008	주문 상세 조회
