@@ -41,7 +41,7 @@ public class FriendController {
 	
 	// 친구 삭제
 	@DeleteMapping("/{friendshipId}")
-	public void deleteFriend(HttpServletRequest request, @PathVariable long friendshipId) {
+	public void deleteFriend(@PathVariable long friendshipId) {
 		// 친구 삭제
 		friendService.deleteFriend(friendshipId);
 	}
