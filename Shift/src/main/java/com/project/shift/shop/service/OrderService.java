@@ -64,7 +64,7 @@ public class OrderService implements IOrderService {
     	        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 후 주문할 수 있습니다.");
     	    }
     	    if (orderDTO.getReceiverId() == null) {
-    	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "receiverId가 필요합니다.");
+    	    	orderDTO.setReceiverId(orderDTO.getSenderId());
     	    }
     	    if (orderDTO.getItems() == null || orderDTO.getItems().isEmpty()) {
     	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "주문 항목이 비어 있습니다.");
