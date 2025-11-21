@@ -48,8 +48,8 @@ public class AuthController {
         if (password == null || password.isBlank()) {
             throw new IllegalArgumentException("[SYSTEM] 비밀번호가 입력되지 않았습니다.");
         }
-        if (password.length() > 10) {
-            throw new IllegalArgumentException("[SYSTEM] 비밀번호의 길이가 너무 깁니다.");
+        if (password.length() > 24) {
+            throw new IllegalArgumentException("[SYSTEM] 비밀번호 형식이 올바르지 않습니다.");
         }
     }
 
@@ -59,7 +59,7 @@ public class AuthController {
             throw new IllegalArgumentException("[SYSTEM] 값이 입력되지 않았습니다.");
         }
         if (loginId.length() > 20) {
-            throw new IllegalArgumentException("[SYSTEM] 아이디 길이가 너무 깁니다.");
+            throw new IllegalArgumentException("[SYSTEM] 아이디 형식이 올바르지 않습니다.");
         }
     }
 
