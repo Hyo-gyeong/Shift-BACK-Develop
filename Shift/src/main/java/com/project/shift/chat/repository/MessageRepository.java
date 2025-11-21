@@ -4,10 +4,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.project.shift.chat.entity.MessageEntity;
+
+import jakarta.transaction.Transactional;
 
 public interface MessageRepository extends JpaRepository<MessageEntity, Long>{
 
@@ -32,6 +35,8 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long>{
 										 @Param("createdDateTime") Date createdDateTime);
 
 	// 마지막 접속 시간 이후의 메시지 읽음 처리
+	@Modifying
+	@Transactional
 	@Query(value = """
 			UPDATE MessageEntity m
 			SET m.unreadCount = m.unreadCount-1

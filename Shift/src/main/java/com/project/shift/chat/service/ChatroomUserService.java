@@ -1,6 +1,7 @@
 package com.project.shift.chat.service;
 
 import java.util.Date;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,5 +45,12 @@ public class ChatroomUserService {
 	public boolean deleteChatroomUser(long chatroomUsersId) {
 		// 삭제된 행이 있으면 true 반환
 		return dao.deleteById(chatroomUsersId);
+	}
+
+	////////////임시 API ////////////
+	// 특정 채팅방 유저 정보 반환
+	@Transactional
+	public Optional<ChatroomUserDTO> getChatroomUser(long chatroomId, long userId) {
+		return dao.getChatroomUser(chatroomId, userId).map(entity -> ChatroomUserDTO.toDto(entity));
 	}
 }
