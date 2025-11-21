@@ -44,7 +44,7 @@ public class ChatroomController {
 	
 	// 새로운 채팅방 추가 및 메시지 DB저장 & 브로드캐스팅
 	@PostMapping
-	public void addChatroom(@RequestBody MessageWithSenderDTO payload) {		
+	public long addChatroom(@RequestBody MessageWithSenderDTO payload) {		
 	    // 채팅방 생성 (Chatrooms) 및 생성된 채팅방 pk 반환
 		// 내부 로직에 객체간 동일한 시간 설정 포함됨
 		long newChatroomId = chatroomService.addChatroom(payload);
@@ -56,7 +56,7 @@ public class ChatroomController {
 	    
 	    // 메시지 DB저장 & 브로드캐스팅
 	    messageService.sendAndSaveMessage(payload.getMessage(), payload.getSender());
-	    return;
+	    return newChatroomId;
 	}
 	
 	// 특정 채팅방에 참여한 모든 사용자의 채팅방 삭제
