@@ -21,6 +21,7 @@ public class MessageDTO {
         CHAT, JOIN, LEAVE
     }
 	@Transient //DB와 매핑하지 않는 필드
+	@Setter
 	private MessageType type;
 	
     private long messageId;
