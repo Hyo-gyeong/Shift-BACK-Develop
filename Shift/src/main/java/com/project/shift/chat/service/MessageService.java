@@ -67,10 +67,10 @@ public class MessageService {
 		}
 		
 		// 메시지 브로드캐스팅 로직 호출
-		messageBroadCasting(messageDTO);
+		broadcastToChatroom(messageDTO);
 	}
 	
-	private void messageBroadCasting(MessageDTO messageDTO) {
+	private void broadcastToChatroom(MessageDTO messageDTO) {
 		try {
 			messagingTemplate.convertAndSend("/sub/messages/" + messageDTO.getChatroomId(), messageDTO);
 		} catch(Exception e) {
