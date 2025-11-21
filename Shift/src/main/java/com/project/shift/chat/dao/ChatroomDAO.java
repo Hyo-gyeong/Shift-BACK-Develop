@@ -1,6 +1,7 @@
 package com.project.shift.chat.dao;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,10 @@ public class ChatroomDAO {
 	private final ChatroomRepository chatroomRepo;
 	private final MessageRepository messageRepo;
 
+	public Optional<ChatroomEntity> findChatroomById(long chatroomId) {
+		return chatroomRepo.findById(chatroomId);
+	}
+	
 	public List<ChatroomListProjection> getUserChatrooms(long userId) {
 		return chatroomRepo.findChatroomsByUserId(userId);
 	}
