@@ -1,6 +1,7 @@
 package com.project.shift.chat.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.dto.ChatroomListDTO;
-import com.project.shift.chat.dto.ChatroomUserDTO;
-import com.project.shift.chat.dto.MessageDTO;
-import com.project.shift.chat.dto.MessageUserDTO;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.service.ChatroomService;
 import com.project.shift.chat.service.ChatroomUserService;
@@ -40,6 +38,23 @@ public class ChatroomController {
 	public List<ChatroomListDTO> getUserChatroomList(@PathVariable long userId){
 		List<ChatroomListDTO> chatroomList = chatroomService.getUserChatrooms(userId);
 		return chatroomList;
+	}
+	
+	// 특정 채팅방 반환
+	@GetMapping("/{chatroomId}")
+	public ResponseEntity<?> getChatroom(@PathVariable long chatroomId){
+		try {
+			Optional<ChatroomDTO> chatroomDTO = chatroomService.getChatroom(chatroomId);
+			if (chatroomDTO.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Chatroom not found");
+	        } else {
+				return ResponseEntity.ok(chatroomDTO);
+	        }
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                             .body("Error searching chatroom: " + e.getMessage());
+	    }
 	}
 	
 	// 새로운 채팅방 추가 및 메시지 DB저장 & 브로드캐스팅

@@ -15,6 +15,9 @@ public interface IOrderService {
     // SHOP-009 결제 요청
     PaymentResponseDTO requestPayment(PaymentRequestDTO requestDTO);
 
+    // ######## 선물 결제 및 메시지 전송 ##############
+    PaymentResponseDTO requestGiftPayment(PaymentRequestDTO requestDTO, long chatroomId, long userId);
+  
     // SHOP-010 결제 결과 조회
     PaymentResultDTO getPaymentResult(Long orderId);
 

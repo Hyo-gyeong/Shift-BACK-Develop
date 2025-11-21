@@ -2,6 +2,7 @@ package com.project.shift.chat.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +11,6 @@ import com.project.shift.chat.dao.ChatroomDAO;
 import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomListProjection;
-import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.entity.ChatroomEntity;
 
@@ -21,6 +21,12 @@ import lombok.RequiredArgsConstructor;
 public class ChatroomService {
 
 	private final ChatroomDAO dao;
+	
+	@Transactional(readOnly = true)
+	public Optional<ChatroomDTO> getChatroom(long chatroomId) {
+		return dao.findChatroomById(chatroomId)
+	              .map(ChatroomDTO::toDto);
+	}
 	
 	// 사용자가 참여한 채팅방 목록 반환
 	@Transactional(readOnly = true)

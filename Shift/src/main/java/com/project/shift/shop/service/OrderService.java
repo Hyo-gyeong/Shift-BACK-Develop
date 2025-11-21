@@ -1,29 +1,54 @@
 package com.project.shift.shop.service;
 
-import com.project.shift.shop.dao.*;
-import com.project.shift.shop.dto.*;
-import com.project.shift.shop.entity.*;
-import com.project.shift.shop.repository.*;
-import com.project.shift.chat.entity.*;
-import com.project.shift.chat.repository.*;
-import com.project.shift.product.entity.*;
-import com.project.shift.product.dao.*;
-import com.project.shift.product.repository.*;
-import com.project.shift.user.entity.*;
-import com.project.shift.user.repository.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import static com.project.shift.global.security.CurrentUser.getUserIdOrNull;
-import org.springframework.security.access.AccessDeniedException;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import java.time.LocalDateTime;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.project.shift.chat.dto.MessageDTO;
+import com.project.shift.chat.entity.ChatroomEntity;
+import com.project.shift.chat.repository.ChatroomRepository;
+import com.project.shift.chat.service.MessageService;
+import com.project.shift.product.dao.IPointDAO;
+import com.project.shift.product.entity.Product;
+import com.project.shift.product.repository.ProductRepository;
+import com.project.shift.shop.dao.IOrderDAO;
+import com.project.shift.shop.dto.DeliverySimpleDTO;
+import com.project.shift.shop.dto.OrderCancelResponseDTO;
+import com.project.shift.shop.dto.OrderDTO;
+import com.project.shift.shop.dto.OrderDetailItemDTO;
+import com.project.shift.shop.dto.OrderDetailResponseDTO;
+import com.project.shift.shop.dto.OrderItemDTO;
+import com.project.shift.shop.dto.OrderListDTO;
+import com.project.shift.shop.dto.OrderListResponseDTO;
+import com.project.shift.shop.dto.PaymentDTO;
+import com.project.shift.shop.dto.PaymentRequestDTO;
+import com.project.shift.shop.dto.PaymentResponseDTO;
+import com.project.shift.shop.dto.PaymentResultDTO;
+import com.project.shift.shop.dto.PointOrderCompleteDTO;
+import com.project.shift.shop.dto.PointOrderRequestDTO;
+import com.project.shift.shop.dto.PointOrderResponseDTO;
+import com.project.shift.shop.dto.RefundRequestDTO;
+import com.project.shift.shop.dto.RefundResponseDTO;
+import com.project.shift.shop.entity.Order;
+import com.project.shift.shop.entity.OrderItem;
+import com.project.shift.shop.repository.DeliveryRepository;
+import com.project.shift.shop.repository.OrderRepository;
+import com.project.shift.user.entity.UserEntity;
+import com.project.shift.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor // 생성자 주입을 임의의 코드없이 자동으로 설정해주는 어노테이션
 public class OrderService implements IOrderService {
 
     private final IOrderDAO orderDAO;
@@ -33,24 +58,8 @@ public class OrderService implements IOrderService {
     private final UserRepository userRepository;
     private final ChatroomRepository chatroomRepository;
     private final IPointDAO pointDAO;
+    private final MessageService messageService;
 
-    public OrderService(IOrderDAO orderDAO,
-            ProductRepository productRepository,
-            DeliveryRepository deliveryRepository,
-            OrderRepository orderRepository,
-            UserRepository userRepository,
-            ChatroomRepository chatroomRepository,
-            IPointDAO pointDAO) {
-
-	this.orderDAO = orderDAO;
-	this.productRepository = productRepository;
-	this.deliveryRepository = deliveryRepository;
-	this.orderRepository = orderRepository;
-	this.userRepository = userRepository;
-	this.chatroomRepository = chatroomRepository;
-	this.pointDAO = pointDAO;
-	}
-    
     // SHOP-006 주문 생성
     @Override
     @Transactional
@@ -169,6 +178,23 @@ public class OrderService implements IOrderService {
         resp.setDelivery(deliveryDTO);
         return resp;
     }
+    
+    //############### 선물 구매 및 메시지 전송 ###############
+    @Override
+	public PaymentResponseDTO requestGiftPayment(PaymentRequestDTO requestDTO, long chatroomId, long userId) {
+    	PaymentResponseDTO dto = requestPayment(requestDTO);
+    	MessageDTO messageDTO = MessageDTO.builder()
+				    	        .isGift("Y")
+				    	        .type(MessageDTO.MessageType.CHAT)
+				    	        .chatroomId(chatroomId)
+				    	        .sendDate(new Date())
+				    	        .unreadCount(1)
+				    	        .content("선물이 도착했습니다!")
+				    	        .userId(userId)
+				    	        .build();
+    	messageService.sendAndSaveMessage(messageDTO, null);
+		return dto;
+	}
     
     // SHOP-009 결제 요청
     @Override
@@ -484,4 +510,5 @@ public class OrderService implements IOrderService {
 
         return dto;
     }
+
 }
