@@ -1,22 +1,44 @@
 package com.project.shift.shop.controller;
 
-import com.project.shift.shop.dto.*;
-import com.project.shift.shop.service.IOrderService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import static com.project.shift.global.security.CurrentUser.getUserIdOrNull;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.project.shift.global.jwt.JwtService;
+import com.project.shift.shop.dto.OrderCancelResponseDTO;
+import com.project.shift.shop.dto.OrderDTO;
+import com.project.shift.shop.dto.OrderDetailResponseDTO;
+import com.project.shift.shop.dto.OrderListResponseDTO;
+import com.project.shift.shop.dto.PaymentRequestDTO;
+import com.project.shift.shop.dto.PaymentResponseDTO;
+import com.project.shift.shop.dto.PaymentResultDTO;
+import com.project.shift.shop.dto.PointOrderCompleteDTO;
+import com.project.shift.shop.dto.PointOrderRequestDTO;
+import com.project.shift.shop.dto.PointOrderResponseDTO;
+import com.project.shift.shop.dto.RefundRequestDTO;
+import com.project.shift.shop.dto.RefundResponseDTO;
+import com.project.shift.shop.service.IOrderService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 
 @RestController
 @RequestMapping
+@RequiredArgsConstructor // 생성자 주입을 임의의 코드없이 자동으로 설정해주는 어노테이션
 public class OrderController {
 
     private final IOrderService orderService;
+    private final JwtService jwtService;
 
-    public OrderController(IOrderService orderService) {
-        this.orderService = orderService;
-    }
-    
     // SHOP-006 주문 생성
     @PostMapping("/orders")
     public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO request) {
@@ -47,6 +69,20 @@ public class OrderController {
         PaymentResponseDTO response = orderService.requestPayment(request);
         return ResponseEntity.ok(response);
     }
+    
+    // ##### 선물하기 버튼을 눌렀을 때 결제 및 채팅이 전송되는 API #####
+    @PostMapping("/payments/gift/{chatroomId}")
+    public ResponseEntity<PaymentResponseDTO> requestGiftPayment(HttpServletRequest request, @RequestBody PaymentRequestDTO dto,
+    																@PathVariable long chatroomId) {
+    	// jwt에서 현재 사용자의 토큰 추출
+		String token = jwtService.extractTokenFromRequest(request);
+        // 토큰에서 현재 사용자의 PK 추출
+		long userId = jwtService.extractUserIdFromValidToken(token);
+    		
+		PaymentResponseDTO response = orderService.requestGiftPayment(dto, chatroomId, userId);
+        return ResponseEntity.ok(response);
+    }
+    
     // SHOP-010 결제 결과 조회
     @GetMapping("/payments/{orderId}")
     public ResponseEntity<PaymentResultDTO> getPaymentResult(@PathVariable Long orderId) {
