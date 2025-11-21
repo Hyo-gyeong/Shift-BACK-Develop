@@ -31,7 +31,7 @@ public class AuthService {
     // 로그인
     @Transactional
     public LoginResponseDTO login(LoginRequestDTO loginInfo) {
-        // 비밀번호 검증 수행
+        // 입력값 검증 수행
         UsernamePasswordAuthenticationToken cred = new UsernamePasswordAuthenticationToken(
                 loginInfo.loginId(),
                 loginInfo.password()
@@ -47,10 +47,11 @@ public class AuthService {
         UserEntity foundUser = authDao.getUser(userEntity);
 
         Long userId = foundUser.getUserId();
+        String name = foundUser.getName();
 
         log.info("[AUTH] 인증 성공, 토큰 발급 및 리프레시 토큰 갱신 시작 UserId: {}", userId);
 
-        String accessToken = jwtService.createAccessToken(userId);
+        String accessToken = jwtService.createAccessToken(userId, name);
         String refreshToken = jwtService.createRefreshToken(userId);
 
         foundUser.setRefreshToken(refreshToken);
@@ -87,7 +88,7 @@ public class AuthService {
         UserEntity foundUser = validateUserByToken(userId, refreshToken);
 
         // 토큰 재발급 실행
-        String newAccessToken = jwtService.createAccessToken(foundUser.getUserId());
+        String newAccessToken = jwtService.createAccessToken(foundUser.getUserId(), foundUser.getName());
         String newRefreshToken = jwtService.createRefreshToken(foundUser.getUserId());
 
         // DB값 갱신

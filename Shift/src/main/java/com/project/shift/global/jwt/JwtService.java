@@ -28,10 +28,11 @@ public class JwtService {
     static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256); // HS256 방식의 키 생성
 
     // Access Token 생성
-    public String createAccessToken(Long userId) {
+    public String createAccessToken(Long userId, String name) {
         return Jwts.builder()
                 .setSubject(userId.toString())
                 .claim("type", TOKEN_TYPE_ACCESS)
+                .claim("name", name)
                 .setIssuedAt(new Date()) // 토큰 발급 시간
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
                 .signWith(key)
