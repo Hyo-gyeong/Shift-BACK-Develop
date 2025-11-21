@@ -2,6 +2,7 @@ package com.project.shift.chat.dao;
 
 import org.springframework.stereotype.Component;
 
+import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.entity.ChatroomUserEntity;
 import com.project.shift.chat.repository.ChatroomUserRepository;
 
@@ -26,5 +27,11 @@ public class ChatroomUserDAO {
 	    }
 		// 채팅방이 없으면 삭제 불가
 	    return false;
+	}
+	
+	public void updateChatUserInfo(ChatroomUserDTO userDTO) {
+		chatroomUserRepo.updateChatUserInfo(userDTO.getConnectionStatus(),
+											userDTO.getLastConnectionTime(),
+											userDTO.getChatroomUserId());
 	}
 }

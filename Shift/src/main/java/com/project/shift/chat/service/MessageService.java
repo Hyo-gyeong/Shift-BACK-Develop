@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.project.shift.chat.dao.ChatroomUserDAO;
 import com.project.shift.chat.dao.MessageDAO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class MessageService {
 	
 	private final MessageDAO messageDAO;
+	private final ChatroomUserDAO chatroomUserDAO;
 	private final SimpMessagingTemplate messagingTemplate;
 
 	// 메시지 DB 저장
@@ -44,7 +46,10 @@ public class MessageService {
 	
 	// 채팅 메시지 전송시 메시지 DB에 저장 및 브로드캐스팅
 	@Transactional
-	public void sendAndSaveMessage(MessageDTO messageDTO, ChatroomUserDTO userDTO) {		
+	public void sendAndSaveMessage(MessageDTO messageDTO, ChatroomUserDTO userDTO) {
+		if (messageDTO.getSendDate() == null) {
+			messageDTO.setSendDate(new Date());
+		}
 		switch (messageDTO.getType()) {
 	        case JOIN :
 	        	// 접속 상태 ON으로 세팅
@@ -57,6 +62,7 @@ public class MessageService {
 	        	userDTO.setConnectionStatus("OF");
 	        	// 채팅방 마지막 접속 시간을 현재 시간으로 변경
 	        	userDTO.setLastConnectionTime(new Date());
+	        	chatroomUserDAO.updateChatUserInfo(userDTO);
 	            break;
 			case CHAT :
 	        	// 메시지를 DB에 저장하는 로직 호출
