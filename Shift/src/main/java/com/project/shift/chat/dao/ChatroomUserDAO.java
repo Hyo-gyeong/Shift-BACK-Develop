@@ -1,5 +1,7 @@
 package com.project.shift.chat.dao;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 
 import com.project.shift.chat.dto.ChatroomUserDTO;
@@ -33,5 +35,11 @@ public class ChatroomUserDAO {
 		chatroomUserRepo.updateChatUserInfo(userDTO.getConnectionStatus(),
 											userDTO.getLastConnectionTime(),
 											userDTO.getChatroomUserId());
+	}
+
+	////////////임시 API ////////////
+	// 특정 채팅방 유저 정보 반환
+	public Optional<ChatroomUserEntity> getChatroomUser(long chatroomId, long userId) {
+		return chatroomUserRepo.getChatroomUser(chatroomId, userId);
 	}
 }

@@ -50,14 +50,17 @@ public class MessageService {
 		if (messageDTO.getSendDate() == null) {
 			messageDTO.setSendDate(new Date());
 		}
+		
 		switch (messageDTO.getType()) {
 	        case JOIN :
 	        	// 접속 상태 ON으로 세팅
+	        	System.out.println("JOIN으로 들어옴");
 	        	userDTO.setConnectionStatus("ON");
 	        	// 채팅방 최초 생성 시간 이후 모든 메시지 읽음 처리
 	        	messageDAO.markMessagesAsRead(messageDTO.getChatroomId(), userDTO.getLastConnectionTime());
 	            break;	
 	        case LEAVE :
+	        	System.out.println("LEAVE으로 들어옴");
 	            // 접속 상태 OF로 세팅
 	        	userDTO.setConnectionStatus("OF");
 	        	// 채팅방 마지막 접속 시간을 현재 시간으로 변경
