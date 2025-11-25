@@ -68,18 +68,19 @@ public class PointDAO implements IPointDAO {
 
     /** [SHOP-017] 포인트 거래내역 insert */
     @Override
-    public void insertPointTransaction(Long userId, Integer amount, String type) {
+    public void insertPointTransaction(Long userId, Integer amount, String type, Long orderId) {
 
         String sql = """
-                INSERT INTO point_transactions
-                (point_transaction_id, user_id, transaction_type, amount, created_at)
-                VALUES (seq_point_transactions.NEXTVAL, :userId, :type, :amount, SYSTIMESTAMP)
-                """;
+            INSERT INTO point_transactions
+                (point_transaction_id, user_id, transaction_type, amount, created_at, order_id)
+            VALUES (seq_point_transactions.NEXTVAL, :userId, :type, :amount, SYSTIMESTAMP, :orderId)
+            """;
 
         em.createNativeQuery(sql)
                 .setParameter("userId", userId)
                 .setParameter("type", type)
                 .setParameter("amount", amount)
+                .setParameter("orderId", orderId)
                 .executeUpdate();
     }
 

@@ -21,7 +21,7 @@ public interface IPointDAO {
     int addPoints(Long userId, Integer amount);
 
     /** [SHOP-017] 포인트 거래내역 기록 (A/U/R) */
-    void insertPointTransaction(Long userId, Integer amount, String type);
+    void insertPointTransaction(Long userId, Integer amount, String type, Long orderId);
     
     /** [SHOP-011] user의 포인트 사용/적립 전체 이력 조회 */
     List<PointTransaction> findTransactions(Long userId);
