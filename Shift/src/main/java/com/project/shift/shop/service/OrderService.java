@@ -18,6 +18,7 @@ import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.repository.ChatroomRepository;
 import com.project.shift.chat.service.MessageService;
 import com.project.shift.product.dao.IPointDAO;
+import com.project.shift.product.entity.PointTransaction;
 import com.project.shift.product.entity.Product;
 import com.project.shift.product.repository.ProductRepository;
 import com.project.shift.shop.dao.IOrderDAO;
@@ -33,6 +34,8 @@ import com.project.shift.shop.dto.PaymentDTO;
 import com.project.shift.shop.dto.PaymentRequestDTO;
 import com.project.shift.shop.dto.PaymentResponseDTO;
 import com.project.shift.shop.dto.PaymentResultDTO;
+import com.project.shift.shop.dto.PointHistoryDTO;
+import com.project.shift.shop.dto.PointHistoryResponseDTO;
 import com.project.shift.shop.dto.PointOrderCompleteDTO;
 import com.project.shift.shop.dto.PointOrderRequestDTO;
 import com.project.shift.shop.dto.PointOrderResponseDTO;
@@ -290,7 +293,40 @@ public class OrderService implements IOrderService {
         dto.setApprovedAt(approvedAt);
         return dto;
     }
+    
     // SHOP-011 포인트 사용/적립 내역 조회
+    @Override
+    @Transactional(readOnly = true)
+    public PointHistoryResponseDTO getPointHistory(Long userId) {
+
+        // 사용자 조회
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        int totalPoints = (user.getPoints() == null ? 0 : user.getPoints());
+
+        // DAO에서 포인트 거래내역 조회
+        List<PointTransaction> list = pointDAO.findTransactions(userId);
+
+        // DTO 매핑
+        List<PointHistoryDTO> history = list.stream()
+                .map(t -> PointHistoryDTO.builder()
+                        .transactionId(t.getId())
+                        .type(t.getType())
+                        .amount(t.getAmount())
+                        .createdAt(t.getCreatedAt())
+                        .orderId(t.getOrderId())
+                        .build()
+                ).toList();
+
+        return PointHistoryResponseDTO.builder()
+                .userId(userId)
+                .totalPoints(totalPoints)
+                .history(history)
+                .result(true)
+                .build();
+    }
+
     
     // SHOP-012 주문 취소
     @Override

@@ -1,5 +1,8 @@
 package com.project.shift.product.dao;
 
+import java.util.List;
+
+import com.project.shift.product.entity.PointTransaction;
 import com.project.shift.product.entity.Product;
 
 /**
@@ -19,5 +22,7 @@ public interface IPointDAO {
 
     /** [SHOP-017] 포인트 거래내역 기록 (A/U/R) */
     void insertPointTransaction(Long userId, Integer amount, String type);
-
+    
+    /** [SHOP-011] user의 포인트 사용/적립 전체 이력 조회 */
+    List<PointTransaction> findTransactions(Long userId);
 }
