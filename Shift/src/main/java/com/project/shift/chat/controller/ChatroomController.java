@@ -14,16 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.shift.chat.dto.ChatroomDTO;
-import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.service.ChatroomService;
 import com.project.shift.chat.service.ChatroomUserService;
 import com.project.shift.chat.service.MessageService;
 
-import com.project.shift.global.jwt.JwtService;
-
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +32,6 @@ public class ChatroomController {
 	private final ChatroomService chatroomService;
 	private final ChatroomUserService chatroomUserService;
 	private final MessageService messageService;
-	private final JwtService jwtService;
 	
 	// 사용자가 참여한 채팅방 목록 반환
 	@GetMapping("/users/{userId}")
@@ -55,29 +50,6 @@ public class ChatroomController {
                         .body("Chatroom not found");
 	        } else {
 				return ResponseEntity.ok(chatroomDTO);
-	        }
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                             .body("Error searching chatroom: " + e.getMessage());
-	    }
-	}
-	
-	//////////// 임시 API ////////////
-	// 특정 채팅방 유저 정보 반환
-	@GetMapping("/data/{chatroomId}")
-	public ResponseEntity<?> getChatroomUser(HttpServletRequest request, @PathVariable long chatroomId){
-		try {
-			// jwt에서 현재 사용자의 토큰 추출
-			String token = jwtService.extractTokenFromRequest(request);
-			// 토큰에서 현재 사용자의 PK 추출
-			long userId = jwtService.extractUserIdFromValidToken(token);
-			
-			Optional<ChatroomUserDTO> chatroomUserDTO = chatroomUserService.getChatroomUser(chatroomId, userId);
-			if (chatroomUserDTO.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Chatroom not found");
-	        } else {
-				return ResponseEntity.ok(chatroomUserDTO);
 	        }
 	    } catch (Exception e) {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
