@@ -511,7 +511,7 @@ public class OrderService implements IOrderService {
         // addPoint = UPDATE users set points = points + amount
 
         // 3) 포인트 거래내역 insert
-        pointDAO.insertPointTransaction(receiverId, amount, "A");
+        pointDAO.insertPointTransaction(receiverId, amount, "A", orderId);
 
         return PointOrderCompleteDTO.builder()
                 .chatroomId(null) // 필요하면 order.getChatroomId() 저장해놔야 함
