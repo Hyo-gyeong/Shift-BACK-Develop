@@ -52,6 +52,7 @@ import lombok.RequiredArgsConstructor;
 public class OrderService implements IOrderService {
 
     private final IOrderDAO orderDAO;
+    private final IPointDAO pointDAO;
     private final ProductRepository productRepository;
     private final DeliveryRepository deliveryRepository;
     private final OrderRepository orderRepository;
@@ -400,7 +401,89 @@ public class OrderService implements IOrderService {
     }
     
     // SHOP-016 금액권 주문 생성
+    @Override
+    @Transactional
+    public PointOrderResponseDTO createPointOrder(PointOrderRequestDTO dto) {
+
+        Long senderId = dto.getSenderId();
+        if (senderId == null)
+            senderId = getUserIdOrNull();
+
+        if (senderId == null)
+            throw new IllegalArgumentException("로그인 후 이용 가능합니다.");
+
+        Long chatroomId = dto.getChatroomId();
+        if (chatroomId == null)
+            throw new IllegalArgumentException("chatroomId 필수");
+
+        // receiver 조회
+        Long receiverId = orderDAO.findReceiverInChatroom(chatroomId, senderId);
+        if (receiverId == null)
+            throw new IllegalArgumentException("대화 상대가 없습니다.");
+
+        // 금액권 상품 검증
+        Product product = productRepository.findById(dto.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException("금액권 상품 없음"));
+
+        if (product.getCategoryId() != 3)
+            throw new IllegalArgumentException("금액권 상품 아님");
+
+        // Order 생성
+        Order order = new Order();
+        order.setSenderId(senderId);
+        order.setReceiverId(receiverId);
+        order.setOrderDate(LocalDateTime.now());
+        order.setTotalPrice(dto.getAmount());
+        order.setCashUsed(dto.getAmount());
+        order.setPointUsed(0);
+        order.setRemainPoints(0);
+        order.setOrderStatus("P");
+
+        orderDAO.save(order);
+
+        return PointOrderResponseDTO.builder()
+                .orderId(order.getOrderId())
+                .senderId(senderId)
+                .chatroomId(chatroomId)
+                .amount(dto.getAmount())
+                .status("P")
+                .result(true)
+                .build();
+    }
     
     // SHOP-017 금액권 결제 완료 (포인트 적립)
-    
+    @Override
+    @Transactional
+    public PointOrderCompleteDTO completePointPayment(Long orderId) {
+
+        Order order = orderDAO.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        if (!"P".equals(order.getOrderStatus())) {
+            throw new IllegalStateException("이미 결제 완료된 주문입니다.");
+        }
+
+        // 1) 상태 변경
+        order.setOrderStatus("S");
+        orderDAO.save(order);
+
+        Long receiverId = order.getReceiverId();
+        Integer amount = order.getTotalPrice();
+
+        // 2) receiver 포인트 적립
+        int updatedTotal = pointDAO.addPoints(receiverId, amount); 
+        // addPoint = UPDATE users set points = points + amount
+
+        // 3) 포인트 거래내역 insert
+        pointDAO.insertPointTransaction(receiverId, amount, "A");
+
+        return PointOrderCompleteDTO.builder()
+                .chatroomId(null) // 필요하면 order.getChatroomId() 저장해놔야 함
+                .receiverId(receiverId)
+                .addedPoints(amount)
+                .updatedTotalPoints(updatedTotal)
+                .result(true)
+                .build();
+    }
+
 }

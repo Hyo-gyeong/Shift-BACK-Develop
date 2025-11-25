@@ -12,6 +12,9 @@ public interface IOrderDAO {
 
     List<Order> findBySenderId(Long senderId);
 
-    // SHOP-016 : 채팅방에서 senderId를 제외한 상대(receiver) 조회
-    
+    // SHOP-016 : 채팅방 내 sender 제외한 상대방 조회
+    Long findReceiverInChatroom(Long chatroomId, Long senderId);
+
+    // SHOP-017 : 주문 상태 업데이트 (결제 완료)
+    void updateOrderStatus(Long orderId, String status);
 }

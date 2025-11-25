@@ -106,8 +106,22 @@ public class OrderController {
     }
 
     // SHOP-016 금액권 주문 생성
-    
+    @PostMapping("/orders/point")
+    public ResponseEntity<PointOrderResponseDTO> createPointOrder(
+            @RequestBody PointOrderRequestDTO dto) {
+
+        Long uid = getUserIdOrNull();
+        if (uid != null) dto.setSenderId(uid);
+
+        return ResponseEntity.ok(orderService.createPointOrder(dto));
+    }
     
     // SHOP-017 금액권 결제 완료 (포인트 적립)
-    
+    @PutMapping("/orders/point/complete/{orderId}")
+    public ResponseEntity<PointOrderCompleteDTO> completePointOrder(
+            @PathVariable Long orderId) {
+
+        PointOrderCompleteDTO response = orderService.completePointPayment(orderId);
+        return ResponseEntity.ok(response);
+    }
 }
