@@ -1,12 +1,17 @@
 package com.project.shift.user.controller;
 
 import com.project.shift.user.dto.UserDTO;
+import com.project.shift.shop.dto.PointHistoryResponseDTO;
+import com.project.shift.shop.service.IOrderService;
 import com.project.shift.user.dto.LoginIdRequestDTO;
 import com.project.shift.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
+
+import static com.project.shift.global.security.CurrentUser.getUserIdOrNull;
 
 import java.util.Map;
 
@@ -15,6 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final IOrderService orderService;
 
     @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
@@ -101,5 +107,17 @@ public class UserController {
     public ResponseEntity<?> findId(@RequestBody LoginIdRequestDTO loginIdRequestDTO) {
         String loginId = userService.findId(loginIdRequestDTO);
         return ResponseEntity.ok(Map.of("loginId", loginId));
+    }
+    
+    // SHOP-011 포인트 사용/적립 내역 조회
+    @GetMapping("/{userId}/points")
+    public ResponseEntity<PointHistoryResponseDTO> getPointHistory(@PathVariable Long userId) {
+
+        // JWT 우선 적용 — 본인 계정만 조회 가능
+        Long uid = getUserIdOrNull();
+        if (uid != null && !uid.equals(userId))
+            throw new AccessDeniedException("본인 계정만 조회 가능합니다.");
+
+        return ResponseEntity.ok(orderService.getPointHistory(userId));
     }
 }

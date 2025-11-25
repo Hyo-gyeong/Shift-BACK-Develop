@@ -22,6 +22,7 @@ public interface IOrderService {
     PaymentResultDTO getPaymentResult(Long orderId);
 
     // SHOP-011 포인트 사용/적립 내역 조회
+    PointHistoryResponseDTO getPointHistory(Long userId);
     
     // SHOP-012 주문 취소
     OrderCancelResponseDTO cancelOrder(Long orderId);
@@ -30,7 +31,9 @@ public interface IOrderService {
     RefundResponseDTO requestRefund(RefundRequestDTO requestDTO);
 
     // SHOP-016 금액권 주문 생성
-    PointOrderResponseDTO createPointOrder(PointOrderRequestDTO requestDTO);
+    PointOrderResponseDTO createPointOrder(PointOrderRequestDTO dto);
+    
     // SHOP-017 금액권 결제 완료 (포인트 적립)
-    PointOrderCompleteDTO completePointOrder(Long orderId, Long chatroomId);
+    PointOrderCompleteDTO completePointPayment(Long orderId);
+	
 }
