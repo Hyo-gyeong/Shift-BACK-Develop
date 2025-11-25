@@ -79,9 +79,9 @@ public class ChatroomController {
 	@DeleteMapping("/{chatroomId}") // 브로드캐스팅 추가 (채팅방 나감)
 	public ResponseEntity<?> deleteChatroom(@PathVariable long chatroomId) {
 	    try {
-	        boolean deleted = chatroomService.deleteChatroom(chatroomId);
+	        boolean deleted = chatroomService.deleteChatroomAndChatroomUsers(chatroomId);
 	        if (deleted) {
-	            return ResponseEntity.ok("Chatroom deleted successfully");
+	            return ResponseEntity.ok("Chatroom and ChatroomUsers deleted successfully");
 	        } else {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
 	                                 .body("Chatroom not found");
