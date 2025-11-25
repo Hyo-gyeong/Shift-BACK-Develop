@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -62,6 +64,25 @@ public class OrderService implements IOrderService {
     private final UserRepository userRepository;
     private final MessageService messageService;
 
+    private String toDisplayOrderStatus(String code) {
+        if (code == null) return "PENDING";
+        return switch (code) {
+            case "S" -> "PAID";
+            case "C" -> "CANCELED";
+            case "P" -> "PENDING";
+            default -> "PENDING";
+        };
+    }
+    
+    private Map.Entry<String, LocalDateTime> toPaymentStatusAndApprovedAt(String orderStatus, LocalDateTime orderDate) {
+        switch (orderStatus) {
+            case "S": return Map.entry("SUCCESS", orderDate);
+            case "C": return Map.entry("CANCELED", null);
+            case "P":
+            default:  return Map.entry("PENDING", null);
+        }
+    }
+    
     // SHOP-006 주문 생성
     @Override
     @Transactional
@@ -125,11 +146,22 @@ public class OrderService implements IOrderService {
     public OrderListResponseDTO getOrdersByUser(Long userId) {
         List<Order> orders = orderDAO.findBySenderId(userId);
 
+        Map<Long, String> nameCache = new HashMap<>();
+        for (Order o : orders) {
+            nameCache.computeIfAbsent(o.getSenderId(),
+                    id -> userRepository.findById(id).map(UserEntity::getName).orElse(null));
+            nameCache.computeIfAbsent(o.getReceiverId(),
+                    id -> userRepository.findById(id).map(UserEntity::getName).orElse(null));
+        }
+
         List<OrderListDTO> list = orders.stream().map(o -> {
             OrderListDTO dto = new OrderListDTO();
             dto.setOrderId(o.getOrderId());
             dto.setSenderId(o.getSenderId());
             dto.setReceiverId(o.getReceiverId());
+            dto.setSenderName(nameCache.get(o.getSenderId()));     
+            dto.setReceiverName(nameCache.get(o.getReceiverId())); 
+            dto.setOrderStatus(toDisplayOrderStatus(o.getOrderStatus())); 
             dto.setOrderDate(o.getOrderDate());
             dto.setTotalPrice(o.getTotalPrice());
             dto.setPointUsed(o.getPointUsed());
@@ -162,17 +194,31 @@ public class OrderService implements IOrderService {
             dto.setProductName(product != null ? product.getName() : null);
             return dto;
         }).collect(Collectors.toList());
-
-        PaymentDTO paymentDTO = new PaymentDTO(order.getCashUsed(), order.getPointUsed());
-
+        
+        // 결제 정보 (status/approvedAt 포함)
+        Integer cash = order.getCashUsed() == null ? 0 : order.getCashUsed();
+        Integer point = order.getPointUsed() == null ? 0 : order.getPointUsed();
+        var pair = toPaymentStatusAndApprovedAt(order.getOrderStatus(), order.getOrderDate());
+        
+        PaymentDTO paymentDTO = new PaymentDTO(cash, point);
+        paymentDTO.setStatus(pair.getKey());         // SUCCESS/PENDING/CANCELED
+        paymentDTO.setApprovedAt(pair.getValue());   // S일 때만 orderDate
+        
         DeliverySimpleDTO deliveryDTO = deliveryRepository.findByOrder_OrderId(orderId)
                 .map(d -> new DeliverySimpleDTO(d.getDeliveryStatus(), d.getTrackingNumber()))
                 .orElse(null);
 
+        // 이름
+        String senderName = userRepository.findById(order.getSenderId()).map(UserEntity::getName).orElse(null);
+        String receiverName = userRepository.findById(order.getReceiverId()).map(UserEntity::getName).orElse(null);
+
+        
         OrderDetailResponseDTO resp = new OrderDetailResponseDTO();
         resp.setOrderId(order.getOrderId());
         resp.setSenderId(order.getSenderId());
         resp.setReceiverId(order.getReceiverId());
+        resp.setSenderName(senderName);    
+        resp.setReceiverName(receiverName);
         resp.setOrderDate(order.getOrderDate());
         resp.setItems(itemDTOs);
         resp.setTotalPrice(order.getTotalPrice());
