@@ -1,6 +1,5 @@
 package com.project.shift.chat.service;
 
-import java.util.Date;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +9,7 @@ import com.project.shift.chat.dao.ChatroomUserDAO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.entity.ChatroomUserEntity;
+import com.project.shift.chat.exception.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,10 +47,14 @@ public class ChatroomUserService {
 		return dao.deleteById(chatroomUsersId);
 	}
 
-	////////////임시 API ////////////
 	// 특정 채팅방 유저 정보 반환
 	@Transactional
 	public Optional<ChatroomUserDTO> getChatroomUser(long chatroomId, long userId) {
-		return dao.getChatroomUser(chatroomId, userId).map(entity -> ChatroomUserDTO.toDto(entity));
+		Optional<ChatroomUserEntity> entityOpt = dao.getChatroomUser(chatroomId, userId);
+	    if (entityOpt.isEmpty()) {
+	        throw new UserNotFoundException("특정 채팅방의 유저 정보가 없습니다.");
+	    }
+
+	    return entityOpt.map(ChatroomUserDTO::toDto);
 	}
 }
