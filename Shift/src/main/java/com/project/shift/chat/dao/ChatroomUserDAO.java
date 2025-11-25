@@ -37,7 +37,6 @@ public class ChatroomUserDAO {
 											userDTO.getChatroomUserId());
 	}
 
-	////////////임시 API ////////////
 	// 특정 채팅방 유저 정보 반환
 	public Optional<ChatroomUserEntity> getChatroomUser(long chatroomId, long userId) {
 		return chatroomUserRepo.getChatroomUser(chatroomId, userId);

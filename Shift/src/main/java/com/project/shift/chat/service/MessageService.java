@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,9 @@ import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.entity.MessageEntity;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageService {
@@ -82,9 +85,17 @@ public class MessageService {
 	private void broadcastToChatroom(MessageDTO messageDTO) {
 		try {
 			messagingTemplate.convertAndSend("/sub/messages/" + messageDTO.getChatroomId(), messageDTO);
-		} catch(Exception e) {
-			// 예외 던지기
-		}
+		} catch (MessagingException e) {
+	        // 메시지 전송 실패 시 상세 로그 출력
+	        log.error("Failed to send message to chatroom {}: {}", 
+	                  messageDTO.getChatroomId(), e.getMessage(), e);
+	        // 런타임 예외
+	        throw new IllegalStateException("메시지 전송 중 오류가 발생했습니다.", e);
+
+	    } catch (Exception e) {
+	        log.error("Unexpected error during message broadcast: {}", e.getMessage(), e);
+	        throw new RuntimeException("예상치 못한 오류가 발생했습니다.", e);
+	    }
 		return;
 	}
 
