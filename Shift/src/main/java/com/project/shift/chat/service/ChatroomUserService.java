@@ -40,11 +40,11 @@ public class ChatroomUserService {
 		return;
 	}
 	
-	// 특정 채팅방에서 나가기 (상대방 데이터 보존)
+	// 특정 채팅방에서 나가기 (사용자 key 보존, 상대방 데이터 보존)
 	@Transactional
 	public boolean deleteChatroomUser(long chatroomUsersId) {
-		// 삭제된 행이 있으면 true 반환
-		return dao.deleteById(chatroomUsersId);
+		// 삭제된(초기화된) 행이 있으면 true 반환
+		return dao.initDataExceptKey(chatroomUsersId);
 	}
 
 	// 특정 채팅방 유저 정보 반환

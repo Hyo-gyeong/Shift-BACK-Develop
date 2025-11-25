@@ -78,8 +78,8 @@ public class ChatroomService {
 	// 특정 채팅방에 참여한 모든 사용자, 특정 채팅방 정보 전체 삭제됨
 	@Transactional
 	public boolean deleteChatroom(long chatroomId) {
-		// 삭제된 행이 있으면 true 반환
-		return dao.deleteById(chatroomId);
+		// 삭제된(초기화된) 행이 있으면 true 반환
+		return dao.initDataExceptKey(chatroomId);
 	}
 	
 	// 채팅방 생성 시간, 메시지 전송 시간, 채팅방에 전송된 최신 메시지 전송 시간 동일하게 세팅
