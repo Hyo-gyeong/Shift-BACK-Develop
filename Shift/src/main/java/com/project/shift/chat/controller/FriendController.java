@@ -14,7 +14,6 @@ import com.project.shift.chat.dto.FriendDTO;
 import com.project.shift.chat.dto.FriendInfoDTO;
 import com.project.shift.chat.service.FriendService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
