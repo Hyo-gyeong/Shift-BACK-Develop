@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.entity.ChatroomUserEntity;
 
 public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity, Long>{
@@ -23,12 +22,11 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 							@Param("time") Date time,
 							@Param("id") long id);
 	
-	////////////임시 API ////////////
 	// 특정 채팅방 유저 정보 반환
 	@Query("""
 			SELECT c FROM ChatroomUserEntity c
 			WHERE c.chatroomId = :chatroomId AND c.userId = :userId
 			""")
 	Optional<ChatroomUserEntity> getChatroomUser(@Param("chatroomId") long chatroomId,
-											  @Param("userId") long userId);
+											  	 @Param("userId") long userId);
 }
