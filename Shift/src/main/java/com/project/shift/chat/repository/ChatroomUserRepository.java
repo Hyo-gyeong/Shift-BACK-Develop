@@ -30,7 +30,7 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	Optional<ChatroomUserEntity> getChatroomUser(@Param("chatroomId") long chatroomId,
 											  	 @Param("userId") long userId);
 	
-	// 채팅방 삭제시 pk, fk 빼고 전부 초기화
+	// 특정 채팅방의 특정 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
 	@Modifying
 	@Transactional
 	@Query("UPDATE ChatroomUserEntity c "
@@ -40,6 +40,18 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			+ "c.connectionStatus = 'DL', "
 			+ "c.isDarkMode = 'N' "
 			+ "WHERE c.chatroomUsersId = :chatroomUsersId")
-	void initDataExceptKey(@Param("chatroomUsersId") long chatroomUsersId);
+	void initChatroomUserExceptKey(@Param("chatroomUsersId") long chatroomUsersId);
+	
+	// 특정 채팅방의 모든 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
+	@Modifying
+	@Transactional
+	@Query("UPDATE ChatroomUserEntity c "
+			+ "SET c.chatroomName = null, "
+			+ "c.lastConnectionTime = null, "
+			+ "c.createdTime = null, "
+			+ "c.connectionStatus = 'DL', "
+			+ "c.isDarkMode = 'N' "
+			+ "WHERE c.chatroomId = :chatroomId")
+	void initAllChatroomUsersExceptKey(@Param("chatroomId") long chatroomId);
 	
 }
