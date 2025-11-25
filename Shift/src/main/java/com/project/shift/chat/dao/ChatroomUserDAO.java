@@ -21,11 +21,21 @@ public class ChatroomUserDAO {
 		chatroomUserRepo.save(entity);
 	}
 	
-	public boolean initDataExceptKey(long chatroomUsersId) {
+	public boolean initChatroomUserExceptKey(long chatroomUsersId) {
 		// 채팅방이 존재하면 pk제외 데이터 초기화
 		if (chatroomUserRepo.existsById(chatroomUsersId)) {
-			chatroomUserRepo.initDataExceptKey(chatroomUsersId);
+			chatroomUserRepo.initChatroomUserExceptKey(chatroomUsersId);
 	        return true;
+	    }
+		// 채팅방이 없으면 삭제 불가
+	    return false;
+	}
+	
+	public boolean initAllChatroomUsersExceptKey(long chatroomId) {
+		// 채팅방이 존재하면 pk제외 데이터 초기화
+		if (chatroomUserRepo.existsById(chatroomId)) {
+			chatroomUserRepo.initAllChatroomUsersExceptKey(chatroomId);
+			return true;
 	    }
 		// 채팅방이 없으면 삭제 불가
 	    return false;
