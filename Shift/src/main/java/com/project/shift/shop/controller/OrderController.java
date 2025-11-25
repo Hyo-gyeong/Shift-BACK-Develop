@@ -55,8 +55,6 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
     
-    // SHOP-011 포인트 사용/적립 내역 조회
-    
     // SHOP-012 주문 취소
     @PutMapping("/{orderId}/cancel")
     public ResponseEntity<OrderCancelResponseDTO> cancelOrder(@PathVariable("orderId") Long orderId) {
