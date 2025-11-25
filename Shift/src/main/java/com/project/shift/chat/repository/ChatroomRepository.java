@@ -25,9 +25,10 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 				cu.is_dark_mode as isDarkMode,
 				c.last_msg_content as lastMsgContent,
 				c.last_msg_date as lastMsgDate
-			from chatrooms c, chatroom_users cu
-			where c.chatroom_id = cu.chatroom_id
-				and cu.user_id = :userId
+			from chatroom_users cu 
+			join chatrooms c ON c.chatroom_id = cu.chatroom_id
+			where cu.user_id = :userId 
+				and cu.connection_status != 'DL'
 			""", nativeQuery = true)
 	List<ChatroomListProjection> findChatroomsByUserId(@Param("userId") long userId);
 
@@ -38,5 +39,5 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 			+ "SET c.lastMsgContent = null,"
 			+ "	   c.lastMsgDate = null "
 			+ "WHERE c.chatroomId = :chatroomId")
-	void initDataExceptKey(@Param("chatroomId") long chatroomId);
+	void initChatroomExceptKey(@Param("chatroomId") long chatroomId);
 }
