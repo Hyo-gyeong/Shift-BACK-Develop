@@ -75,6 +75,7 @@ public class ChatroomController {
 	}
 	
 	// 특정 채팅방에 참여한 모든 사용자의 채팅방 삭제
+	// → 실제 데이터 삭제가 아닌 pk, fk 빼고 초기화
 	@DeleteMapping("/{chatroomId}") // 브로드캐스팅 추가 (채팅방 나감)
 	public ResponseEntity<?> deleteChatroom(@PathVariable long chatroomId) {
 	    try {
@@ -92,9 +93,10 @@ public class ChatroomController {
 	}
 	
 	// 특정 채팅방에 참여한 일부 사용자 채팅방 삭제
+	// → 실제 데이터 삭제가 아닌 pk, fk 빼고 초기화
 	@DeleteMapping("/users/{chatroomUsersId}") // 브로드캐스팅 추가 (채팅방 나감)
 	public ResponseEntity<?> deleteUsersChatroom(@PathVariable long chatroomUsersId) {
-	    try {
+	    try {	    				
 	        boolean deleted = chatroomUserService.deleteChatroomUser(chatroomUsersId);
 	        if (deleted) {
 	            return ResponseEntity.ok("Chatroom deleted successfully");
