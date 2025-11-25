@@ -9,6 +9,10 @@ public class OrderListDTO {
     private Long orderId;
     private Long senderId;
     private Long receiverId;
+    
+    private String senderName; 
+    private String receiverName;
+    private String orderStatus;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime orderDate;
@@ -23,6 +27,12 @@ public class OrderListDTO {
     public void setSenderId(Long senderId) { this.senderId = senderId; }
     public Long getReceiverId() { return receiverId; }
     public void setReceiverId(Long receiverId) { this.receiverId = receiverId; }
+    public String getSenderName() { return senderName; }
+    public void setSenderName(String senderName) { this.senderName = senderName; }
+    public String getReceiverName() { return receiverName; }
+    public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
+    public String getOrderStatus() { return orderStatus; }
+    public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
     public LocalDateTime getOrderDate() { return orderDate; }
     public void setOrderDate(LocalDateTime orderDate) { this.orderDate = orderDate; }
     public Integer getTotalPrice() { return totalPrice; }
