@@ -30,7 +30,7 @@ public interface IOrderService {
     RefundResponseDTO requestRefund(RefundRequestDTO requestDTO);
 
     // SHOP-016 금액권 주문 생성
-    PointOrderResponseDTO createPointOrder(PointOrderRequestDTO requestDTO);
+    
     // SHOP-017 금액권 결제 완료 (포인트 적립)
-    PointOrderCompleteDTO completePointOrder(Long orderId, Long chatroomId);
+    
 }
