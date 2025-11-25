@@ -76,4 +76,8 @@ public class Product {
     public int hashCode() {
         return Objects.hash(id, name); // id와 name을 기준으로 해시코드 생성
     }
+
+    public Long getCategoryId() {
+        return this.category != null ? this.category.getCategoryId() : null;
+    }
 }

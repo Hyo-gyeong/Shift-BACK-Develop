@@ -1,32 +1,21 @@
 package com.project.shift.shop.dto;
 
-/**
- * [DTO] SHOP-017 금액권 결제 완료 응답 DTO
- */
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PointOrderCompleteDTO {
 
-    private Long orderId;
-    private Long chatroomId;  // Controller에서 전달
-    private Long receiverId;
-    private Integer addedPoints;
-    private Integer updatedTotalPoints;
-    private Boolean result;
-
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
-
-    public Long getChatroomId() { return chatroomId; }
-    public void setChatroomId(Long chatroomId) { this.chatroomId = chatroomId; }
-
-    public Long getReceiverId() { return receiverId; }
-    public void setReceiverId(Long receiverId) { this.receiverId = receiverId; }
-
-    public Integer getAddedPoints() { return addedPoints; }
-    public void setAddedPoints(Integer addedPoints) { this.addedPoints = addedPoints; }
-
-    public Integer getUpdatedTotalPoints() { return updatedTotalPoints; }
-    public void setUpdatedTotalPoints(Integer updatedTotalPoints) { this.updatedTotalPoints = updatedTotalPoints; }
-
-    public Boolean getResult() { return result; }
-    public void setResult(Boolean result) { this.result = result; }
+    private Long chatroomId;         // 금액권을 받은 채팅방
+    private Long receiverId;         // 포인트 적립 대상 사용자
+    private Integer addedPoints;     // 적립된 포인트 (금액권 금액)
+    private Integer updatedTotalPoints; // 적립 이후 receiver의 총 포인트
+    private boolean result;          // 성공 여부
 }
