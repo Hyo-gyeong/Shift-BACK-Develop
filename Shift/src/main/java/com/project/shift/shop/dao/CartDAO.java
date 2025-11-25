@@ -8,11 +8,13 @@ import com.project.shift.shop.repository.CartRepository;
 import com.project.shift.user.entity.UserEntity;
 import com.project.shift.user.repository.UserRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 
 @Repository
+@Transactional
 public class CartDAO {
 
     private final CartRepository cartRepository;
@@ -28,6 +30,7 @@ public class CartDAO {
     }
 
     // SHOP-001 : userId로 장바구니 조회
+    @Transactional(readOnly = true)
     public List<CartItemDTO> findByUserId(Long userId) {
         List<Cart> carts = cartRepository.findByUser_UserIdOrderByIdDesc(userId);
         return carts.stream()
@@ -37,7 +40,18 @@ public class CartDAO {
 
     // SHOP-002 : 장바구니에 상품 추가
     public CartItemDTO insertCartItem(Long userId, Long productId, int quantity) {
+    	
+    	// 1. 기존에 동일 상품이 있는지 확인
+        var existingOpt = cartRepository.findByUser_UserIdAndProduct_Id(userId, productId);
 
+        if (existingOpt.isPresent()) {
+            Cart existing = existingOpt.get();
+            existing.setQuantity(existing.getQuantity() + quantity);
+            Cart saved = cartRepository.save(existing);
+            return toDto(saved);
+        }
+
+        // 2. 없으면 새로 추가
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
@@ -57,6 +71,9 @@ public class CartDAO {
 
     // SHOP-003 : 장바구니 수량 변경
     public CartItemDTO updateCartItemQuantity(Long cartId, int quantity) {
+    	if (cartId == null) throw new IllegalArgumentException("cartId는 필수입니다.");
+        if (quantity <= 0) throw new IllegalArgumentException("quantity는 1 이상이어야 합니다.");
+
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new IllegalArgumentException("Cart not found: " + cartId));
 
