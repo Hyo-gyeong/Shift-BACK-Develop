@@ -20,7 +20,7 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	@Query("""
 			UPDATE ChatroomUserEntity c 
 			SET c.connectionStatus = :status, c.lastConnectionTime = :time 
-			WHERE c.chatroomUsersId = :id
+			WHERE c.chatroomUserId = :id
 			""")
 	void updateChatUserInfo(@Param("status") String status,
 							@Param("time") Date time,
@@ -44,9 +44,9 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			c.createdTime = null, 
 			c.connectionStatus = 'DL', 
 			c.isDarkMode = 'N' 
-			WHERE c.chatroomUsersId = :chatroomUsersId
+			WHERE c.chatroomUserId = :chatroomUserId
 			""")
-	void initChatroomUserExceptKey(@Param("chatroomUsersId") long chatroomUsersId);
+	void initChatroomUserExceptKey(@Param("chatroomUserId") long chatroomUserId);
 	
 	// 특정 채팅방의 모든 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
 	@Modifying
