@@ -16,7 +16,7 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 	// 채팅방 목록 조회
 	@Query(value = """
 			select
-				cu.chatroom_users_id as chatroomUsersId,
+				cu.chatroom_users_id as chatroomUserId,
 				cu.chatroom_id as chatroomId,
 				cu.chatroom_name as chatroomName,
 				cu.last_connection_time as lastConnectionTime,
