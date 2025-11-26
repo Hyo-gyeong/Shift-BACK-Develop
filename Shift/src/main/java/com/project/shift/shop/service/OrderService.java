@@ -383,34 +383,75 @@ public class OrderService implements IOrderService {
         Order order = orderDAO.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다. order_id=" + orderId));
 
+        //본인주문만 취소가능
         if (uid != null && !order.getSenderId().equals(uid)) {
             throw new AccessDeniedException("본인 주문만 취소할 수 있습니다.");
         }
-
-        // 결제 전(P)만 취소 가능
-        if (!"P".equals(order.getOrderStatus())) {
-            return new OrderCancelResponseDTO(orderId, false);
-        }
-
-        // 배송 상태가 이미 진행 중이면 취소 불가
+        
+        // 배송 정보 조회
         var deliveryOpt = deliveryRepository.findByOrder_OrderId(orderId);
-        if (deliveryOpt.isPresent()) {
-            String ds = deliveryOpt.get().getDeliveryStatus(); // P,S,D,C
-            if (!"P".equals(ds)) {
+
+        String orderStatus = order.getOrderStatus();    // P / S / C
+        String deliveryStatus = deliveryOpt
+                .map(d -> d.getDeliveryStatus())       // P / S / D / C
+                .orElse(null);
+        
+        // 결제 전(P) 취소 
+        if ("P".equals(orderStatus)) {
+            // 배송이 이미 진행 중이면 취소 불가
+            if (deliveryStatus != null && !"P".equals(deliveryStatus)) {
                 return new OrderCancelResponseDTO(orderId, false);
             }
+
+            order.setOrderStatus("C");
+            orderDAO.save(order);
+
+            deliveryOpt.ifPresent(d -> {
+                d.setDeliveryStatus("C");
+                deliveryRepository.save(d);
+            });
+
+            return new OrderCancelResponseDTO(orderId, true);
         }
 
-        // 주문 취소
+        
+        // 결제 완료(S) + 배송상태 P 일 때만 취소
+	    if (!"S".equals(orderStatus)) {
+	        // 이미 취소(C)거나 기타 상태 → 취소 불가
+	        return new OrderCancelResponseDTO(orderId, false);
+	    }
+	    if (!"P".equals(deliveryStatus)) {
+	        // 배송이 이미 출발/완료/취소된 경우
+	        return new OrderCancelResponseDTO(orderId, false);
+	    }
+
+	    // 결제완료 주문에 대한 간이 환불 처리 
+	    Integer cashUsed = order.getCashUsed() == null ? 0 : order.getCashUsed();
+	    Integer pointUsed = order.getPointUsed() == null ? 0 : order.getPointUsed();
+
+	    // 	포인트 되돌리기 (requestRefund 로직 축약)
+	    if (pointUsed > 0) {
+	        UserEntity sender = userRepository.findById(order.getSenderId())
+	                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+	        int currentPoints = sender.getPoints() == null ? 0 : sender.getPoints();
+	        int newPoints = currentPoints + pointUsed;
+	        sender.setPoints(newPoints);
+	        userRepository.save(sender);
+
+	        order.setRemainPoints(newPoints);
+	    }
+	    
+	    // TODO : cashUsed에 대해서는 실제 PG 연동 할건지?? 
+	    
+	    //주문 취소
         order.setOrderStatus("C");
         orderDAO.save(order);
 
         // 배송 레코드가 있다면 함께 취소 표기
         deliveryOpt.ifPresent(d -> {
-            if (!"C".equals(d.getDeliveryStatus())) {
                 d.setDeliveryStatus("C");
                 deliveryRepository.save(d);
-            }
         });
 
         return new OrderCancelResponseDTO(orderId, true);
