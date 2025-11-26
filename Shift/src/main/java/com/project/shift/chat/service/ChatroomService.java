@@ -38,7 +38,7 @@ public class ChatroomService {
 			   .stream()
 			   .map(p -> {
 				   ChatroomListDTO dto = ChatroomListDTO.builder()
-                	.chatroomUsersId(p.getChatroomUsersId())
+                	.chatroomUserId(p.getChatroomUserId())
                     .chatroomId(p.getChatroomId())
                     .chatroomName(p.getChatroomName())
                     .lastMsgContent(p.getLastMsgContent())
