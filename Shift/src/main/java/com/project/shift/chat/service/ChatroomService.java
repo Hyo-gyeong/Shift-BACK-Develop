@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class ChatroomService {
 
 	private final ChatroomDAO dao;
+	private final ChatroomUserService chatroomUserService;
 	
 	// 특정 채팅방 정보 반환
 	@Transactional(readOnly = true)
@@ -77,10 +78,16 @@ public class ChatroomService {
 	}
 	
 	// 특정 채팅방에 참여한 모든 사용자, 특정 채팅방 정보 전체 삭제됨
+	// → pk,fk 제외 모든 데이터 초기화
 	@Transactional
-	public boolean deleteChatroom(long chatroomId) {
-		// 삭제된 행이 있으면 true 반환
-		return dao.deleteById(chatroomId);
+	public boolean deleteChatroomAndChatroomUsers(long chatroomId) {
+		// Chatroom 초기화
+		boolean ifChatroomDeleted = dao.initChatroomExceptKey(chatroomId);
+		if (ifChatroomDeleted) {
+			// ChatroomUsers 초기화
+			return chatroomUserService.deleteAllChatroomUsers(chatroomId);
+		}
+		return false;
 	}
 	
 	// 채팅방 생성 시간, 메시지 전송 시간, 채팅방에 전송된 최신 메시지 전송 시간 동일하게 세팅

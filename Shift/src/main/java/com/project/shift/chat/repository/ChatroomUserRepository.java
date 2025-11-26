@@ -32,17 +32,28 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	Optional<ChatroomUserEntity> getChatroomUser(@Param("chatroomId") long chatroomId,
 											  	 @Param("userId") long userId);
 	
-	// 채팅방 삭제 여부와 관계 없이 두 유저간 생성된 채팅방
-	// not null  : 한 번이라도 같이 채팅을 한 적이 있음
-	// null : 한 번도 같이 채팅을 한 적이 없음
-	@Query("""
-		    SELECT c.chatroomId
-		    FROM ChatroomUserEntity c
-		    WHERE c.userId IN :userIds
-		    GROUP BY c.chatroomId
-		    HAVING COUNT(DISTINCT c.userId) = :userCount
-		""")
-	Optional<Long> findChatroomWithUsers(@Param("userIds") List<Long> userIds,
-										  @Param("userCount") long userCount);
-
+	// 특정 채팅방의 특정 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
+	@Modifying
+	@Transactional
+	@Query("UPDATE ChatroomUserEntity c "
+			+ "SET c.chatroomName = null, "
+			+ "c.lastConnectionTime = null, "
+			+ "c.createdTime = null, "
+			+ "c.connectionStatus = 'DL', "
+			+ "c.isDarkMode = 'N' "
+			+ "WHERE c.chatroomUsersId = :chatroomUsersId")
+	void initChatroomUserExceptKey(@Param("chatroomUsersId") long chatroomUsersId);
+	
+	// 특정 채팅방의 모든 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
+	@Modifying
+	@Transactional
+	@Query("UPDATE ChatroomUserEntity c "
+			+ "SET c.chatroomName = null, "
+			+ "c.lastConnectionTime = null, "
+			+ "c.createdTime = null, "
+			+ "c.connectionStatus = 'DL', "
+			+ "c.isDarkMode = 'N' "
+			+ "WHERE c.chatroomId = :chatroomId")
+	void initAllChatroomUsersExceptKey(@Param("chatroomId") long chatroomId);
+	
 }

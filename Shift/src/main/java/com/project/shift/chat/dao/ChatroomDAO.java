@@ -37,11 +37,12 @@ public class ChatroomDAO {
 	    return chatroomRepo.save(entity);
 	}
 	
-	public boolean deleteById(long chatroomId) {
+	public boolean initChatroomExceptKey(long chatroomId) {
 		// 채팅방이 존재하면 삭제
 		if (chatroomRepo.existsById(chatroomId)) {
-	        chatroomRepo.deleteById(chatroomId);
-	        return true;
+	        // 값 변경
+			chatroomRepo.initChatroomExceptKey(chatroomId);
+			return true;
 	    }
 		// 채팅방이 없으면 삭제 불가
 	    return false;
