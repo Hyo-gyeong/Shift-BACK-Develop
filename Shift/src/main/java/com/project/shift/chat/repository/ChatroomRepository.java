@@ -35,9 +35,12 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 	// 채팅 삭제 → 키값 빼고 초기화
 	@Modifying
 	@Transactional
-	@Query("UPDATE ChatroomEntity c "
-			+ "SET c.lastMsgContent = null,"
-			+ "	   c.lastMsgDate = null "
-			+ "WHERE c.chatroomId = :chatroomId")
+	@Query("""
+			UPDATE ChatroomEntity c 
+			SET c.lastMsgContent = null,
+				   c.lastMsgDate = null 
+			WHERE c.chatroomId = :chatroomId
+			""")
 	void initChatroomExceptKey(@Param("chatroomId") long chatroomId);
+	
 }

@@ -72,7 +72,7 @@ public class ChatroomUserService {
 		List<Long> ids = new ArrayList<>();
 		ids.add(userId);
 		ids.add(receiverId);
-		Optional<Long> chatroomIdOpt = dao.getChatroomWithUsers(ids, ids.size());
+		Optional<Long> chatroomIdOpt = dao.getChatroomWithReceiver(ids, ids.size());
 		if (chatroomIdOpt.isEmpty()) { // 한 번도 채팅을 한 적이 없는 사용자들
 			return Optional.empty();
 		} else { // 채팅방 삭제 여부와 관계 없이 한 번이라도 채팅을 한 사용자들

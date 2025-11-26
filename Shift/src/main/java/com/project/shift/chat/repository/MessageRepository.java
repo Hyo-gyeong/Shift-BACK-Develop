@@ -26,7 +26,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long>{
 	int countUnreadMessages(@Param("chatroomId") long chatroomId, @Param("userId") long userId);
 
 	// 채팅방 최초 생성 시간 이후의 메시지 반환
-	@Query(value = """
+	@Query("""
 			SELECT m FROM MessageEntity m
 			WHERE m.chatroomId = :chatroomId AND
 				  m.sendDate >= :createdDateTime
@@ -37,7 +37,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long>{
 	// 마지막 접속 시간 이후의 메시지 읽음 처리
 	@Modifying
 	@Transactional
-	@Query(value = """
+	@Query("""
 			UPDATE MessageEntity m
 			SET m.unreadCount = m.unreadCount-1
 			WHERE m.chatroomId = :chatroomId AND

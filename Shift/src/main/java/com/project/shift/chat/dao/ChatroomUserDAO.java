@@ -54,7 +54,7 @@ public class ChatroomUserDAO {
 	}
 	
 	// 삭제 여부와 관계 없이 두 유저간 생성된 채팅방 반환
-	public Optional<Long> getChatroomWithUsers(List<Long> ids, long countUsers){
+	public Optional<Long> getChatroomWithReceiver(List<Long> ids, long countUsers){
 		return chatroomUserRepo.findChatroomWithUsers(ids, countUsers);
 	}
 }
