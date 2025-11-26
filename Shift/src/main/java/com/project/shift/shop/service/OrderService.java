@@ -200,7 +200,10 @@ public class OrderService implements IOrderService {
             dto.setItemPrice(oi.getItemPrice());
 
             Product product = productRepository.findById(oi.getProductId()).orElse(null);
-            dto.setProductName(product != null ? product.getName() : null);
+            if (product != null) {
+                dto.setProductName(product.getName());   
+                dto.setCategoryId(product.getCategoryId());
+            }
             return dto;
         }).collect(Collectors.toList());
         
@@ -479,6 +482,7 @@ public class OrderService implements IOrderService {
         if (!"S".equals(order.getOrderStatus())) {
             throw new IllegalArgumentException("결제 완료된 주문만 환불할 수 있습니다.");
         }
+        
 
         // 3) 실제 결제 금액(현금 + 포인트) 계산
         int cashUsed = (order.getCashUsed() == null ? 0 : order.getCashUsed());
