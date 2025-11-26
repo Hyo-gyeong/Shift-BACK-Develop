@@ -1,5 +1,6 @@
 package com.project.shift.chat.dao;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,5 +57,10 @@ public class ChatroomUserDAO {
 	// 삭제 여부와 관계 없이 두 유저간 생성된 채팅방 반환
 	public Optional<Long> getChatroomWithReceiver(List<Long> ids, long countUsers){
 		return chatroomUserRepo.findChatroomWithUsers(ids, countUsers);
+	}
+	
+	// 채팅방 생성 시 두 사용자간 삭제된 채팅방 복구
+	public void restoreChatroomUser(long chatroomId, long userId, String status, Date now, String chatroomName) {
+		chatroomUserRepo.restoreChatroomUser(chatroomId, userId, status, now, chatroomName);
 	}
 }
