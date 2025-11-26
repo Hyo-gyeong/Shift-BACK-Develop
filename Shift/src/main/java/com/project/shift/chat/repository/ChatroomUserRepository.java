@@ -1,6 +1,7 @@
 package com.project.shift.chat.repository;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,7 @@ import com.project.shift.chat.entity.ChatroomUserEntity;
 
 public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity, Long>{
 
+	// 사용자 채팅방 접속 정보 수정
 	@Modifying
 	@Transactional
 	@Query("UPDATE ChatroomUserEntity c "
@@ -29,4 +31,18 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			""")
 	Optional<ChatroomUserEntity> getChatroomUser(@Param("chatroomId") long chatroomId,
 											  	 @Param("userId") long userId);
+	
+	// 채팅방 삭제 여부와 관계 없이 두 유저간 생성된 채팅방
+	// not null  : 한 번이라도 같이 채팅을 한 적이 있음
+	// null : 한 번도 같이 채팅을 한 적이 없음
+	@Query("""
+		    SELECT c.chatroomId
+		    FROM ChatroomUserEntity c
+		    WHERE c.userId IN :userIds
+		    GROUP BY c.chatroomId
+		    HAVING COUNT(DISTINCT c.userId) = :userCount
+		""")
+	Optional<Long> findChatroomWithUsers(@Param("userIds") List<Long> userIds,
+										  @Param("userCount") long userCount);
+
 }
