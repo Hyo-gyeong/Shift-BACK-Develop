@@ -37,7 +37,7 @@ public class ChatroomUserEntity {
         allocationSize = 1
     )
     @Column(name = "CHATROOM_USERS_ID", nullable = false)
-    private long chatroomUsersId;
+    private long chatroomUserId;
     
     @Column(name = "CHATROOM_ID", nullable = false)
     private long chatroomId;

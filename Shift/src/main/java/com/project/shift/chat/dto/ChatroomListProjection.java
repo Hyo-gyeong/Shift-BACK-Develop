@@ -1,7 +1,7 @@
 package com.project.shift.chat.dto;
 
 public interface ChatroomListProjection {
-	Long getChatroomUsersId();
+	Long getChatroomUserId();
     Long getChatroomId();
     String getChatroomName();
     String getLastMsgContent();

@@ -34,6 +34,7 @@ public class ChatroomUserDTO {
     // Entity -> DTO 변환
     public static ChatroomUserDTO toDto(ChatroomUserEntity entity) {
         return ChatroomUserDTO.builder()
+        		.chatroomUserId(entity.getChatroomUserId())
                 .chatroomId(entity.getChatroomId())
                 .userId(entity.getUserId())
                 .chatroomName(entity.getChatroomName())
