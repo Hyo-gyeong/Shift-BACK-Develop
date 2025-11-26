@@ -79,10 +79,11 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 		    UPDATE ChatroomUserEntity c 
 		    SET c.createdTime = :now,
 			    c.lastConnectionTime = :now,
-			    c.connectionStatus = :connectionStatus
-			    c.chatroomName = :chatroomName 
+			    c.connectionStatus = :connectionStatus,
+			    c.chatroomName = :chatroomName
 			WHERE c.chatroomId = :chatroomId
 				AND c.userId = :userId
+				AND c.connectionStatus = 'DL'
 			""")
 	void restoreChatroomUser(@Param("chatroomId") long chatroomId,
 							 @Param("userId") long userId,
