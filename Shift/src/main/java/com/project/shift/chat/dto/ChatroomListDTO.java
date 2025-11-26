@@ -16,7 +16,7 @@ import lombok.Setter;
 @Builder
 public class ChatroomListDTO {
 
-	private long chatroomUsersId;
+	private long chatroomUserId;
     private long chatroomId;
     private String lastMsgContent;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
