@@ -62,6 +62,7 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			""")
 	void initAllChatroomUsersExceptKey(@Param("chatroomId") long chatroomId);
 
+	// 두 사용자가 속한 채팅방 ID 반환
 	@Query("""
 			SELECT c.chatroomId
 		    FROM ChatroomUserEntity c
@@ -70,4 +71,22 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 		    HAVING COUNT(DISTINCT c.userId) = :countUsers 
 			""")
 	Optional<Long> findChatroomWithUsers(@Param("ids") List<Long> ids, @Param("countUsers") long countUsers);
+	
+	// 채팅방 생성 시 두 사용자간 삭제된 채팅방 복구
+	@Modifying
+	@Transactional
+	@Query("""
+		    UPDATE ChatroomUserEntity c 
+		    SET c.createdTime = :now,
+			    c.lastConnectionTime = :now,
+			    c.connectionStatus = :connectionStatus
+			    c.chatroomName = :chatroomName 
+			WHERE c.chatroomId = :chatroomId
+				AND c.userId = :userId
+			""")
+	void restoreChatroomUser(@Param("chatroomId") long chatroomId,
+							 @Param("userId") long userId,
+							 @Param("connectionStatus") String connectionStatus,
+							 @Param("now") Date now,
+							 @Param("chatroomName") String chatroomName);
 }
