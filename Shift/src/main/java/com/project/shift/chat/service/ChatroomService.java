@@ -23,6 +23,7 @@ public class ChatroomService {
 	private final ChatroomDAO dao;
 	private final ChatroomUserService chatroomUserService;
 	
+	// 특정 채팅방 정보 반환
 	@Transactional(readOnly = true)
 	public Optional<ChatroomDTO> getChatroom(long chatroomId) {
 		return dao.findChatroomById(chatroomId)

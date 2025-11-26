@@ -1,6 +1,7 @@
 package com.project.shift.chat.repository;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,7 @@ import com.project.shift.chat.entity.ChatroomUserEntity;
 
 public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity, Long>{
 
+	// 사용자 채팅방 접속 정보 수정
 	@Modifying
 	@Transactional
 	@Query("UPDATE ChatroomUserEntity c "

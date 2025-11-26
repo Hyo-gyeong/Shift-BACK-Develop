@@ -1,5 +1,6 @@
 package com.project.shift.chat.dao;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -50,5 +51,10 @@ public class ChatroomUserDAO {
 	// 특정 채팅방 유저 정보 반환
 	public Optional<ChatroomUserEntity> getChatroomUser(long chatroomId, long userId) {
 		return chatroomUserRepo.getChatroomUser(chatroomId, userId);
+	}
+	
+	// 삭제 여부와 관계 없이 두 유저간 생성된 채팅방 반환
+	public Optional<Long> getChatroomWithUsers(List<Long> ids, long countUsers){
+		return chatroomUserRepo.findChatroomWithUsers(ids, countUsers);
 	}
 }

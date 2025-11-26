@@ -1,5 +1,7 @@
 package com.project.shift.chat.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -55,7 +57,7 @@ public class ChatroomUserService {
 	}
 
 	// 특정 채팅방 유저 정보 반환
-	@Transactional
+	@Transactional(readOnly = true)
 	public Optional<ChatroomUserDTO> getChatroomUser(long chatroomId, long userId) {
 		Optional<ChatroomUserEntity> entityOpt = dao.getChatroomUser(chatroomId, userId);
 	    if (entityOpt.isEmpty()) {
@@ -63,5 +65,18 @@ public class ChatroomUserService {
 	    }
 
 	    return entityOpt.map(ChatroomUserDTO::toDto);
+	}
+	
+	@Transactional(readOnly = true)
+	public Optional<ChatroomUserDTO> getChatroomWithReceiver(long userId, long receiverId){
+		List<Long> ids = new ArrayList<>();
+		ids.add(userId);
+		ids.add(receiverId);
+		Optional<Long> chatroomIdOpt = dao.getChatroomWithUsers(ids, ids.size());
+		if (chatroomIdOpt.isEmpty()) { // 한 번도 채팅을 한 적이 없는 사용자들
+			return Optional.empty();
+		} else { // 채팅방 삭제 여부와 관계 없이 한 번이라도 채팅을 한 사용자들
+			return getChatroomUser(chatroomIdOpt.get(), userId);
+		}
 	}
 }
