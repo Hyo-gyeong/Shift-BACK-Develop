@@ -87,9 +87,9 @@ public class ChatroomUserService {
 	public void restoreChatroomBetweenUsers(DeletedChatroomUserInfoDTO dto) {
 		Date now = new Date();
 		String senderChatroomName = dto.getReceiverName()+"님과의 채팅방";
-		String receiverChatroomName = dto.getReceiverName()+"님과의 채팅방";
+		String receiverChatroomName = dto.getSenderName()+"님과의 채팅방";
 		
-		dao.restoreChatroomUser(dto.getChatroomId(), dto.getUserId(), "ON", now, senderChatroomName);
+		dao.restoreChatroomUser(dto.getChatroomId(), dto.getSenderId(), "ON", now, senderChatroomName);
 		dao.restoreChatroomUser(dto.getChatroomId(), dto.getReceiverId(), "OF", now, receiverChatroomName);
 	}
 }
