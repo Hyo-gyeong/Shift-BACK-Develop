@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.AbstractMap;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -74,12 +76,19 @@ public class OrderService implements IOrderService {
         };
     }
     
-    private Map.Entry<String, LocalDateTime> toPaymentStatusAndApprovedAt(String orderStatus, LocalDateTime orderDate) {
+    private Map.Entry<String, LocalDateTime> toPaymentStatusAndApprovedAt(
+            String orderStatus, LocalDateTime orderDate) {
+
         switch (orderStatus) {
-            case "S": return Map.entry("SUCCESS", orderDate);
-            case "C": return Map.entry("CANCELED", null);
+            case "S":
+                return new AbstractMap.SimpleEntry<>("SUCCESS", orderDate);
+
+            case "C":
+                return new AbstractMap.SimpleEntry<>("CANCELED", null);
+
             case "P":
-            default:  return Map.entry("PENDING", null);
+            default:
+                return new AbstractMap.SimpleEntry<>("PENDING", null);
         }
     }
     
