@@ -17,9 +17,11 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	// 사용자 채팅방 접속 정보 수정
 	@Modifying
 	@Transactional
-	@Query("UPDATE ChatroomUserEntity c "
-			+ "SET c.connectionStatus = :status, c.lastConnectionTime = :time "
-			+ "WHERE c.chatroomUsersId = :id")
+	@Query("""
+			UPDATE ChatroomUserEntity c 
+			SET c.connectionStatus = :status, c.lastConnectionTime = :time 
+			WHERE c.chatroomUsersId = :id
+			""")
 	void updateChatUserInfo(@Param("status") String status,
 							@Param("time") Date time,
 							@Param("id") long id);
@@ -35,25 +37,37 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	// 특정 채팅방의 특정 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
 	@Modifying
 	@Transactional
-	@Query("UPDATE ChatroomUserEntity c "
-			+ "SET c.chatroomName = null, "
-			+ "c.lastConnectionTime = null, "
-			+ "c.createdTime = null, "
-			+ "c.connectionStatus = 'DL', "
-			+ "c.isDarkMode = 'N' "
-			+ "WHERE c.chatroomUsersId = :chatroomUsersId")
+	@Query("""
+			UPDATE ChatroomUserEntity c 
+			SET c.chatroomName = null, 
+			c.lastConnectionTime = null, 
+			c.createdTime = null, 
+			c.connectionStatus = 'DL', 
+			c.isDarkMode = 'N' 
+			WHERE c.chatroomUsersId = :chatroomUsersId
+			""")
 	void initChatroomUserExceptKey(@Param("chatroomUsersId") long chatroomUsersId);
 	
 	// 특정 채팅방의 모든 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
 	@Modifying
 	@Transactional
-	@Query("UPDATE ChatroomUserEntity c "
-			+ "SET c.chatroomName = null, "
-			+ "c.lastConnectionTime = null, "
-			+ "c.createdTime = null, "
-			+ "c.connectionStatus = 'DL', "
-			+ "c.isDarkMode = 'N' "
-			+ "WHERE c.chatroomId = :chatroomId")
+	@Query("""
+			UPDATE ChatroomUserEntity c 
+			SET c.chatroomName = null, 
+			c.lastConnectionTime = null, 
+			c.createdTime = null, 
+			c.connectionStatus = 'DL', 
+			c.isDarkMode = 'N' 
+			WHERE c.chatroomId = :chatroomId
+			""")
 	void initAllChatroomUsersExceptKey(@Param("chatroomId") long chatroomId);
-	
+
+	@Query("""
+			SELECT c.chatroomId
+		    FROM ChatroomUserEntity c
+		    WHERE c.userId IN :ids
+		    GROUP BY c.chatroomId
+		    HAVING COUNT(DISTINCT c.userId) = :countUsers 
+			""")
+	Optional<Long> findChatroomWithUsers(@Param("ids") List<Long> ids, @Param("countUsers") long countUsers);
 }
