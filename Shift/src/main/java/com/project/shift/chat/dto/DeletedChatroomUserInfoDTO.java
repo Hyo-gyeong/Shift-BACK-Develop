@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 public class DeletedChatroomUserInfoDTO {
 
 	private long chatroomId;
-	private long userId;
+	private long senderId;
 	private long receiverId;
-	private String userName;
+	private String senderName;
 	private String receiverName;
 }
