@@ -50,28 +50,6 @@ public class ChatUserController {
 		                        .body("Error searching chatroom: " + e.getMessage());
 		}
 	}
-	
-	// 특정 두 유저가 참여한 채팅방 정보 확인 및 반환
-	@GetMapping("/receiver/{receiverId}")
-	public ResponseEntity<?> getChatroomWithReceiver(HttpServletRequest request, @PathVariable long receiverId) {
-		try {
-			// jwt에서 현재 사용자의 토큰 추출
-			String token = jwtService.extractTokenFromRequest(request);
-	        // 토큰에서 현재 사용자의 PK 추출
-			long userId = jwtService.extractUserIdFromValidToken(token);
-			Optional<ChatroomUserDTO> chatroomUserDTO = chatroomUserService.getChatroomWithReceiver(userId, receiverId);
-			if (chatroomUserDTO.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND)
-		               .body("Chatroom not found");
-			} else {
-				return ResponseEntity.ok(chatroomUserDTO);
-			}
-		} catch (Exception e) {
-			   return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-			                        .body("Error searching chatroom: " + e.getMessage());
-		}
-	}
-
 
 	// 전화번호로 사용자 검색 및 친구여부 반환
 	@GetMapping("/search/{phone}")
