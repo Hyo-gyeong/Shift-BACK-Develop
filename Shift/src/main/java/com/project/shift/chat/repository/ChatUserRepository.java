@@ -10,7 +10,8 @@ import org.springframework.data.repository.query.Param;
 import com.project.shift.chat.entity.ChatUserEntity;
 
 public interface ChatUserRepository extends JpaRepository<ChatUserEntity, Long>{
-		
+
+	// userId로 친구 검색
 	@Query("""
 			SELECT u FROM ChatUserEntity u
             WHERE u.userId IN :friendIds
@@ -18,11 +19,11 @@ public interface ChatUserRepository extends JpaRepository<ChatUserEntity, Long>{
 			""")
      List<ChatUserEntity> findUserInfoByIds(@Param("friendIds") List<Integer> friendIds);
 
+	// 하이픈 없이 정확하게 일치하는 핸드폰 번호로만 친구 검색
 	@Query("""
 		    SELECT u FROM ChatUserEntity u
-		    WHERE (:phone LIKE '%-%' AND u.phone = :phone)
-		       OR (:phone NOT LIKE '%-%' AND REPLACE(u.phone, '-', '') = :phone)
-			""") // 하이픈을 포함해서 입력하면 그대로 비교하고 하이픈을 포함하지 않고 검색하면 모든 숫자가 일치하는 결과값 반환 
+		    WHERE u.phone = :phone
+			""") 
 	ChatUserEntity findByPhoneFlexible(@Param("phone") String phone);
 
 }
