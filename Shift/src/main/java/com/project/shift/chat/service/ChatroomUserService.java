@@ -1,6 +1,7 @@
 package com.project.shift.chat.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.project.shift.chat.dao.ChatroomUserDAO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
+import com.project.shift.chat.dto.DeletedChatroomUserInfoDTO;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.entity.ChatroomUserEntity;
 import com.project.shift.chat.exception.UserNotFoundException;
@@ -78,5 +80,16 @@ public class ChatroomUserService {
 		} else { // 채팅방 삭제 여부와 관계 없이 한 번이라도 채팅을 한 사용자들
 			return getChatroomUser(chatroomIdOpt.get(), userId);
 		}
+	}
+	
+	// 채팅방 생성 시 두 사용자간 삭제된 채팅방 복구
+	@Transactional
+	public void restoreChatroomBetweenUsers(DeletedChatroomUserInfoDTO dto) {
+		Date now = new Date();
+		String senderChatroomName = dto.getReceiverName()+"님과의 채팅방";
+		String receiverChatroomName = dto.getReceiverName()+"님과의 채팅방";
+		
+		dao.restoreChatroomUser(dto.getChatroomId(), dto.getUserId(), "ON", now, senderChatroomName);
+		dao.restoreChatroomUser(dto.getChatroomId(), dto.getReceiverId(), "OF", now, receiverChatroomName);
 	}
 }
