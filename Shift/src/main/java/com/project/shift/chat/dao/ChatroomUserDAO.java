@@ -23,10 +23,10 @@ public class ChatroomUserDAO {
 		chatroomUserRepo.save(entity);
 	}
 	
-	public boolean initChatroomUserExceptKey(long chatroomUsersId) {
+	public boolean initChatroomUserExceptKey(long chatroomUserId) {
 		// 채팅방이 존재하면 pk제외 데이터 초기화
-		if (chatroomUserRepo.existsById(chatroomUsersId)) {
-			chatroomUserRepo.initChatroomUserExceptKey(chatroomUsersId);
+		if (chatroomUserRepo.existsById(chatroomUserId)) {
+			chatroomUserRepo.initChatroomUserExceptKey(chatroomUserId);
 	        return true;
 	    }
 		// 채팅방이 없으면 삭제 불가
