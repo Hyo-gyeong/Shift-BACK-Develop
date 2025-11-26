@@ -83,6 +83,7 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			    c.chatroomName = :chatroomName 
 			WHERE c.chatroomId = :chatroomId
 				AND c.userId = :userId
+				AND c.connectionStatus = 'DL'
 			""")
 	void restoreChatroomUser(@Param("chatroomId") long chatroomId,
 							 @Param("userId") long userId,
