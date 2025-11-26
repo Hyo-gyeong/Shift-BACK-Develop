@@ -4,28 +4,38 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
 public class JwtService {
 
-    // Access Token
-    static final long ACCESS_TOKEN_EXPIRATION_TIME = 1800000; // 30분
-
-    // Refresh Token
-    static final long REFRESH_TOKEN_EXPIRATION_TIME = 604800000; // 7일
-
     static final String PREFIX = "Bearer ";
     static final String TOKEN_TYPE_ACCESS = "access";
     static final String TOKEN_TYPE_REFRESH = "refresh";
 
-    static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256); // HS256 방식의 키 생성
+    private final SecretKey secretKey;
+    private final SignatureAlgorithm signatureAlgorithm;
+
+    private final long accessTokenValidityMs;
+    private final long refreshTokenValidityMs;
+
+    public JwtService(
+            SecretKey secretKey,
+            SignatureAlgorithm signatureAlgorithm,
+            @Value("${jwt.access-token-validity-ms}") long accessTokenValidityMs,
+            @Value("${jwt.refresh-token-validity-ms}") long refreshTokenValidityMs
+    ) {
+        this.secretKey = secretKey;
+        this.signatureAlgorithm = signatureAlgorithm;
+        this.accessTokenValidityMs = accessTokenValidityMs;
+        this.refreshTokenValidityMs = refreshTokenValidityMs;
+    }
 
     // Access Token 생성
     public String createAccessToken(Long userId, String name) {
@@ -34,8 +44,8 @@ public class JwtService {
                 .claim("type", TOKEN_TYPE_ACCESS)
                 .claim("name", name)
                 .setIssuedAt(new Date()) // 토큰 발급 시간
-                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
-                .signWith(key)
+                .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidityMs))
+                .signWith(secretKey, signatureAlgorithm)
                 .compact();
     }
 
@@ -45,8 +55,8 @@ public class JwtService {
                 .setSubject(userId.toString())
                 .claim("type", TOKEN_TYPE_REFRESH)
                 .setIssuedAt(new Date()) // 토큰 발급 시간
-                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
-                .signWith(key)
+                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidityMs))
+                .signWith(secretKey, signatureAlgorithm)
                 .compact();
     }
 
@@ -59,10 +69,11 @@ public class JwtService {
         return null;
     }
 
+    // 유효한 토큰에서만 userId 추출
     public Long extractUserIdFromValidToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -76,7 +87,7 @@ public class JwtService {
     public Long extractUserIdFromExpiredValidToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -92,7 +103,7 @@ public class JwtService {
     public boolean isValidToken(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token);
             return true;
@@ -105,7 +116,7 @@ public class JwtService {
     public boolean isRefreshToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
