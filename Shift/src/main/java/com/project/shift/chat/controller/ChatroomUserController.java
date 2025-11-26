@@ -6,10 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.shift.chat.dto.ChatroomUserDTO;
+import com.project.shift.chat.dto.DeletedChatroomUserInfoDTO;
 import com.project.shift.chat.service.ChatroomUserService;
 import com.project.shift.global.jwt.JwtService;
 
@@ -43,6 +46,13 @@ public class ChatroomUserController {
 			   return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			                        .body("Error searching chatroom: " + e.getMessage());
 		}
+	}
+	
+	// 채팅방 생성 시 두 사용자간 삭제된 채팅방 복구
+	@PostMapping("/restore")
+	public ResponseEntity<?> restoreChatroomBetweenUsers (@RequestBody DeletedChatroomUserInfoDTO dto){
+		chatroomUserService.restoreChatroomBetweenUsers(dto);
+		return null;
 	}
 
 }
