@@ -8,6 +8,7 @@ public class OrderDTO {
     private Long orderId;
     private Long senderId;
     private Long receiverId;
+    private Long chatroomId;
     private Integer totalPrice;
     private LocalDateTime orderDate;
     private String orderStatus;
@@ -22,6 +23,8 @@ public class OrderDTO {
     public Long getSenderId() { return senderId; }
     public void setSenderId(Long senderId) { this.senderId = senderId; }
     public Long getReceiverId() { return receiverId; }
+    public Long getChatroomId() { return chatroomId; }
+    public void setChatroomId(Long chatroomId) { this.chatroomId = chatroomId; }
     public void setReceiverId(Long receiverId) { this.receiverId = receiverId; }
     public Integer getTotalPrice() { return totalPrice; }
     public void setTotalPrice(Integer totalPrice) { this.totalPrice = totalPrice; }

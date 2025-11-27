@@ -104,13 +104,32 @@ public class OrderService implements IOrderService {
     	    if (uid != null) {
     	        orderDTO.setSenderId(uid); 
     	    }
-
     	    if (orderDTO.getSenderId() == null) {
     	        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 후 주문할 수 있습니다.");
     	    }
+    	    
+    	    // receiverId가 비어 있고, chatroomId가 있으면 채팅방에서 수령인 찾기
     	    if (orderDTO.getReceiverId() == null) {
-    	    	orderDTO.setReceiverId(orderDTO.getSenderId());
-    	    }
+    	        Long chatroomId = orderDTO.getChatroomId();
+
+    	        if (chatroomId != null) {
+    	            // 이미 금액권에서 쓰고 있는 DAO 메서드 재사용
+    	            Long receiverId = orderDAO.findReceiverInChatroom(chatroomId, orderDTO.getSenderId());
+
+    	            if (receiverId == null) {
+    	                // 채팅방에 상대방이 없으면 선물 주문 자체가 성립하지 않음
+    	                throw new ResponseStatusException(
+    	                        HttpStatus.BAD_REQUEST,
+    	                        "채팅방에서 수령인을 찾을 수 없습니다. (chatroomId=" + chatroomId + ")"
+    	                );
+    	            }
+    	            orderDTO.setReceiverId(receiverId);
+    	        } else {
+    	            // chatroomId도 없고 receiverId도 없으면 "나에게 주문"
+    	            orderDTO.setReceiverId(orderDTO.getSenderId());
+    	        }
+    	    }   	    
+    	  
     	    if (orderDTO.getItems() == null || orderDTO.getItems().isEmpty()) {
     	        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "주문 항목이 비어 있습니다.");
     	    }
