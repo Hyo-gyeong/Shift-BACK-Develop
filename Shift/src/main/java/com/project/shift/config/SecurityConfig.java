@@ -51,12 +51,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/logout").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll() // 토큰 재발급
-                        .requestMatchers(HttpMethod.GET, "/").permitAll()
-                        .anyRequest().permitAll()) // 배포 전까지 모두 허용
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users", "/users/check/**", "/users/find-id").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
+                        .requestMatchers("/ws/**", "/").permitAll() // WebSocket 연결 허용
+                        .anyRequest().authenticated()) // 배포 전까지 모두 허용
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(exceptionHandler));
         return http.build();
