@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,9 +51,8 @@ public class ChatroomUserController {
 	
 	// 채팅방 생성 시 두 사용자간 삭제된 채팅방 복구
 	@PostMapping("/restore")
-	public ResponseEntity<?> restoreChatroomBetweenUsers (@RequestBody DeletedChatroomUserInfoDTO dto){
+	public void restoreChatroomBetweenUsers(@RequestBody DeletedChatroomUserInfoDTO dto){
 		chatroomUserService.restoreChatroomBetweenUsers(dto);
-		return null;
 	}
 
 }
