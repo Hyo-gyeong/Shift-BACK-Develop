@@ -20,7 +20,7 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	@Query("""
 			UPDATE ChatroomUserEntity c 
 			SET c.connectionStatus = :status, c.lastConnectionTime = :time 
-			WHERE c.chatroomUsersId = :id
+			WHERE c.chatroomUserId = :id
 			""")
 	void updateChatUserInfo(@Param("status") String status,
 							@Param("time") Date time,
@@ -29,9 +29,9 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	// 특정 채팅방 유저 정보 반환
 	@Query("""
 			SELECT c FROM ChatroomUserEntity c
-			WHERE c.chatroomId = :chatroomId AND c.userId = :userId
+			WHERE c.chatroomId = :id AND c.userId = :userId
 			""")
-	Optional<ChatroomUserEntity> getChatroomUser(@Param("chatroomId") long chatroomId,
+	Optional<ChatroomUserEntity> getChatroomUser(@Param("id") long id,
 											  	 @Param("userId") long userId);
 	
 	// 특정 채팅방의 특정 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
@@ -44,9 +44,9 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			c.createdTime = null, 
 			c.connectionStatus = 'DL', 
 			c.isDarkMode = 'N' 
-			WHERE c.chatroomUsersId = :chatroomUsersId
+			WHERE c.chatroomUserId = :id
 			""")
-	void initChatroomUserExceptKey(@Param("chatroomUsersId") long chatroomUsersId);
+	void initChatroomUserExceptKey(@Param("id") long id);
 	
 	// 특정 채팅방의 모든 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
 	@Modifying
@@ -58,9 +58,9 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			c.createdTime = null, 
 			c.connectionStatus = 'DL', 
 			c.isDarkMode = 'N' 
-			WHERE c.chatroomId = :chatroomId
+			WHERE c.chatroomId = :id
 			""")
-	void initAllChatroomUsersExceptKey(@Param("chatroomId") long chatroomId);
+	void initAllChatroomUsersExceptKey(@Param("id") long id);
 
 	// 두 사용자가 속한 채팅방 ID 반환
 	@Query("""
@@ -90,4 +90,29 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 							 @Param("connectionStatus") String connectionStatus,
 							 @Param("now") Date now,
 							 @Param("chatroomName") String chatroomName);
+	
+	// 상대방의 채팅방 삭제여부 반환
+	@Query("""
+		    SELECT COUNT(c)
+		    FROM ChatroomUserEntity c
+		    WHERE c.connectionStatus = 'DL'
+		      AND c.chatroomId = :id
+		      AND c.userId != :userId
+		""")
+	int checkIfChatroomDeleted(@Param("id") long id, @Param("userId") long userId);
+
+	// 상대방의 채팅방 접속 상태를 'DL'에서 'OF'로 변경 및 채팅방 생성 시간과 마지막 접속시간 변경
+	@Modifying
+	@Transactional
+	@Query("""
+			UPDATE ChatroomUserEntity c 
+			SET c.connectionStatus = 'OF',
+				c.createdTime = :now,
+				c.lastConnectionTime = :now
+			WHERE c.chatroomId = :id
+				AND c.userId != :userId
+			""")
+	void updateReceiverConnectionStatus(@Param("id") long id,
+										@Param("userId") long userId,
+										@Param("now") Date now);
 }

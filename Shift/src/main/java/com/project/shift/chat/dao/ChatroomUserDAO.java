@@ -23,10 +23,10 @@ public class ChatroomUserDAO {
 		chatroomUserRepo.save(entity);
 	}
 	
-	public boolean initChatroomUserExceptKey(long chatroomUsersId) {
+	public boolean initChatroomUserExceptKey(long chatroomUserId) {
 		// 채팅방이 존재하면 pk제외 데이터 초기화
-		if (chatroomUserRepo.existsById(chatroomUsersId)) {
-			chatroomUserRepo.initChatroomUserExceptKey(chatroomUsersId);
+		if (chatroomUserRepo.existsById(chatroomUserId)) {
+			chatroomUserRepo.initChatroomUserExceptKey(chatroomUserId);
 	        return true;
 	    }
 		// 채팅방이 없으면 삭제 불가
@@ -62,5 +62,16 @@ public class ChatroomUserDAO {
 	// 채팅방 생성 시 두 사용자간 삭제된 채팅방 복구
 	public void restoreChatroomUser(long chatroomId, long userId, String status, Date now, String chatroomName) {
 		chatroomUserRepo.restoreChatroomUser(chatroomId, userId, status, now, chatroomName);
+	}
+	
+	// 채팅방 connectionStatus가 DL인지 확인
+	public boolean checkIfChatroomDeleted (long chatroomUserId, long userId) {
+		int rslt = chatroomUserRepo.checkIfChatroomDeleted(chatroomUserId, userId);
+		return rslt > 0;
+	}
+	
+	// 채팅방 접속 상태를 DL에서 OF로 변경
+	public void updateReceiverConnectionStatus(long chatroomId, long userId, Date now) {
+		chatroomUserRepo.updateReceiverConnectionStatus(chatroomId, userId, now);
 	}
 }
