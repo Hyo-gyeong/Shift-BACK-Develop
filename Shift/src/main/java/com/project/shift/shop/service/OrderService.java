@@ -2,12 +2,18 @@ package com.project.shift.shop.service;
 
 import static com.project.shift.global.security.CurrentUser.getUserIdOrNull;
 
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.AbstractMap;
+import java.util.Set;                  
+import java.util.stream.Stream;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -74,12 +80,19 @@ public class OrderService implements IOrderService {
         };
     }
     
-    private Map.Entry<String, LocalDateTime> toPaymentStatusAndApprovedAt(String orderStatus, LocalDateTime orderDate) {
+    private Map.Entry<String, LocalDateTime> toPaymentStatusAndApprovedAt(
+            String orderStatus, LocalDateTime orderDate) {
+
         switch (orderStatus) {
-            case "S": return Map.entry("SUCCESS", orderDate);
-            case "C": return Map.entry("CANCELED", null);
+            case "S":
+                return new AbstractMap.SimpleEntry<>("SUCCESS", orderDate);
+
+            case "C":
+                return new AbstractMap.SimpleEntry<>("CANCELED", null);
+
             case "P":
-            default:  return Map.entry("PENDING", null);
+            default:
+                return new AbstractMap.SimpleEntry<>("PENDING", null);
         }
     }
     
@@ -183,6 +196,16 @@ public class OrderService implements IOrderService {
         if (uid != null && !order.getSenderId().equals(uid)) {
             throw new AccessDeniedException("본인 주문만 조회할 수 있습니다.");
         }
+        
+        // 상품명을 한 번에 로드 
+        List<Long> productIds = order.getOrderItems().stream()
+                .map(OrderItem::getProductId)
+                .distinct()
+                .toList();
+
+        var products = productRepository.findAllById(productIds);
+        var productMap = products.stream()
+                .collect(java.util.stream.Collectors.toMap(Product::getId, p -> p));
 
         List<OrderDetailItemDTO> itemDTOs = order.getOrderItems().stream().map(oi -> {
             OrderDetailItemDTO dto = new OrderDetailItemDTO();
@@ -190,10 +213,14 @@ public class OrderService implements IOrderService {
             dto.setQuantity(oi.getQuantity());
             dto.setItemPrice(oi.getItemPrice());
 
-            Product product = productRepository.findById(oi.getProductId()).orElse(null);
-            dto.setProductName(product != null ? product.getName() : null);
+            Product product = productMap.get(oi.getProductId());
+            if (product != null) {
+                dto.setProductName(product.getName());
+                dto.setCategoryId(product.getCategoryId());
+            }
             return dto;
-        }).collect(Collectors.toList());
+        }).toList();
+         
         
         // 결제 정보 (status/approvedAt 포함)
         Integer cash = order.getCashUsed() == null ? 0 : order.getCashUsed();
@@ -211,6 +238,9 @@ public class OrderService implements IOrderService {
         // 이름
         String senderName = userRepository.findById(order.getSenderId()).map(UserEntity::getName).orElse(null);
         String receiverName = userRepository.findById(order.getReceiverId()).map(UserEntity::getName).orElse(null);
+        
+        // 금액권 여부 판정
+        boolean voucherOrder = !products.isEmpty() && products.stream().allMatch(p -> p.getCategoryId() == 3);
 
         
         OrderDetailResponseDTO resp = new OrderDetailResponseDTO();
@@ -224,25 +254,47 @@ public class OrderService implements IOrderService {
         resp.setTotalPrice(order.getTotalPrice());
         resp.setPayment(paymentDTO);
         resp.setDelivery(deliveryDTO);
+        resp.setVoucherOrder(voucherOrder);
         return resp;
     }
     
     //############### 선물 구매 및 메시지 전송 ###############
     @Override
-	public PaymentResponseDTO requestGiftPayment(PaymentRequestDTO requestDTO, long chatroomId, long userId) {
-    	PaymentResponseDTO dto = requestPayment(requestDTO);
-    	MessageDTO messageDTO = MessageDTO.builder()
-				    	        .isGift("Y")
-				    	        .type(MessageDTO.MessageType.CHAT)
-				    	        .chatroomId(chatroomId)
-				    	        .sendDate(new Date())
-				    	        .unreadCount(1)
-				    	        .content("선물이 도착했습니다!")
-				    	        .userId(userId)
-				    	        .build();
-    	messageService.sendAndSaveMessage(messageDTO, null);
-		return dto;
-	}
+    public PaymentResponseDTO requestGiftPayment(PaymentRequestDTO requestDTO, long chatroomId, long userId) {
+        PaymentResponseDTO dto = requestPayment(requestDTO);
+
+        Order order = orderDAO.findById(requestDTO.getOrderId())
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        boolean isVoucherOrder = order.getOrderItems().isEmpty();
+
+        // 콤마 포맷
+        NumberFormat nf = NumberFormat.getNumberInstance(Locale.KOREA);
+        String formattedPrice = nf.format(order.getTotalPrice());   // → "1,000"
+
+        String content;
+        if (isVoucherOrder) {
+            // 2줄 + 콤마 적용
+            content = "💳 금액권 선물이 도착했습니다!\n"
+                    + formattedPrice + "원";
+        } else {
+            content = "🎁 선물이 도착했습니다!";
+        }
+
+        MessageDTO messageDTO = MessageDTO.builder()
+                .isGift("Y")
+                .type(MessageDTO.MessageType.CHAT)
+                .chatroomId(chatroomId)
+                .sendDate(new Date())
+                .unreadCount(1)
+                .content(content)
+                .userId(userId)
+                .build();
+
+        messageService.sendAndSaveMessage(messageDTO, null);
+
+        return dto;
+    }
     
     // SHOP-009 결제 요청
     @Override
@@ -465,11 +517,22 @@ public class OrderService implements IOrderService {
         // 1) 주문 조회
         Order order = orderDAO.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-
+        // 1-1) 금액권 주문 여부 체크 (모든 OrderItem의 categoryId가 3이면 금액권 전용 주문으로 간주)
+        boolean isVoucherOrder = order.getOrderItems() != null
+                && !order.getOrderItems().isEmpty()
+                && order.getOrderItems().stream().allMatch(oi -> {
+                    Product p = productRepository.findById(oi.getProductId()).orElse(null);
+                    return p != null && p.getCategoryId() == 3;
+                });
+        if (isVoucherOrder) {
+            throw new IllegalArgumentException("금액권 주문은 환불이 불가능합니다.");
+        }
+        
         // 2) 상태 체크: 결제 완료(S)인 주문만 환불 가능
         if (!"S".equals(order.getOrderStatus())) {
             throw new IllegalArgumentException("결제 완료된 주문만 환불할 수 있습니다.");
         }
+        
 
         // 3) 실제 결제 금액(현금 + 포인트) 계산
         int cashUsed = (order.getCashUsed() == null ? 0 : order.getCashUsed());
@@ -561,6 +624,14 @@ public class OrderService implements IOrderService {
         order.setPointUsed(0);
         order.setRemainPoints(0);
         order.setOrderStatus("P");
+
+        //주문상품 생성
+        OrderItem item = new OrderItem();
+        item.setProductId(dto.getProductId()); 
+        item.setQuantity(1);
+        item.setItemPrice(dto.getAmount());
+
+        order.addItem(item); 
 
         orderDAO.save(order);
 
