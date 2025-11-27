@@ -2,9 +2,11 @@ package com.project.shift.shop.service;
 
 import static com.project.shift.global.security.CurrentUser.getUserIdOrNull;
 
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
@@ -238,20 +240,41 @@ public class OrderService implements IOrderService {
     
     //############### 선물 구매 및 메시지 전송 ###############
     @Override
-	public PaymentResponseDTO requestGiftPayment(PaymentRequestDTO requestDTO, long chatroomId, long userId) {
-    	PaymentResponseDTO dto = requestPayment(requestDTO);
-    	MessageDTO messageDTO = MessageDTO.builder()
-				    	        .isGift("Y")
-				    	        .type(MessageDTO.MessageType.CHAT)
-				    	        .chatroomId(chatroomId)
-				    	        .sendDate(new Date())
-				    	        .unreadCount(1)
-				    	        .content("선물이 도착했습니다!")
-				    	        .userId(userId)
-				    	        .build();
-    	messageService.sendAndSaveMessage(messageDTO, null);
-		return dto;
-	}
+    public PaymentResponseDTO requestGiftPayment(PaymentRequestDTO requestDTO, long chatroomId, long userId) {
+        PaymentResponseDTO dto = requestPayment(requestDTO);
+
+        Order order = orderDAO.findById(requestDTO.getOrderId())
+                .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        boolean isVoucherOrder = order.getOrderItems().isEmpty();
+
+        // 콤마 포맷
+        NumberFormat nf = NumberFormat.getNumberInstance(Locale.KOREA);
+        String formattedPrice = nf.format(order.getTotalPrice());   // → "1,000"
+
+        String content;
+        if (isVoucherOrder) {
+            // 2줄 + 콤마 적용
+            content = "💳 금액권 선물이 도착했습니다!\n"
+                    + formattedPrice + "원";
+        } else {
+            content = "🎁 선물이 도착했습니다!";
+        }
+
+        MessageDTO messageDTO = MessageDTO.builder()
+                .isGift("Y")
+                .type(MessageDTO.MessageType.CHAT)
+                .chatroomId(chatroomId)
+                .sendDate(new Date())
+                .unreadCount(1)
+                .content(content)
+                .userId(userId)
+                .build();
+
+        messageService.sendAndSaveMessage(messageDTO, null);
+
+        return dto;
+    }
     
     // SHOP-009 결제 요청
     @Override
