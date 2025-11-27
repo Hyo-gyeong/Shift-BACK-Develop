@@ -57,11 +57,8 @@ public class ChatUserController {
 	// 전화번호로 사용자 검색 및 친구여부 반환
 	@GetMapping("/search/{phone}")
 	public ChatUserSearchResultDTO searchUser(HttpServletRequest request, @PathVariable String phone) {
-		// jwt에서 현재 사용자의 토큰 추출
-		String token = jwtService.extractTokenFromRequest(request);
-        // 토큰에서 현재 사용자의 PK 추출
-		long userId = jwtService.extractUserIdFromValidToken(token);
-				
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
 		return chatUserService.searchUserByPhone(userId, phone);		
 	}
 	
