@@ -627,14 +627,28 @@ public class OrderService implements IOrderService {
         if (senderId == null)
             throw new IllegalArgumentException("로그인 후 이용 가능합니다.");
 
-        Long chatroomId = dto.getChatroomId();
-        if (chatroomId == null)
-            throw new IllegalArgumentException("chatroomId 필수");
-
-        // receiver 조회
-        Long receiverId = orderDAO.findReceiverInChatroom(chatroomId, senderId);
-        if (receiverId == null)
-            throw new IllegalArgumentException("대화 상대가 없습니다.");
+        Long chatroomId = null;
+        Long receiverId = null;
+        
+        if (dto.getChatroomId() == null) {
+        	receiverId = dto.getReceiverId();
+        }
+        else {
+        	chatroomId = dto.getChatroomId();
+        	receiverId = orderDAO.findReceiverInChatroom(chatroomId, senderId);
+        }
+        if (chatroomId == null && receiverId == null)
+        	throw new IllegalArgumentException("선물할 상대가 없습니다.");
+        
+//      기존 로직
+//      Long chatroomId = dto.getChatroomId();
+//      if (chatroomId == null)
+//          throw new IllegalArgumentException("chatroomId 필수");
+//
+//      // receiver 조회
+//      Long receiverId = orderDAO.findReceiverInChatroom(chatroomId, senderId);
+//      if (receiverId == null)
+//          throw new IllegalArgumentException("대화 상대가 없습니다.");
 
         // 금액권 상품 검증
         Product product = productRepository.findById(dto.getProductId())
@@ -667,7 +681,7 @@ public class OrderService implements IOrderService {
         return PointOrderResponseDTO.builder()
                 .orderId(order.getOrderId())
                 .senderId(senderId)
-                .chatroomId(chatroomId)
+                //.chatroomId(chatroomId) // 프론트에서 사용하지는 않는데, 함수에 들어올때 chatroomId가 null이면 오류가 발생해서 주석처리 했습니다
                 .amount(dto.getAmount())
                 .status("P")
                 .result(true)
