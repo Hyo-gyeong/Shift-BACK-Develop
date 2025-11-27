@@ -63,4 +63,15 @@ public class ChatroomUserDAO {
 	public void restoreChatroomUser(long chatroomId, long userId, String status, Date now, String chatroomName) {
 		chatroomUserRepo.restoreChatroomUser(chatroomId, userId, status, now, chatroomName);
 	}
+	
+	// 채팅방 connectionStatus가 DL인지 확인
+	public boolean checkIfChatroomDeleted (long chatroomUserId, long userId) {
+		int rslt = chatroomUserRepo.checkIfChatroomDeleted(chatroomUserId, userId);
+		return rslt > 0;
+	}
+	
+	// 채팅방 접속 상태를 DL에서 OF로 변경
+	public void updateReceiverConnectionStatus(long chatroomId, long userId, Date now) {
+		chatroomUserRepo.updateReceiverConnectionStatus(chatroomId, userId, now);
+	}
 }

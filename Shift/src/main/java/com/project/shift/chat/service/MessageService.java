@@ -14,6 +14,7 @@ import com.project.shift.chat.dao.MessageDAO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.MessageDTO;
+import com.project.shift.chat.dto.MessageUserDTO;
 import com.project.shift.chat.entity.MessageEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -49,27 +50,38 @@ public class MessageService {
 	
 	// 채팅 메시지 전송시 메시지 DB에 저장 및 브로드캐스팅
 	@Transactional
-	public void sendAndSaveMessage(MessageDTO messageDTO, ChatroomUserDTO userDTO) {
+	public void sendAndSaveMessage(MessageDTO messageDTO, ChatroomUserDTO chatroomUserDTO) {
+		// 채팅을 보내는 사람이 이전에 채팅방을 삭제한 적이 있는 경우 채팅방 생성시간과 마지막 접속 시간을 메시지를 보내기 직전으로 설정
+		if (chatroomUserDTO.getConnectionStatus().equals("DL")) {
+			Date now = new Date();
+			chatroomUserDTO.setCreatedTime(now);
+			chatroomUserDTO.setLastConnectionTime(now);
+		}
+		
+		// 채팅방을 완전히 처음 생성해서 메시지를 보내는 경우 메시지 전송 시간이 채팅방 생성시간과 동일하게 설정되어있음
+		// 채팅방에 참여한 후 메시지 전송시, 삭제된 채팅방 복구시 메시지 전송시간이 아직 null인 상태
 		if (messageDTO.getSendDate() == null) {
 			messageDTO.setSendDate(new Date());
 		}
 		
+		// 메시지 타입에 따라 필드값 변경 및 DB에 저장
 		switch (messageDTO.getType()) {
 	        case JOIN :
 	        	// 접속 상태 ON으로 세팅
-	        	userDTO.setConnectionStatus("ON");
+	        	chatroomUserDTO.setConnectionStatus("ON");
 	        	// 채팅방 최초 생성 시간 이후 모든 메시지 읽음 처리
-	        	messageDAO.markMessagesAsRead(messageDTO.getChatroomId(), userDTO.getLastConnectionTime());
+	        	messageDAO.markMessagesAsRead(messageDTO.getChatroomId(),
+	        									chatroomUserDTO.getLastConnectionTime());
 	            break;	
 	        case LEAVE :
 	            // 접속 상태 OF로 세팅
-	        	userDTO.setConnectionStatus("OF");
+	        	chatroomUserDTO.setConnectionStatus("OF");
 	        	// 채팅방 마지막 접속 시간을 현재 시간으로 변경
-	        	userDTO.setLastConnectionTime(new Date());
-	        	chatroomUserDAO.updateChatUserInfo(userDTO);
+	        	chatroomUserDTO.setLastConnectionTime(new Date());
+	        	chatroomUserDAO.updateChatUserInfo(chatroomUserDTO);
 	            break;
 			case CHAT :
-	        	// 메시지를 DB에 저장하는 로직 호출
+	        	// 메시지를 DB에 저장
 	        	messageDAO.saveMessage(MessageEntity.toEntity(messageDTO));
 	        	break;
 	        default :
@@ -95,6 +107,32 @@ public class MessageService {
 	        throw new RuntimeException("예상치 못한 오류가 발생했습니다.", e);
 	    }
 		return;
+	}
+	
+	// 상대방의 채팅방 접속 상태 확인 후 변경
+	public void checkAndUpdateReceiverConnectionStatus(MessageUserDTO messageUserDTO, Date now) {
+		ChatroomUserDTO chatroomUserDTO = messageUserDTO.getChatroomUserDTO();
+		// 채팅 메시지를 보낸 사용자ID
+		long userId = messageUserDTO.getMessageDTO().getUserId();
+		long chatroomId = chatroomUserDTO.getChatroomId();
+		// 상대방이 채팅방을 삭제한 상태인지 확인
+		boolean ifDeleted = checkReceiverConnectionStatus(chatroomId, userId);
+		if (ifDeleted) {
+			// 삭제했다면 채팅방 접속상태 'OF'로 변경
+			updateReceiverConnectionStatus(chatroomId, userId, now);
+		}
+	}
+	
+	// 상대방의 채팅방 connectionStatus가 'DL'인지 확인
+	@Transactional(readOnly = true)
+	private boolean checkReceiverConnectionStatus(long chatroomId, long userId) {
+		return chatroomUserDAO.checkIfChatroomDeleted(chatroomId, userId);
+	}
+	
+	// 상대방의 채팅방 접속 상태를 'DL'에서 'OF'로 변경
+	@Transactional
+	private void updateReceiverConnectionStatus(long chatroomId, long userId, Date now) {
+		chatroomUserDAO.updateReceiverConnectionStatus(chatroomId, userId, now);
 	}
 
 }
