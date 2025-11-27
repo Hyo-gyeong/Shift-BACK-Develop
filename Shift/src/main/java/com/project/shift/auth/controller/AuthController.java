@@ -69,12 +69,16 @@ public class AuthController {
 
         // 로그아웃 시 쿠키 삭제
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .path("/")
+                .path("/auth/refresh")
                 .maxAge(0) // 즉시 만료
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
                 .build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .header("Clear-Site-Data", "\"cookies\", \"storage\", \"cache\"") // 좀비 쿠키 방지를 위한 추가 헤더
                 .body(Map.of("message", "로그아웃이 정상적으로 처리되었습니다."));
     }
 
@@ -111,7 +115,7 @@ public class AuthController {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true) // JavaScript에서 접근 불가
                 .secure(false)
-                .path("/") // 모든 경로에서 접근 가능
+                .path("/auth/refresh") // 특정 경로에서만 전송
                 .maxAge(7 * 24 * 60 * 60) // 7일
                 .sameSite("Lax") // CSRF 방어
                 .build();
