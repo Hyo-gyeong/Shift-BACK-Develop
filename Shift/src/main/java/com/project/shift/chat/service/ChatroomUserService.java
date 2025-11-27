@@ -92,4 +92,9 @@ public class ChatroomUserService {
 		dao.restoreChatroomUser(dto.getChatroomId(), dto.getSenderId(), "ON", now, senderChatroomName);
 		dao.restoreChatroomUser(dto.getChatroomId(), dto.getReceiverId(), "OF", now, receiverChatroomName);
 	}
+	
+	@Transactional
+	public int updateChatroomName(ChatroomUserDTO dto) {
+		return dao.updateChatroomName(dto.getChatroomUserId(), dto.getChatroomName());
+	}
 }

@@ -54,5 +54,22 @@ public class ChatroomUserController {
 	public void restoreChatroomBetweenUsers(@RequestBody DeletedChatroomUserInfoDTO dto){
 		chatroomUserService.restoreChatroomBetweenUsers(dto);
 	}
+	
+	// 채팅방 이름 변경
+	@PatchMapping("/chatroom-name")
+	public ResponseEntity<?> updateChatroomName(@RequestBody ChatroomUserDTO dto) {
+		try {
+			int updated = chatroomUserService.updateChatroomName(dto);
+			if (updated > 0) {
+				return ResponseEntity.ok("Chatroom name successfully updated!");
+			} else {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+		               .body("Chatroom not found");
+			}
+		} catch (Exception e) {
+			   return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                       .body("Error updating chatroom name: " + e.getMessage());
+		}
+	}
 
 }

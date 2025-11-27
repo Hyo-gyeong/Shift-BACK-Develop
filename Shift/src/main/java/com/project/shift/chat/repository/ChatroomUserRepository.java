@@ -115,4 +115,16 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	void updateReceiverConnectionStatus(@Param("id") long id,
 										@Param("userId") long userId,
 										@Param("now") Date now);
+	
+	// 채팅방 이름 변경
+	@Modifying
+	@Transactional
+    @Query("""
+    		UPDATE ChatroomUserEntity c
+    		SET c.chatroomName = :newChatroomName
+    		WHERE c.chatroomUserId = :id
+    		""")
+    int updateChatroomName(@Param("id") long id,
+    					   @Param("newChatroomName") String newChatroomName);
+	
 }
