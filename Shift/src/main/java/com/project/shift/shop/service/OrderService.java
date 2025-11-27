@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.AbstractMap;
+import java.util.Set;                  
+import java.util.stream.Stream;
 
 
 import org.springframework.http.HttpStatus;
@@ -194,6 +196,16 @@ public class OrderService implements IOrderService {
         if (uid != null && !order.getSenderId().equals(uid)) {
             throw new AccessDeniedException("본인 주문만 조회할 수 있습니다.");
         }
+        
+        // 상품명을 한 번에 로드 
+        List<Long> productIds = order.getOrderItems().stream()
+                .map(OrderItem::getProductId)
+                .distinct()
+                .toList();
+
+        var products = productRepository.findAllById(productIds);
+        var productMap = products.stream()
+                .collect(java.util.stream.Collectors.toMap(Product::getId, p -> p));
 
         List<OrderDetailItemDTO> itemDTOs = order.getOrderItems().stream().map(oi -> {
             OrderDetailItemDTO dto = new OrderDetailItemDTO();
@@ -201,10 +213,14 @@ public class OrderService implements IOrderService {
             dto.setQuantity(oi.getQuantity());
             dto.setItemPrice(oi.getItemPrice());
 
-            Product product = productRepository.findById(oi.getProductId()).orElse(null);
-            dto.setProductName(product != null ? product.getName() : null);
+            Product product = productMap.get(oi.getProductId());
+            if (product != null) {
+                dto.setProductName(product.getName());
+                dto.setCategoryId(product.getCategoryId());
+            }
             return dto;
-        }).collect(Collectors.toList());
+        }).toList();
+         
         
         // 결제 정보 (status/approvedAt 포함)
         Integer cash = order.getCashUsed() == null ? 0 : order.getCashUsed();
@@ -222,6 +238,9 @@ public class OrderService implements IOrderService {
         // 이름
         String senderName = userRepository.findById(order.getSenderId()).map(UserEntity::getName).orElse(null);
         String receiverName = userRepository.findById(order.getReceiverId()).map(UserEntity::getName).orElse(null);
+        
+        // 금액권 여부 판정
+        boolean voucherOrder = !products.isEmpty() && products.stream().allMatch(p -> p.getCategoryId() == 3);
 
         
         OrderDetailResponseDTO resp = new OrderDetailResponseDTO();
@@ -235,6 +254,7 @@ public class OrderService implements IOrderService {
         resp.setTotalPrice(order.getTotalPrice());
         resp.setPayment(paymentDTO);
         resp.setDelivery(deliveryDTO);
+        resp.setVoucherOrder(voucherOrder);
         return resp;
     }
     
@@ -497,11 +517,22 @@ public class OrderService implements IOrderService {
         // 1) 주문 조회
         Order order = orderDAO.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-
+        // 1-1) 금액권 주문 여부 체크 (모든 OrderItem의 categoryId가 3이면 금액권 전용 주문으로 간주)
+        boolean isVoucherOrder = order.getOrderItems() != null
+                && !order.getOrderItems().isEmpty()
+                && order.getOrderItems().stream().allMatch(oi -> {
+                    Product p = productRepository.findById(oi.getProductId()).orElse(null);
+                    return p != null && p.getCategoryId() == 3;
+                });
+        if (isVoucherOrder) {
+            throw new IllegalArgumentException("금액권 주문은 환불이 불가능합니다.");
+        }
+        
         // 2) 상태 체크: 결제 완료(S)인 주문만 환불 가능
         if (!"S".equals(order.getOrderStatus())) {
             throw new IllegalArgumentException("결제 완료된 주문만 환불할 수 있습니다.");
         }
+        
 
         // 3) 실제 결제 금액(현금 + 포인트) 계산
         int cashUsed = (order.getCashUsed() == null ? 0 : order.getCashUsed());
@@ -593,6 +624,14 @@ public class OrderService implements IOrderService {
         order.setPointUsed(0);
         order.setRemainPoints(0);
         order.setOrderStatus("P");
+
+        //주문상품 생성
+        OrderItem item = new OrderItem();
+        item.setProductId(dto.getProductId()); 
+        item.setQuantity(1);
+        item.setItemPrice(dto.getAmount());
+
+        order.addItem(item); 
 
         orderDAO.save(order);
 
