@@ -15,6 +15,8 @@ public class OrderDetailResponseDTO {
     private int totalPrice;
     private PaymentDTO payment;
     private DeliverySimpleDTO delivery;
+    private boolean voucherOrder;
+
 
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
@@ -44,7 +46,9 @@ public class OrderDetailResponseDTO {
     public void setPayment(PaymentDTO payment) { this.payment = payment; }
 
     public DeliverySimpleDTO getDelivery() { return delivery; }
-    public void setDelivery(DeliverySimpleDTO delivery) {  // ★ 핵심 수정
+    public void setDelivery(DeliverySimpleDTO delivery) { 
         this.delivery = delivery;
     }
+    public boolean isVoucherOrder() { return voucherOrder; }
+    public void setVoucherOrder(boolean voucherOrder) { this.voucherOrder = voucherOrder; }
 }
