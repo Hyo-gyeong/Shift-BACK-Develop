@@ -1,5 +1,6 @@
 package com.project.shift.chat.controller;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -27,6 +28,8 @@ public class MessageController {
     
 	@MessageMapping("/send")
     public void sendMessage(@Payload MessageUserDTO dto) {
+		Date now = new Date();
+		messageService.checkAndUpdateReceiverConnectionStatus(dto, now);
 		messageService.sendAndSaveMessage(dto.getMessageDTO(), dto.getChatroomUserDTO());
     }
 	
