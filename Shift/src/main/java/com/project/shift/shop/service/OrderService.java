@@ -302,28 +302,28 @@ public class OrderService implements IOrderService {
     //############### 선물 메시지 세팅 및 반환 ###############
     @Override
     public String setGiftMessage(PaymentRequestDTO requestDTO) {
-    	
+
         Order order = orderDAO.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
-        boolean isVoucherOrder = order.getOrderItems().isEmpty();
+        // ★ 금액권 판별 (categoryId == 3)
+        boolean isVoucherOrder =
+                order.getOrderItems().stream().allMatch(item -> {
+                    Product p = productRepository.findById(item.getProductId()).orElse(null);
+                    return p != null && p.getCategoryId() == 3;
+                });
 
         // 콤마 포맷
         NumberFormat nf = NumberFormat.getNumberInstance(Locale.KOREA);
-        String formattedPrice = nf.format(order.getTotalPrice());   // → "1,000"
+        String formattedPrice = nf.format(order.getTotalPrice());
 
-        String content;
+        // 메시지 생성
         if (isVoucherOrder) {
-            // 2줄 + 콤마 적용
-            content = "💳 금액권 선물이 도착했습니다!\n"
-                    + formattedPrice + "원";
+            return "💳 금액권 선물이 도착했습니다!\n" + formattedPrice + "원";
         } else {
-            content = "🎁 선물이 도착했습니다!";
+            return "🎁 선물이 도착했습니다!";
         }
-
-        return content;
     }
-    
     
     // SHOP-009 결제 요청
     @Override
