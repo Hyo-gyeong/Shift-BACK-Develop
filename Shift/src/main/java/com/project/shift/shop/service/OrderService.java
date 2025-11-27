@@ -477,7 +477,17 @@ public class OrderService implements IOrderService {
         // 1) 주문 조회
         Order order = orderDAO.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-
+        // 1-1) 금액권 주문 여부 체크 (모든 OrderItem의 categoryId가 3이면 금액권 전용 주문으로 간주)
+        boolean isVoucherOrder = order.getOrderItems() != null
+                && !order.getOrderItems().isEmpty()
+                && order.getOrderItems().stream().allMatch(oi -> {
+                    Product p = productRepository.findById(oi.getProductId()).orElse(null);
+                    return p != null && p.getCategoryId() == 3;
+                });
+        if (isVoucherOrder) {
+            throw new IllegalArgumentException("금액권 주문은 환불이 불가능합니다.");
+        }
+        
         // 2) 상태 체크: 결제 완료(S)인 주문만 환불 가능
         if (!"S".equals(order.getOrderStatus())) {
             throw new IllegalArgumentException("결제 완료된 주문만 환불할 수 있습니다.");
@@ -574,6 +584,14 @@ public class OrderService implements IOrderService {
         order.setPointUsed(0);
         order.setRemainPoints(0);
         order.setOrderStatus("P");
+
+        //주문상품 생성
+        OrderItem item = new OrderItem();
+        item.setProductId(dto.getProductId()); 
+        item.setQuantity(1);
+        item.setItemPrice(dto.getAmount());
+
+        order.addItem(item); 
 
         orderDAO.save(order);
 
