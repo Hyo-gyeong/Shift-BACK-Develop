@@ -263,6 +263,27 @@ public class OrderService implements IOrderService {
     public PaymentResponseDTO requestGiftPayment(PaymentRequestDTO requestDTO, long chatroomId, long userId) {
         PaymentResponseDTO dto = requestPayment(requestDTO);
 
+        String content = setGiftMessage(requestDTO);
+
+        MessageDTO messageDTO = MessageDTO.builder()
+                .isGift("Y")
+                .type(MessageDTO.MessageType.CHAT)
+                .chatroomId(chatroomId)
+                .sendDate(new Date())
+                .unreadCount(1)
+                .content(content)
+                .userId(userId)
+                .build();
+
+        messageService.sendAndSaveMessage(messageDTO, null);
+
+        return dto;
+    }
+    
+    //############### 선물 메시지 세팅 및 반환 ###############
+    @Override
+    public String setGiftMessage(PaymentRequestDTO requestDTO) {
+    	
         Order order = orderDAO.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다."));
 
@@ -281,20 +302,9 @@ public class OrderService implements IOrderService {
             content = "🎁 선물이 도착했습니다!";
         }
 
-        MessageDTO messageDTO = MessageDTO.builder()
-                .isGift("Y")
-                .type(MessageDTO.MessageType.CHAT)
-                .chatroomId(chatroomId)
-                .sendDate(new Date())
-                .unreadCount(1)
-                .content(content)
-                .userId(userId)
-                .build();
-
-        messageService.sendAndSaveMessage(messageDTO, null);
-
-        return dto;
+        return content;
     }
+    
     
     // SHOP-009 결제 요청
     @Override
