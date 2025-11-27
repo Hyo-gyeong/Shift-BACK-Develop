@@ -17,6 +17,9 @@ public interface IOrderService {
 
     // ######## 선물 결제 및 메시지 전송 ##############
     PaymentResponseDTO requestGiftPayment(PaymentRequestDTO requestDTO, long chatroomId, long userId);
+    
+    // ######## 선물 메시지 세팅 및 반환 ##############
+    String setGiftMessage(PaymentRequestDTO requestDTO);
   
     // SHOP-010 결제 결과 조회
     PaymentResultDTO getPaymentResult(Long orderId);
