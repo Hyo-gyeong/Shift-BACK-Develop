@@ -1,7 +1,10 @@
 package com.project.shift.shop.dto;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 public class DeliverySimpleDTO {
 
+	@JsonProperty("status") 
     private String deliveryStatus;
     private String trackingNumber;
 

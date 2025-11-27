@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.AbstractMap;
+import java.util.Set;                  
+import java.util.stream.Stream;
 
 
 import org.springframework.http.HttpStatus;
@@ -192,6 +194,16 @@ public class OrderService implements IOrderService {
         if (uid != null && !order.getSenderId().equals(uid)) {
             throw new AccessDeniedException("본인 주문만 조회할 수 있습니다.");
         }
+        
+        // 상품명을 한 번에 로드 
+        List<Long> productIds = order.getOrderItems().stream()
+                .map(OrderItem::getProductId)
+                .distinct()
+                .toList();
+
+        var products = productRepository.findAllById(productIds);
+        var productMap = products.stream()
+                .collect(java.util.stream.Collectors.toMap(Product::getId, p -> p));
 
         List<OrderDetailItemDTO> itemDTOs = order.getOrderItems().stream().map(oi -> {
             OrderDetailItemDTO dto = new OrderDetailItemDTO();
@@ -199,13 +211,14 @@ public class OrderService implements IOrderService {
             dto.setQuantity(oi.getQuantity());
             dto.setItemPrice(oi.getItemPrice());
 
-            Product product = productRepository.findById(oi.getProductId()).orElse(null);
+            Product product = productMap.get(oi.getProductId());
             if (product != null) {
-                dto.setProductName(product.getName());   
+                dto.setProductName(product.getName());
                 dto.setCategoryId(product.getCategoryId());
             }
             return dto;
-        }).collect(Collectors.toList());
+        }).toList();
+         
         
         // 결제 정보 (status/approvedAt 포함)
         Integer cash = order.getCashUsed() == null ? 0 : order.getCashUsed();
@@ -223,6 +236,9 @@ public class OrderService implements IOrderService {
         // 이름
         String senderName = userRepository.findById(order.getSenderId()).map(UserEntity::getName).orElse(null);
         String receiverName = userRepository.findById(order.getReceiverId()).map(UserEntity::getName).orElse(null);
+        
+        // 금액권 여부 판정
+        boolean voucherOrder = !products.isEmpty() && products.stream().allMatch(p -> p.getCategoryId() == 3);
 
         
         OrderDetailResponseDTO resp = new OrderDetailResponseDTO();
@@ -236,6 +252,7 @@ public class OrderService implements IOrderService {
         resp.setTotalPrice(order.getTotalPrice());
         resp.setPayment(paymentDTO);
         resp.setDelivery(deliveryDTO);
+        resp.setVoucherOrder(voucherOrder);
         return resp;
     }
     
