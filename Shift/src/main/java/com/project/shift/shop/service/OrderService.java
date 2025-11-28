@@ -28,6 +28,7 @@ import com.project.shift.chat.service.MessageService;
 import com.project.shift.product.dao.IPointDAO;
 import com.project.shift.product.entity.PointTransaction;
 import com.project.shift.product.entity.Product;
+import com.project.shift.product.repository.PointTransactionRepository;
 import com.project.shift.product.repository.ProductRepository;
 import com.project.shift.shop.dao.IOrderDAO;
 import com.project.shift.shop.dto.DeliverySimpleDTO;
@@ -69,6 +70,7 @@ public class OrderService implements IOrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final MessageService messageService;
+    private final PointTransactionRepository pointTransactionRepository;
 
     private String toDisplayOrderStatus(String code) {
         if (code == null) return "PENDING";
@@ -546,29 +548,30 @@ public class OrderService implements IOrderService {
         // 1) 주문 조회
         Order order = orderDAO.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        // 1-1) 금액권 주문 여부 체크 (모든 OrderItem의 categoryId가 3이면 금액권 전용 주문으로 간주)
+
+        // 1-1) 금액권 주문 여부 체크
         boolean isVoucherOrder = order.getOrderItems() != null
                 && !order.getOrderItems().isEmpty()
                 && order.getOrderItems().stream().allMatch(oi -> {
                     Product p = productRepository.findById(oi.getProductId()).orElse(null);
                     return p != null && p.getCategoryId() == 3;
                 });
+
         if (isVoucherOrder) {
             throw new IllegalArgumentException("금액권 주문은 환불이 불가능합니다.");
         }
-        
-        // 2) 상태 체크: 결제 완료(S)인 주문만 환불 가능
+
+        // 2) 상태 체크
         if (!"S".equals(order.getOrderStatus())) {
             throw new IllegalArgumentException("결제 완료된 주문만 환불할 수 있습니다.");
         }
-        
 
-        // 3) 실제 결제 금액(현금 + 포인트) 계산
+        // 3) 실제 결제 금액(현금 + 포인트)
         int cashUsed = (order.getCashUsed() == null ? 0 : order.getCashUsed());
         int pointUsed = (order.getPointUsed() == null ? 0 : order.getPointUsed());
         int paidTotal = cashUsed + pointUsed;
 
-        // 4) 요청 amount 검증 (전체환불만 허용)
+        // 4) 요청 금액 검증
         Integer requestedAmount = requestDTO.getAmount();
         if (requestedAmount == null || requestedAmount <= 0) {
             throw new IllegalArgumentException("환불 금액은 0보다 커야 합니다.");
@@ -577,7 +580,7 @@ public class OrderService implements IOrderService {
             throw new IllegalArgumentException("환불 금액이 결제 금액과 일치하지 않습니다.");
         }
 
-        // 5) sender 포인트 환불 처리 (결제 때 사용한 포인트를 다시 적립)
+        // 5) sender 포인트 환불 처리 (포인트 복원)
         UserEntity sender = userRepository.findById(order.getSenderId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
@@ -589,20 +592,30 @@ public class OrderService implements IOrderService {
         sender.setPoints(newPoints);
         userRepository.save(sender);
 
-        // 6) 주문 상태 변경 (C: 취소/환불 완료)
+        // 5-1) 포인트 거래내역: 복원(R) 기록 
+        PointTransaction refundTx = new PointTransaction();
+        refundTx.setUserId(sender.getUserId());
+        refundTx.setType("R");                  // R: 복원
+        refundTx.setAmount(pointRefunded);      // 환불 포인트
+        refundTx.setOrderId(order.getOrderId());
+        refundTx.setCreatedAt(LocalDateTime.now());
+
+        pointTransactionRepository.save(refundTx);
+
+        // 6) 주문 상태 변경
         order.setOrderStatus("C");
         order.setRemainPoints(newPoints);
         orderDAO.save(order);
 
         // 7) 배송 상태 변경
         deliveryRepository.findByOrder_OrderId(order.getOrderId())
-                .ifPresent(delivery -> {                   
+                .ifPresent(delivery -> {
                     if (!"C".equals(delivery.getDeliveryStatus())) {
-                        delivery.setDeliveryStatus("C");   
+                        delivery.setDeliveryStatus("C");
                         deliveryRepository.save(delivery);
                     }
                 });
-        
+
         // 8) 응답 DTO 구성
         RefundResponseDTO resp = new RefundResponseDTO();
         resp.setOrderId(order.getOrderId());
