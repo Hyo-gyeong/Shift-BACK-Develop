@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.DeletedChatroomUserInfoDTO;
 import com.project.shift.chat.service.ChatroomUserService;
-import com.project.shift.global.jwt.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 public class ChatroomUserController {
 
 	private final ChatroomUserService chatroomUserService;
-	private final JwtService jwtService;
 	
 	// 특정 두 유저가 참여한 채팅방 정보 확인 및 반환
 	@GetMapping("/receiver/{receiverId}")
