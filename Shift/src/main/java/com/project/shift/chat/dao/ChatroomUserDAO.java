@@ -74,4 +74,9 @@ public class ChatroomUserDAO {
 	public void updateReceiverConnectionStatus(long chatroomId, long userId, Date now) {
 		chatroomUserRepo.updateReceiverConnectionStatus(chatroomId, userId, now);
 	}
+	
+	// 채팅방 이름 변경
+	public int updateChatroomName(long chatroomUserId, String newChatroomName) {
+		return chatroomUserRepo.updateChatroomName(chatroomUserId, newChatroomName);
+	}
 }
