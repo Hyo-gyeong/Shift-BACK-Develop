@@ -1,10 +1,11 @@
-package com.project.shift.chat.validation.service;
-
-import com.project.shift.chat.validation.dto.InputValidationResponse;
-import com.project.shift.chat.validation.util.InputSecurityValidator;
-import org.springframework.stereotype.Service;
+package com.project.shift.global.validation.service;
 
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.project.shift.global.validation.dto.InputValidationResponse;
+import com.project.shift.global.validation.util.InputSecurityValidator;
 
 @Service
 public class SecurityValidationService {

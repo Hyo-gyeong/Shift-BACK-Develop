@@ -1,4 +1,4 @@
-package com.project.shift.chat.validation.util;
+package com.project.shift.global.validation.util;
 
 import java.util.ArrayList;
 import java.util.List;

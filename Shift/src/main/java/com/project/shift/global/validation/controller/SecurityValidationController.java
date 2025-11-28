@@ -1,4 +1,4 @@
-package com.project.shift.chat.validation.controller;
+package com.project.shift.global.validation.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project.shift.chat.validation.dto.InputValidationRequest;
-import com.project.shift.chat.validation.service.SecurityValidationService;
+import com.project.shift.global.validation.dto.InputValidationRequest;
+import com.project.shift.global.validation.service.SecurityValidationService;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,4 +1,4 @@
-package com.project.shift.chat.validation.dto;
+package com.project.shift.global.validation.dto;
 
 import java.util.List;
 
