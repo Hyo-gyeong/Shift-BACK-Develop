@@ -11,6 +11,8 @@ import com.project.shift.chat.dao.ChatroomDAO;
 import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomListProjection;
+import com.project.shift.chat.dto.MessageSearchResultDTO;
+import com.project.shift.chat.dto.MessageSearchResultProjection;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.entity.ChatroomEntity;
 
@@ -30,31 +32,25 @@ public class ChatroomService {
 	              .map(ChatroomDTO::toDto);
 	}
 	
+	// 채팅방 검색 - 1. 검색 키워드가 참여한 채팅 목록의 상대방 이름에 포함될 때
+	@Transactional(readOnly = true)
+	public List<ChatroomListDTO> searchChatroomUsersName(String input, long userId) {
+		List<ChatroomListProjection> chatroomList = dao.searchChatroomUsersName(input, userId);
+		return chatroomListDTOBuilder(chatroomList, userId);
+	}
+	
+	// 채팅 검색 - 채팅 메시지 검색
+	@Transactional(readOnly = true)
+	public List<MessageSearchResultDTO> searchChatroomMessages(String input, long userId){
+		List<MessageSearchResultProjection> chatroomList = dao.searchChatroomMessages(input, userId);
+		return MessageSearchResultDTOBuilder(chatroomList, userId);
+	}
+		
 	// 사용자가 참여한 채팅방 목록 반환
 	@Transactional(readOnly = true)
 	public List<ChatroomListDTO> getUserChatrooms(long userId){
 		List<ChatroomListProjection> chatroomList = dao.getUserChatrooms(userId);
-		return chatroomList
-			   .stream()
-			   .map(p -> {
-				   ChatroomListDTO dto = ChatroomListDTO.builder()
-                	.chatroomUserId(p.getChatroomUserId())
-                    .chatroomId(p.getChatroomId())
-                    .chatroomName(p.getChatroomName())
-                    .lastMsgContent(p.getLastMsgContent())
-                    .lastMsgDate(toDate(p.getLastMsgDate()))
-                    .lastConnectionTime(toDate(p.getLastConnectionTime()))
-                    .createdTime(toDate(p.getCreatedTime()))
-                    .connectionStatus(p.getConnectionStatus())
-                    .isDarkMode(p.getIsDarkMode())
-                    .build();
-
-                // unreadCount 계산
-                dto.setUnreadCount(dao.countUnreadMessages(p.getChatroomId(), userId));
-
-                return dto;
-            })
-            .toList();
+		return chatroomListDTOBuilder(chatroomList, userId);
 	}
 	
 	// Date 세팅
@@ -99,4 +95,44 @@ public class ChatroomService {
 		// 채팅방 최초 생성시 해당 시점 이후의 채팅을 읽음처리 하기 위한 기준
 		payload.getSender().setLastConnectionTime(now);
 	}
+	
+	private List<ChatroomListDTO> chatroomListDTOBuilder(List<ChatroomListProjection> chatroomList, long userId){
+		return chatroomList.stream().map(p -> {
+			   ChatroomListDTO dto = ChatroomListDTO.builder()
+            	.chatroomUserId(p.getChatroomUserId())
+                .chatroomId(p.getChatroomId())
+                .chatroomName(p.getChatroomName())
+                .lastMsgContent(p.getLastMsgContent())
+                .lastMsgDate(toDate(p.getLastMsgDate()))
+                .lastConnectionTime(toDate(p.getLastConnectionTime()))
+                .createdTime(toDate(p.getCreatedTime()))
+                .connectionStatus(p.getConnectionStatus())
+                .isDarkMode(p.getIsDarkMode())
+                .build();
+            // unreadCount 계산
+            dto.setUnreadCount(dao.countUnreadMessages(p.getChatroomId(), userId));
+            
+            return dto;
+        }).toList();
+	}
+	
+	private List<MessageSearchResultDTO> MessageSearchResultDTOBuilder(List<MessageSearchResultProjection> chatroomList,
+																		long userId){
+		return chatroomList.stream().map(p -> {
+			   MessageSearchResultDTO dto = MessageSearchResultDTO.builder()
+			    .chatroomUserId(p.getChatroomUserId())
+                .chatroomId(p.getChatroomId())
+                .chatroomName(p.getChatroomName())
+                .lastConnectionTime(toDate(p.getLastConnectionTime()))
+                .createdTime(toDate(p.getCreatedTime()))
+                .connectionStatus(p.getConnectionStatus())
+                .isDarkMode(p.getIsDarkMode())
+                .message(p.getMessage())
+                .build();
+           // unreadCount 계산
+           dto.setUnreadCount(dao.countUnreadMessages(p.getChatroomId(), userId));
+           return dto;
+     }).toList();
+	}
+
 }
