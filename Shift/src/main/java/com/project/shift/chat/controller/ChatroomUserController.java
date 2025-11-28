@@ -4,6 +4,8 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,10 +34,8 @@ public class ChatroomUserController {
 	@GetMapping("/receiver/{receiverId}")
 	public ResponseEntity<?> getChatroomWithReceiver(HttpServletRequest request, @PathVariable long receiverId) {
 		try {
-			// jwt에서 현재 사용자의 토큰 추출
-			String token = jwtService.extractTokenFromRequest(request);
-	        // 토큰에서 현재 사용자의 PK 추출
-			long userId = jwtService.extractUserIdFromValidToken(token);
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	        Long userId = Long.parseLong(auth.getName());
 			Optional<ChatroomUserDTO> chatroomUserDTO = chatroomUserService.getChatroomWithReceiver(userId, receiverId);
 			if (chatroomUserDTO.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND)

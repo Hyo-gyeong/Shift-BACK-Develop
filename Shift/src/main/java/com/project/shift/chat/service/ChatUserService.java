@@ -1,10 +1,13 @@
 package com.project.shift.chat.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.project.shift.chat.dao.ChatUserDAO;
 import com.project.shift.chat.dao.FriendDAO;
+import com.project.shift.chat.dto.ChatUserMyPageInfoDTO;
 import com.project.shift.chat.dto.ChatUserSearchResultDTO;
 import com.project.shift.chat.entity.ChatUserEntity;
 import com.project.shift.chat.exception.UserNotFoundException;
@@ -35,6 +38,20 @@ public class ChatUserService {
 				.name(entity.getName())
 				.phone(entity.getPhone())
 				.build();
+	}
+	
+	@Transactional(readOnly = true)
+	public Optional<ChatUserMyPageInfoDTO> getChatUserInfo(long userId) {
+		Optional<ChatUserEntity> entity = chatUserDAO.getChatUserInfo(userId);
+		if (!entity.isEmpty()) {
+			ChatUserEntity e = entity.get();
+			return Optional.of(ChatUserMyPageInfoDTO.builder()
+					.id(e.getLoginId())
+					.name(e.getName())
+					.phone(e.getPhone())
+					.build());
+		}
+		return Optional.empty();
 	}
 	
 }

@@ -4,11 +4,14 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.project.shift.chat.dto.ChatUserMyPageInfoDTO;
 import com.project.shift.chat.dto.ChatUserSearchResultDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.service.ChatUserService;
@@ -54,12 +57,27 @@ public class ChatUserController {
 	// 전화번호로 사용자 검색 및 친구여부 반환
 	@GetMapping("/search/{phone}")
 	public ChatUserSearchResultDTO searchUser(HttpServletRequest request, @PathVariable String phone) {
-		// jwt에서 현재 사용자의 토큰 추출
-		String token = jwtService.extractTokenFromRequest(request);
-        // 토큰에서 현재 사용자의 PK 추출
-		long userId = jwtService.extractUserIdFromValidToken(token);
-				
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
 		return chatUserService.searchUserByPhone(userId, phone);		
 	}
 	
+	// 채팅-마이페이지 개인 정보(ID, 이름, 핸드폰 번호) 반환, 프로필 이미지는 추후 추가 예정
+	@GetMapping("/me")
+	public ResponseEntity<?> getChatUserInfo() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+		try {
+			Optional<ChatUserMyPageInfoDTO> mypageDto = chatUserService.getChatUserInfo(userId);
+			if (mypageDto.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Chatroom user not found");
+	        } else {
+				return ResponseEntity.ok(mypageDto);
+	        }
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                             .body("Error searching chatroom user: " + e.getMessage());
+	    }
+	}
 }
