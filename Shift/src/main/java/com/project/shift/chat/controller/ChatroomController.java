@@ -1,10 +1,13 @@
 package com.project.shift.chat.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.dto.ChatroomListDTO;
+import com.project.shift.chat.dto.MessageSearchResultDTO;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.service.ChatroomService;
 import com.project.shift.chat.service.ChatroomUserService;
@@ -34,8 +38,10 @@ public class ChatroomController {
 	private final MessageService messageService;
 	
 	// 사용자가 참여한 채팅방 목록 반환
-	@GetMapping("/users/{userId}")
-	public List<ChatroomListDTO> getUserChatroomList(@PathVariable long userId){
+	@GetMapping
+	public List<ChatroomListDTO> getUserChatroomList(){
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
 		List<ChatroomListDTO> chatroomList = chatroomService.getUserChatrooms(userId);
 		return chatroomList;
 	}
@@ -108,6 +114,36 @@ public class ChatroomController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 	                             .body("Error deleting chatroom: " + e.getMessage());
 	    }
+	}
+	
+	/*
+	 * ## 채팅 검색 ##
+	 * 검색 방법에는 두 가지가 있음
+	 * 1. 검색 키워드가 참여한 채팅 목록의 상대방 이름에 포함될 때
+	 * 2. 검색 키워드가 참여한 채팅방의 메시지 내용에 포함될 때
+	 * 
+	 * 각각의 경우가 반환 타입이 다름
+	 * 1. 기존의 채팅방 목록 형태와 일치
+	 * 2. 기존의 채팅방 목록에 메시지 내용이 추가되고 채팅방의 최신 메시지와 최신 메시지 전송 시간이 빠짐
+	 * 
+	 * 사용자가 검색을 하면 두 API를 호출하면 되고 검색 결과 UI를 위, 아래로 나누어 보여주는 것을 고려하여 설계
+	 */
+	// 채팅방 검색 - 1. 검색 키워드가 참여한 채팅 목록의 상대방 이름에 포함될 때
+	@GetMapping("/search/name")
+	public List<ChatroomListDTO> searchChatroomUsersName(@RequestBody Map<String, String> body){
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+		List<ChatroomListDTO> chatroomList = chatroomService.searchChatroomUsersName(body.get("input"), userId);
+		return chatroomList;
+	}
+	
+	// 채팅방 검색 - 2. 검색 키워드가 참여한 채팅방의 메시지 내용에 포함될 때
+	@GetMapping("/search/messages")
+	public List<MessageSearchResultDTO> searchChatroomMessages(@RequestBody Map<String, String> body){
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+        List<MessageSearchResultDTO> messageList = chatroomService.searchChatroomMessages(body.get("input"), userId);
+		return messageList;
 	}
 
 }
