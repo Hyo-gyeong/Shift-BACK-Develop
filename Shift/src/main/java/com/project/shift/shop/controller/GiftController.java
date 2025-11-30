@@ -22,8 +22,10 @@ public class GiftController {
     // GIFT-01 보낸 선물 조회
     @GetMapping("/sent")
     public ResponseEntity<?> getSentGifts() {
-        // 구현 예정
-        return ResponseEntity.ok().build();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+
+        return ResponseEntity.ok(giftService.getSentGifts(userId));
     }
 
     // GIFT-02 받은 선물 조회
