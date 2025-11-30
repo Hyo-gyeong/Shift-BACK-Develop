@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,9 +39,11 @@ public class GiftController {
     }
 
     // GIFT-03 선물 상세 조회
-    @GetMapping("/products/{giftId}")
-    public ResponseEntity<?> getGiftDetails() {
-        // 구현 예정
-        return ResponseEntity.ok().build();
+    @GetMapping("/products/{orderId}")
+    public ResponseEntity<?> getGiftDetails(@PathVariable Long orderId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+
+        return ResponseEntity.ok(giftService.getDetailGift(userId, orderId));
     }
 }

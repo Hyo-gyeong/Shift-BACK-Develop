@@ -4,29 +4,29 @@ import com.project.shift.product.dao.IImageDAO;
 import com.project.shift.product.dao.IProductDAO;
 import com.project.shift.product.entity.Image;
 import com.project.shift.product.entity.Product;
+import com.project.shift.shop.dao.IDeliveryDAO;
 import com.project.shift.shop.dao.IOrderDAO;
+import com.project.shift.shop.dto.gift.GiftDetailResponseDTO;
 import com.project.shift.shop.dto.gift.GiftListResponseDTO;
+import com.project.shift.shop.entity.Delivery;
 import com.project.shift.shop.entity.Order;
 import com.project.shift.user.dao.IUserDAO;
+import com.project.shift.user.entity.UserEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service
-public class GiftService implements IGiftService{
+@RequiredArgsConstructor
+public class GiftService implements IGiftService {
 
     private final IOrderDAO orderDAO;
     private final IProductDAO productDAO;
     private final IUserDAO userDAO;
     private final IImageDAO imageDAO;
-
-    public GiftService(IOrderDAO orderDAO, IProductDAO productDAO, IUserDAO userDAO, IImageDAO imageDAO) {
-        this.orderDAO = orderDAO;
-        this.productDAO = productDAO;
-        this.userDAO = userDAO;
-        this.imageDAO = imageDAO;
-    }
+    private final IDeliveryDAO deliveryDAO;
 
     @Override
     public List<GiftListResponseDTO> getSentGifts(Long myUserId) {
@@ -39,7 +39,7 @@ public class GiftService implements IGiftService{
 
         // 상품id 수집
         Set<Long> productIds = new HashSet<>();
-        
+
         // 받는 사람id 수집
         Set<Long> receiverIds = new HashSet<>();
 
@@ -62,7 +62,7 @@ public class GiftService implements IGiftService{
 
         // users 테이블에서 받는 사람 이름 조회
         Map<Long, String> receiverMap = new HashMap<>();
-        for(Long id : receiverIds) {
+        for (Long id : receiverIds) {
             userDAO.findById(id).ifPresent(u ->
                     receiverMap.put(id, u.getName())
             );
@@ -70,7 +70,7 @@ public class GiftService implements IGiftService{
 
         // image 테이블에서 대표 이미지 URL 조회
         Map<Long, String> imageMap = new HashMap<>();
-        for(Long pid : productIds) {
+        for (Long pid : productIds) {
             List<Image> images = imageDAO.findByProductId(pid);
             String url = images.stream()
                     .filter(img -> "Y".equals(img.getIsRepresentative()))
@@ -133,7 +133,7 @@ public class GiftService implements IGiftService{
 
         // 상품id 수집
         Set<Long> productIds = new HashSet<>();
-        
+
         // 보낸 사람id 수집
         Set<Long> senderIds = new HashSet<>();
 
@@ -166,7 +166,7 @@ public class GiftService implements IGiftService{
 
         // image 테이블에서 대표 이미지 URL 조회
         // 이미지 URL
-        Map<Long, String> imageMap = new  HashMap<>();
+        Map<Long, String> imageMap = new HashMap<>();
         for (Long pid : productIds) {
             List<Image> images = imageDAO.findByProductId(pid);
             String url = images.stream()
@@ -215,5 +215,73 @@ public class GiftService implements IGiftService{
             result.add(dto);
         }
         return result;
+    }
+
+    @Override
+    public GiftDetailResponseDTO getDetailGift(Long userId, Long orderId) {
+
+        Order order = orderDAO.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        Long senderId = order.getSenderId();
+        Long receiverId = order.getReceiverId();
+
+        // 접근 권한 확인
+        if (!userId.equals(senderId) && !userId.equals(receiverId)) {
+            throw new IllegalArgumentException("해당 선물에 대한 접근 권한이 없습니다.");
+        }
+
+        if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
+            throw new IllegalArgumentException("해당 주문에 상품이 없습니다.");
+        }
+
+        // product 정보 조회
+        Long productId = order.getOrderItems().getFirst().getProductId();
+        Integer quantity = order.getOrderItems().getFirst().getQuantity();
+
+        Product product = productDAO.findById(productId);
+        if (product == null) {
+            throw new IllegalArgumentException("해당 상품이 존재하지 않습니다.");
+        }
+
+        // image 정보 조회
+        List<Image> images = imageDAO.findByProductId(productId);
+        String imageUrl = images.stream()
+                .filter(img -> "Y".equals(img.getIsRepresentative()))
+                .findFirst()
+                .map(Image::getImageUrl)
+                .orElse(null); // 이미지가 없으면 null
+
+        // user 정보 조회
+        String senderName = userDAO.findById(senderId)
+                .map(UserEntity::getName).orElse("알 수 없음");
+        String receiverName = userDAO.findById(receiverId)
+                .map(UserEntity::getName).orElse("알 수 없음");
+
+        // 배송지 정보 조회
+        String deliveryAddress = null;
+        try {
+            Delivery delivery = deliveryDAO.findByOrderId(orderId);
+            if (delivery != null) {
+                if (userId.equals(receiverId)) {
+                    deliveryAddress = delivery.getDeliveryAddress();
+                } else {
+                    deliveryAddress = null;
+                }
+            }
+        } catch (Exception e) {
+            // 배송 정보가 없을 경우 무시
+        }
+
+        return GiftDetailResponseDTO.builder()
+                .orderId(order.getOrderId())
+                .productName(product.getName())
+                .imageUrl(imageUrl)
+                .senderName(senderName)
+                .receiverName(receiverName)
+                .status(order.getOrderStatus())
+                .quantity(quantity)
+                .deliveryAddress(deliveryAddress)
+                .build();
     }
 }
