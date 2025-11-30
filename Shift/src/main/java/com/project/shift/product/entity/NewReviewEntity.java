@@ -4,7 +4,7 @@ import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
-import com.project.shift.product.dto.NewReviewDTO;
+import com.project.shift.product.dto.ReviewOriginDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,7 +57,7 @@ public class NewReviewEntity {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdDate;
     
-    public static NewReviewEntity toEntity(NewReviewDTO dto) {
+    public static NewReviewEntity toEntity(ReviewOriginDTO dto) {
         return NewReviewEntity.builder()
                 .reviewId(dto.getReviewId())
                 .userId(dto.getUserId())
