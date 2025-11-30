@@ -16,7 +16,11 @@ import com.project.shift.product.dto.ReviewOriginDTO;
 import com.project.shift.product.dto.UserReviewDetailDTO;
 import com.project.shift.product.dto.UserReviewDetailProjection;
 import com.project.shift.product.entity.Review;
+import com.project.shift.product.entity.ReviewOriginEntity;
+import com.project.shift.product.repository.ReviewEntityRepository;
 import com.project.shift.user.dao.IUserDAO;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * [SERVICE-003] 리뷰 관련 비즈니스 로직 처리 클래스
@@ -26,15 +30,13 @@ import com.project.shift.user.dao.IUserDAO;
  * ※ 리뷰 작성자(UserEntity)와 조인하여 userName 반환
  */
 @Service
+@RequiredArgsConstructor
 public class ReviewService implements IReviewService {
 
     private final IReviewDAO reviewDAO;
     private final IUserDAO userDAO;
+    private final ReviewEntityRepository reviewEntityRepository;
 
-    public ReviewService(IReviewDAO reviewDAO, IUserDAO userDAO) {
-        this.reviewDAO = reviewDAO;
-        this.userDAO = userDAO;
-    }
 
     /** [PROD-008] 특정 상품의 리뷰 목록 조회 */
     @Override
@@ -85,7 +87,7 @@ public class ReviewService implements IReviewService {
 		dto.setCreatedDate(new Date());
     	dto.setUserId(userId);
     	
-		reviewDAO.saveNewReview(dto);		
+		reviewDAO.saveNewReview(ReviewOriginEntity.toEntity(dto));		
 	}
 
 	/** [PROD-011] 리뷰 삭제 */
@@ -99,6 +101,13 @@ public class ReviewService implements IReviewService {
 	@Override
 	@Transactional
 	public void updateReview(ReviewOriginDTO dto) {
-		reviewDAO.updateReview(dto);
+		ReviewOriginEntity entity = reviewEntityRepository.findById(dto.getReviewId())
+		        .orElseThrow(() -> new RuntimeException("리뷰가 존재하지 않습니다."));
+		
+		entity.setContent(dto.getContent());
+		entity.setCreatedDate(new Date());
+		entity.setRating(dto.getRating());
+		
+		reviewDAO.updateReview(entity);
 	}
 }

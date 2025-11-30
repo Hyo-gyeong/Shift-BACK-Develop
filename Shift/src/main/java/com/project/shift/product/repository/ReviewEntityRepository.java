@@ -2,8 +2,8 @@ package com.project.shift.product.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.project.shift.product.entity.NewReviewEntity;
+import com.project.shift.product.entity.ReviewOriginEntity;
 
-public interface ReviewEntityRepository extends JpaRepository<NewReviewEntity, Long> {
+public interface ReviewEntityRepository extends JpaRepository<ReviewOriginEntity, Long> {
 
 }

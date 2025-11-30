@@ -2,9 +2,9 @@ package com.project.shift.product.dao;
 
 import java.util.List;
 
-import com.project.shift.product.dto.ReviewOriginDTO;
 import com.project.shift.product.dto.UserReviewDetailProjection;
 import com.project.shift.product.entity.Review;
+import com.project.shift.product.entity.ReviewOriginEntity;
 
 /**
  * [DAO-INT-004] 리뷰 DAO 인터페이스
@@ -18,9 +18,9 @@ public interface IReviewDAO {
     /** [PROD-009] 특정 사용자가 작성한 모든 리뷰 목록 조회 (최신 작성일 순) */
     List<UserReviewDetailProjection> findUserReviewDetails(Long userId);
     /** [PROD-010] 리뷰 작성 */
-    void saveNewReview(ReviewOriginDTO dto);
+    void saveNewReview(ReviewOriginEntity dto);
     /** [PROD-011] 리뷰 삭제 */
     void deleteReview(Long reviewId);
     /** [PROD-012] 리뷰 수정 */
-    void updateReview(ReviewOriginDTO dto);
+    void updateReview(ReviewOriginEntity dto);
 }
