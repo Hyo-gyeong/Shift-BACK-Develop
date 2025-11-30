@@ -100,6 +100,5 @@ public class ReviewService implements IReviewService {
 	@Transactional
 	public void updateReview(ReviewOriginDTO dto) {
 		reviewDAO.updateReview(dto);
-		
 	}
 }
