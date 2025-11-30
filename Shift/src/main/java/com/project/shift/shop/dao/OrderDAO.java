@@ -66,4 +66,11 @@ public class OrderDAO implements IOrderDAO {
                 .setParameter("orderId", orderId)
                 .executeUpdate();
     }
+
+    // 받은 선물 조회
+    @Override
+    public List<Order> findReceivedGifts(Long receiverId) {
+        // 주문 상태가 '취소'가 아닌 받은 선물만 조회
+        return orderRepository.findByReceiverIdAndOrderStatusNotOrderByOrderDateDesc(receiverId, "C");
+    }
 }

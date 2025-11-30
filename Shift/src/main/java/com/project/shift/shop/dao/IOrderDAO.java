@@ -17,4 +17,7 @@ public interface IOrderDAO {
 
     // SHOP-017 : 주문 상태 업데이트 (결제 완료)
     void updateOrderStatus(Long orderId, String status);
+
+    // 받은 선물 조회
+    List<Order> findReceivedGifts(Long receiverId);
 }
