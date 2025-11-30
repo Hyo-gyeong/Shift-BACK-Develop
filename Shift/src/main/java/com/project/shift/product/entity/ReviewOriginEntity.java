@@ -26,7 +26,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NewReviewEntity {
+public class ReviewOriginEntity {
 
     @Id
     @GeneratedValue(
@@ -57,8 +57,8 @@ public class NewReviewEntity {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdDate;
     
-    public static NewReviewEntity toEntity(ReviewOriginDTO dto) {
-        return NewReviewEntity.builder()
+    public static ReviewOriginEntity toEntity(ReviewOriginDTO dto) {
+        return ReviewOriginEntity.builder()
                 .reviewId(dto.getReviewId())
                 .userId(dto.getUserId())
                 .productId(dto.getProductId())
