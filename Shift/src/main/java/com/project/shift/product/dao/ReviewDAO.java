@@ -4,9 +4,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.project.shift.product.dto.NewReviewDTO;
 import com.project.shift.product.dto.UserReviewDetailProjection;
+import com.project.shift.product.entity.NewReviewEntity;
 import com.project.shift.product.entity.Review;
+import com.project.shift.product.repository.ReviewEntityRepository;
 import com.project.shift.product.repository.ReviewRepository;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * [DAO-004] 리뷰 관련 데이터 접근 클래스
@@ -16,13 +21,11 @@ import com.project.shift.product.repository.ReviewRepository;
  * ReviewRepository를 통해 DB와 직접 통신
  */
 @Repository
+@RequiredArgsConstructor
 public class ReviewDAO implements IReviewDAO {
 
     private final ReviewRepository reviewRepository;
-
-    public ReviewDAO(ReviewRepository reviewRepository) {
-        this.reviewRepository = reviewRepository;
-    }
+    private final ReviewEntityRepository reviewEntityRepository;
 
     /** [PROD-008] 상품 ID 기준 리뷰 목록 조회 (최신 작성일 순 정렬) */
     @Override
@@ -34,5 +37,11 @@ public class ReviewDAO implements IReviewDAO {
 	@Override
 	public List<UserReviewDetailProjection> findUserReviewDetails(Long userId) {
 		return reviewRepository.findUserReviewDetails(userId);
+	}
+
+	/** [PROD-010] 리뷰 작성 */
+	@Override
+	public void saveNewReview(NewReviewDTO dto) {
+		reviewEntityRepository.save(NewReviewEntity.toEntity(dto));		
 	}
 }

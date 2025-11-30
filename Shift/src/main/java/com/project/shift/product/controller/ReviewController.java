@@ -7,12 +7,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.project.shift.product.dto.NewReviewDTO;
 import com.project.shift.product.dto.ReviewDTO;
 import com.project.shift.product.dto.UserReviewDetailDTO;
 import com.project.shift.product.service.IReviewService;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * [CTRL-004] 리뷰 관련 API 컨트롤러
@@ -21,14 +26,11 @@ import com.project.shift.product.service.IReviewService;
  */
 @RestController
 @RequestMapping("/products")
+@RequiredArgsConstructor
 public class ReviewController {
 
     private final IReviewService reviewService;
-
-    public ReviewController(IReviewService reviewService) {
-        this.reviewService = reviewService;
-    }
-
+    
     /** [PROD-008] 특정 상품 리뷰 목록 조회 (최신 작성일 순) */
     @GetMapping("/{productId}/reviews")
     public ResponseEntity<List<ReviewDTO>> getProductReviews(@PathVariable Long productId) {
@@ -43,6 +45,12 @@ public class ReviewController {
         Long userId = Long.parseLong(auth.getName());
         List<UserReviewDetailDTO> reviewDetails = reviewService.getUserReviewDetails(userId);
         return reviewDetails.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(reviewDetails);
+    }
+    
+    /** [PROD-010] 리뷰 작성 */
+    @PostMapping("/reviews")
+    public void createReview(@RequestBody NewReviewDTO dto) {
+    	reviewService.createReview(dto);
     }
 
 }

@@ -1,12 +1,17 @@
 package com.project.shift.product.service;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.shift.product.dao.IReviewDAO;
+import com.project.shift.product.dto.NewReviewDTO;
 import com.project.shift.product.dto.ReviewDTO;
 import com.project.shift.product.dto.UserReviewDetailDTO;
 import com.project.shift.product.dto.UserReviewDetailProjection;
@@ -51,6 +56,7 @@ public class ReviewService implements IReviewService {
 
     /** [PROD-009] 특정 사용자가 작성한 모든 리뷰 목록 조회 (최신 작성일 순) */
 	@Override
+	@Transactional(readOnly = true)
 	public List<UserReviewDetailDTO> getUserReviewDetails(Long userId) {
 		List<UserReviewDetailProjection> reviewDetails = reviewDAO.findUserReviewDetails(userId);
 		return reviewDetails.stream()
@@ -67,5 +73,18 @@ public class ReviewService implements IReviewService {
 		                .imageUrl(p.getImageUrl())
 		                .build())
 		        .toList();
+	}
+
+	/** [PROD-010] 리뷰 작성 */
+	@Override
+	@Transactional
+	public void createReview(NewReviewDTO dto) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+        
+		dto.setCreatedDate(new Date());
+    	dto.setUserId(userId);
+    	
+		reviewDAO.saveNewReview(dto);		
 	}
 }
