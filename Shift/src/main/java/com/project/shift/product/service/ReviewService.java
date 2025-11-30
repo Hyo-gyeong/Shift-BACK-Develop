@@ -87,7 +87,7 @@ public class ReviewService implements IReviewService {
 		dto.setCreatedDate(new Date());
     	dto.setUserId(userId);
     	
-		reviewDAO.saveNewReview(ReviewOriginEntity.toEntity(dto));		
+		reviewDAO.saveReview(ReviewOriginEntity.toEntity(dto));		
 	}
 
 	/** [PROD-011] 리뷰 삭제 */
@@ -108,6 +108,6 @@ public class ReviewService implements IReviewService {
 		entity.setCreatedDate(new Date());
 		entity.setRating(dto.getRating());
 		
-		reviewDAO.updateReview(entity);
+		reviewDAO.saveReview(entity);
 	}
 }

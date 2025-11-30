@@ -38,9 +38,9 @@ public class ReviewDAO implements IReviewDAO {
 		return reviewRepository.findUserReviewDetails(userId);
 	}
 
-	/** [PROD-010] 리뷰 작성 */
+	/** [PROD-010] 리뷰 작성, 수정 */
 	@Override
-	public void saveNewReview(ReviewOriginEntity entity) {
+	public void saveReview(ReviewOriginEntity entity) {
 		reviewEntityRepository.save(entity);		
 	}
 
@@ -50,9 +50,4 @@ public class ReviewDAO implements IReviewDAO {
 		reviewEntityRepository.deleteById(reviewId);
 	}
 
-	/** [PROD-012] 리뷰 수정 */
-	@Override
-	public void updateReview(ReviewOriginEntity entity) {
-		reviewEntityRepository.save(entity);
-	}
 }
