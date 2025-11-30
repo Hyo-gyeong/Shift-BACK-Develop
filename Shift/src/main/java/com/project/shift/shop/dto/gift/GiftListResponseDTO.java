@@ -14,6 +14,7 @@ public class GiftListResponseDTO {
     String imageUrl;
     String productName;
     String senderName;
+    String receiverName;
     String status;
     LocalDateTime orderDate;
     String giftType;

@@ -84,7 +84,7 @@ public class GiftService implements IGiftService{
         List<GiftListResponseDTO> giftList = new ArrayList<>();
 
         for (Order order : orders) {
-            if (order.getOrderItems() == null && order.getOrderItems().isEmpty()) {
+            if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
                 continue;
             }
 
@@ -107,7 +107,7 @@ public class GiftService implements IGiftService{
             GiftListResponseDTO dto = GiftListResponseDTO.builder()
                     .orderId(order.getOrderId())
                     .productName(product.getName())
-                    .senderName(receiverName)
+                    .receiverName(receiverName)
                     .imageUrl(thumbUrl)
                     .status(order.getOrderStatus())
                     .orderDate(order.getOrderDate())
