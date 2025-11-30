@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.DeletedChatroomUserInfoDTO;
 import com.project.shift.chat.service.ChatroomUserService;
-import com.project.shift.global.jwt.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 public class ChatroomUserController {
 
 	private final ChatroomUserService chatroomUserService;
-	private final JwtService jwtService;
 	
 	// 특정 두 유저가 참여한 채팅방 정보 확인 및 반환
 	@GetMapping("/receiver/{receiverId}")
@@ -47,6 +46,26 @@ public class ChatroomUserController {
 			   return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			                        .body("Error searching chatroom: " + e.getMessage());
 		}
+	}
+	
+	
+	// CHATROOM-08 : 특정 채팅방 정보 반환
+	@GetMapping("/{chatroomUserId}")
+	public ResponseEntity<?> getChatroomListView(@PathVariable long chatroomUserId){
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	        Long userId = Long.parseLong(auth.getName());
+			Optional<ChatroomListDTO> chatroomDTO = chatroomUserService.getChatroomListView(chatroomUserId, userId);
+			if (chatroomDTO.isEmpty()) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Chatroom not found");
+	        } else {
+				return ResponseEntity.ok(chatroomDTO);
+	        }
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                             .body("Error searching chatroom: " + e.getMessage());
+	    }
 	}
 	
 	// 채팅방 생성 시 두 사용자간 삭제된 채팅방 복구
