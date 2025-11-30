@@ -5,14 +5,16 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project.shift.product.dto.NewReviewDTO;
+import com.project.shift.product.dto.ReviewOriginDTO;
 import com.project.shift.product.dto.ReviewDTO;
 import com.project.shift.product.dto.UserReviewDetailDTO;
 import com.project.shift.product.service.IReviewService;
@@ -49,8 +51,20 @@ public class ReviewController {
     
     /** [PROD-010] 리뷰 작성 */
     @PostMapping("/reviews")
-    public void createReview(@RequestBody NewReviewDTO dto) {
+    public void createReview(@RequestBody ReviewOriginDTO dto) {
     	reviewService.createReview(dto);
+    }
+    
+    /** [PROD-011] 리뷰 삭제 */
+    @DeleteMapping("/reviews/{reviewId}")
+    public void deleteReview(@PathVariable Long reviewId){
+    	reviewService.deleteReview(reviewId);
+    }
+    
+    /** [PROD-012] 리뷰 수정 */
+    @PatchMapping("/reviews")
+    public void updateReview(@RequestBody ReviewOriginDTO dto){
+    	reviewService.updateReview(dto);
     }
 
 }

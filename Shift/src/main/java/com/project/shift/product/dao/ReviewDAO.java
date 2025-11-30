@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.project.shift.product.dto.NewReviewDTO;
+import com.project.shift.product.dto.ReviewOriginDTO;
 import com.project.shift.product.dto.UserReviewDetailProjection;
 import com.project.shift.product.entity.NewReviewEntity;
 import com.project.shift.product.entity.Review;
@@ -41,7 +41,21 @@ public class ReviewDAO implements IReviewDAO {
 
 	/** [PROD-010] 리뷰 작성 */
 	@Override
-	public void saveNewReview(NewReviewDTO dto) {
+	public void saveNewReview(ReviewOriginDTO dto) {
 		reviewEntityRepository.save(NewReviewEntity.toEntity(dto));		
+	}
+
+	/** [PROD-011] 리뷰 삭제 */
+	@Override
+	public void deleteReview(Long reviewId) {
+		reviewEntityRepository.deleteById(reviewId);
+	}
+
+	/** [PROD-012] 리뷰 수정 */
+	@Override
+	public void updateReview(ReviewOriginDTO dto) {
+		if (reviewEntityRepository.existsById(dto.getReviewId())) {
+			reviewEntityRepository.save(NewReviewEntity.toEntity(dto));
+		}
 	}
 }

@@ -2,7 +2,7 @@ package com.project.shift.product.service;
 
 import java.util.List;
 
-import com.project.shift.product.dto.NewReviewDTO;
+import com.project.shift.product.dto.ReviewOriginDTO;
 import com.project.shift.product.dto.ReviewDTO;
 import com.project.shift.product.dto.UserReviewDetailDTO;
 
@@ -18,5 +18,9 @@ public interface IReviewService {
     /** [PROD-009] 특정 사용자가 작성한 모든 리뷰 목록 조회 (최신 작성일 순) */
     List<UserReviewDetailDTO> getUserReviewDetails(Long userId);
     /** [PROD-010] 리뷰 작성 */
-    void createReview(NewReviewDTO dto);
+    void createReview(ReviewOriginDTO dto);
+    /** [PROD-011] 리뷰 삭제 */
+    void deleteReview(Long reviewId);
+    /** [PROD-012] 리뷰 수정 */
+    void updateReview(ReviewOriginDTO dto);
 }

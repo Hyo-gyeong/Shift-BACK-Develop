@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.project.shift.product.dao.IReviewDAO;
-import com.project.shift.product.dto.NewReviewDTO;
 import com.project.shift.product.dto.ReviewDTO;
+import com.project.shift.product.dto.ReviewOriginDTO;
 import com.project.shift.product.dto.UserReviewDetailDTO;
 import com.project.shift.product.dto.UserReviewDetailProjection;
 import com.project.shift.product.entity.Review;
@@ -78,7 +78,7 @@ public class ReviewService implements IReviewService {
 	/** [PROD-010] 리뷰 작성 */
 	@Override
 	@Transactional
-	public void createReview(NewReviewDTO dto) {
+	public void createReview(ReviewOriginDTO dto) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getName());
         
@@ -86,5 +86,20 @@ public class ReviewService implements IReviewService {
     	dto.setUserId(userId);
     	
 		reviewDAO.saveNewReview(dto);		
+	}
+
+	/** [PROD-011] 리뷰 삭제 */
+	@Override
+	@Transactional
+	public void deleteReview(Long reviewId) {
+		reviewDAO.deleteReview(reviewId);
+	}
+
+	/** [PROD-012] 리뷰 수정 */
+	@Override
+	@Transactional
+	public void updateReview(ReviewOriginDTO dto) {
+		reviewDAO.updateReview(dto);
+		
 	}
 }
