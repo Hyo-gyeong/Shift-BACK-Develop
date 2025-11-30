@@ -1,10 +1,12 @@
 package com.project.shift.product.dao;
 
-import com.project.shift.product.entity.Review;
-import com.project.shift.product.repository.ReviewRepository;
+import java.util.List;
+
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.project.shift.product.dto.UserReviewDetailProjection;
+import com.project.shift.product.entity.Review;
+import com.project.shift.product.repository.ReviewRepository;
 
 /**
  * [DAO-004] 리뷰 관련 데이터 접근 클래스
@@ -27,4 +29,10 @@ public class ReviewDAO implements IReviewDAO {
     public List<Review> findReviewsByProductId(Long productId) {
         return reviewRepository.findByProduct_IdOrderByCreatedDateDesc(productId);
     }
+
+    /** [PROD-009] 특정 사용자가 작성한 모든 리뷰 목록 조회 (최신 작성일 순) */
+	@Override
+	public List<UserReviewDetailProjection> findUserReviewDetails(Long userId) {
+		return reviewRepository.findUserReviewDetails(userId);
+	}
 }

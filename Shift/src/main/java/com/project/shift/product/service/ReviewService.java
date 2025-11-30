@@ -1,14 +1,17 @@
 package com.project.shift.product.service;
 
-import com.project.shift.product.dao.IReviewDAO;
-import com.project.shift.product.dto.ReviewDTO;
-import com.project.shift.product.entity.Review;
-import com.project.shift.user.dao.IUserDAO;
-import org.springframework.stereotype.Service;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.project.shift.product.dao.IReviewDAO;
+import com.project.shift.product.dto.ReviewDTO;
+import com.project.shift.product.dto.UserReviewDetailDTO;
+import com.project.shift.product.dto.UserReviewDetailProjection;
+import com.project.shift.product.entity.Review;
+import com.project.shift.user.dao.IUserDAO;
 
 /**
  * [SERVICE-003] 리뷰 관련 비즈니스 로직 처리 클래스
@@ -45,4 +48,24 @@ public class ReviewService implements IReviewService {
                 .build())
                 .collect(Collectors.toList());
     }
+
+    /** [PROD-009] 특정 사용자가 작성한 모든 리뷰 목록 조회 (최신 작성일 순) */
+	@Override
+	public List<UserReviewDetailDTO> getUserReviewDetails(Long userId) {
+		List<UserReviewDetailProjection> reviewDetails = reviewDAO.findUserReviewDetails(userId);
+		return reviewDetails.stream()
+		        .map(p -> UserReviewDetailDTO.builder()
+		                .reviewId(p.getReviewId())
+		                .rating(p.getRating())
+		                .content(p.getContent())
+		                .createdDate(p.getCreatedDate())
+		                .quantity(p.getQuantity())
+		                .itemPrice(p.getItemPrice())
+		                .productName(p.getProductName())
+		                .price(p.getPrice())
+		                .seller(p.getSeller())
+		                .imageUrl(p.getImageUrl())
+		                .build())
+		        .toList();
+	}
 }
