@@ -39,7 +39,7 @@ public class GiftController {
     }
 
     // GIFT-03 선물 상세 조회
-    @GetMapping("/products/{orderId}")
+    @GetMapping("/{orderId}")
     public ResponseEntity<?> getGiftDetails(@PathVariable Long orderId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getName());
