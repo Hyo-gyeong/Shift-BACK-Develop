@@ -21,9 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.repository.ChatroomRepository;
+import com.project.shift.chat.service.ChatroomUserService;
 import com.project.shift.chat.service.MessageService;
 import com.project.shift.product.dao.IPointDAO;
 import com.project.shift.product.entity.PointTransaction;
@@ -71,6 +73,7 @@ public class OrderService implements IOrderService {
     private final UserRepository userRepository;
     private final MessageService messageService;
     private final PointTransactionRepository pointTransactionRepository;
+    private final ChatroomUserService chatroomUserService;
 
     private String toDisplayOrderStatus(String code) {
         if (code == null) return "PENDING";
@@ -296,7 +299,8 @@ public class OrderService implements IOrderService {
                 .userId(userId)
                 .build();
 
-        messageService.sendAndSaveMessage(messageDTO, null);
+        ChatroomUserDTO chatroomUserDTO = chatroomUserService.getChatroomUser(chatroomId, userId).get();
+        messageService.sendAndSaveMessage(messageDTO, chatroomUserDTO);
 
         return dto;
     }
