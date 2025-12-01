@@ -127,6 +127,18 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
     		""")
     int updateChatroomName(@Param("id") long id,
     					   @Param("newChatroomName") String newChatroomName);
+
+	// chatroomUserId와 userId로 해당 채팅방의 모든 ReceiverId를 반환하는 함수
+	// 메시지가 전송됐다는 알림을 모든 수신자들에게 보내기 위한 함수 (실시간 채팅방 목록 관련)
+	@Query("""
+			SELECT r.userId 
+			FROM ChatroomUserEntity u, ChatroomUserEntity r 
+			WHERE u.chatroomId = r.chatroomId 
+			AND u.userId = :userId
+			AND u.chatroomId = :chatroomId 
+			AND r.userId <> :userId
+			""")
+	List<Long> getReceiverId(@Param("chatroomId") long chatroomUserId, @Param("userId") long userId);
 	
 	// 채팅방 목록 조회
 	@Query(value = """

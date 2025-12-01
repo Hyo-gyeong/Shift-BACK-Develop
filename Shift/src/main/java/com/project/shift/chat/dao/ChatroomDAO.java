@@ -1,5 +1,6 @@
 package com.project.shift.chat.dao;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,6 +58,11 @@ public class ChatroomDAO {
 	// 채팅 검색 - 참여한 모든 채팅방의 메시지 내용
 	public List<MessageSearchResultProjection> searchChatroomMessages(String input, long userId){
 		return chatroomRepo.findChatroomMessagesBySearchInput(input, userId);
+	}
+	
+	// 채팅방 마지막 메시지와 보낸 시간 업데이트
+	public void updateLastMsgAndDate(long chatroomId, String content, Date date) {
+		chatroomRepo.updateLastMsgAndDate(chatroomId, content, date);
 	}
 	
 }

@@ -85,4 +85,10 @@ public class ChatroomUserDAO {
 	public Optional<ChatroomListProjection> getChatroomListView(long chatroomUserId){
 		return chatroomUserRepo.findChatroomByChatroomUserId(chatroomUserId);
 	}
+	
+	// chatroomUserId와 userId로 해당 채팅방의 모든 ReceiverId를 반환하는 함수
+	// 메시지가 전송됐다는 알림을 모든 수신자들에게 보내기 위한 함수 (실시간 채팅방 목록 관련)
+	public List<Long> getReceiverId(long chatroomUserId, long userId) {
+		return chatroomUserRepo.getReceiverId(chatroomUserId, userId);
+	}
 }
