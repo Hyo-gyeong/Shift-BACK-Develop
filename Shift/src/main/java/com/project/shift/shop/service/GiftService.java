@@ -54,35 +54,16 @@ public class GiftService implements IGiftService {
         }
 
         // product 테이블에서 상품 정보 조회
-        Map<Long, Product> productMap = new HashMap<>();
-        for (Long pid : productIds) {
-            Product p = productDAO.findById(pid);
-            if (p != null) productMap.put(pid, p);
-        }
+        Map<Long, Product> productMap = getProductMap(productIds);
 
         // users 테이블에서 받는 사람 이름 조회
-        Map<Long, String> receiverMap = new HashMap<>();
-        for (Long id : receiverIds) {
-            userDAO.findById(id).ifPresent(u ->
-                    receiverMap.put(id, u.getName())
-            );
-        }
+        Map<Long, String> receiverMap = getUserNameMap(receiverIds);
 
         // image 테이블에서 대표 이미지 URL 조회
-        Map<Long, String> imageMap = new HashMap<>();
-        for (Long pid : productIds) {
-            List<Image> images = imageDAO.findByProductId(pid);
-            String url = images.stream()
-                    .filter(img -> "Y".equals(img.getIsRepresentative()))
-                    .findFirst()
-                    .map(Image::getImageUrl)
-                    .orElse(null); // 이미지가 없으면 null
-            imageMap.put(pid, url);
-        }
+        Map<Long, String> imageMap = getImageUrlMap(productIds);
 
         // 결과값을 반환할 DTO 리스트 생성
         List<GiftListResponseDTO> giftList = new ArrayList<>();
-
         for (Order order : orders) {
             if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
                 continue;
@@ -115,7 +96,6 @@ public class GiftService implements IGiftService {
                     .build();
             giftList.add(dto);
         }
-
         return giftList;
     }
 
@@ -149,33 +129,15 @@ public class GiftService implements IGiftService {
 
         // product 테이블에서 상품 정보 조회
         // 상품 정보
-        Map<Long, Product> productMap = new HashMap<>();
-        for (Long pid : productIds) {
-            Product p = productDAO.findById(pid);
-            if (p != null) productMap.put(pid, p);
-        }
+        Map<Long, Product> productMap = getProductMap(productIds);
 
         // users 테이블에서 보낸 사람 이름 조회
         // 보낸 사람 이름
-        Map<Long, String> senderNameMap = new HashMap<>();
-        for (Long sid : senderIds) {
-            userDAO.findById(sid).ifPresent(u ->
-                    senderNameMap.put(sid, u.getName())
-            );
-        }
+        Map<Long, String> senderNameMap = getUserNameMap(senderIds);
 
         // image 테이블에서 대표 이미지 URL 조회
         // 이미지 URL
-        Map<Long, String> imageMap = new HashMap<>();
-        for (Long pid : productIds) {
-            List<Image> images = imageDAO.findByProductId(pid);
-            String url = images.stream()
-                    .filter(img -> "Y".equals(img.getIsRepresentative()))
-                    .findFirst()
-                    .map(Image::getImageUrl)
-                    .orElse(null); // 이미지가 없으면 null
-            imageMap.put(pid, url);
-        }
+        Map<Long, String> imageMap = getImageUrlMap(productIds);
 
         // 결과값을 반환할 DTO 리스트 생성
         List<GiftListResponseDTO> result = new ArrayList<>();
@@ -220,6 +182,7 @@ public class GiftService implements IGiftService {
     @Override
     public GiftDetailResponseDTO getDetailGift(Long userId, Long orderId) {
 
+        // order 정보 조회
         Order order = orderDAO.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
@@ -283,5 +246,41 @@ public class GiftService implements IGiftService {
                 .quantity(quantity)
                 .deliveryAddress(deliveryAddress)
                 .build();
+    }
+
+    // 상품 정보 조회
+    private Map<Long, Product> getProductMap(Set<Long> productIds) {
+        Map<Long, Product> productMap = new HashMap<>();
+        for (Long pid : productIds) {
+            Product p = productDAO.findById(pid);
+            if (p != null) productMap.put(pid, p);
+        }
+        return productMap;
+    }
+
+    // 사용자 이름 조회
+    private Map<Long, String> getUserNameMap(Set<Long> userIds) {
+        Map<Long, String> userNameMap = new HashMap<>();
+        for (Long id : userIds) {
+            userDAO.findById(id).ifPresent(u ->
+                    userNameMap.put(id, u.getName())
+            );
+        }
+        return userNameMap;
+    }
+
+    // 이미지 URL 조회
+    private Map<Long, String> getImageUrlMap(Set<Long> productIds) {
+        Map<Long, String> imageMap = new HashMap<>();
+        for (Long pid : productIds) {
+            List<Image> images = imageDAO.findByProductId(pid);
+            String url = images.stream()
+                    .filter(img -> "Y".equals(img.getIsRepresentative()))
+                    .findFirst()
+                    .map(Image::getImageUrl)
+                    .orElse(null);
+            imageMap.put(pid, url);
+        }
+        return imageMap;
     }
 }
