@@ -34,4 +34,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("status") String status,
             @Param("remainPoints") Integer remainPoints
     );
+
+    // 받은 선물 목록 조회
+    List<Order> findByReceiverIdAndOrderStatusNotOrderByOrderDateDesc(Long receiverId, String status);
 }
