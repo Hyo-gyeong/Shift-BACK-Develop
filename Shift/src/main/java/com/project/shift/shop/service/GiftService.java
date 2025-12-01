@@ -45,9 +45,17 @@ public class GiftService implements IGiftService {
 
         for (Order order : orders) {
             // 주문 상품이 없는 경우 건너뜀
-            if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
-                productIds.add(order.getOrderItems().getFirst().getProductId());
+            if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
+                continue;
             }
+
+            // 본인에게 보낸 선물은 제외
+            if (order.getReceiverId().equals(myUserId)) {
+                continue;
+            }
+
+            productIds.add(order.getOrderItems().getFirst().getProductId());
+
             if (order.getReceiverId() != null) {
                 receiverIds.add(order.getReceiverId());
             }
@@ -119,9 +127,17 @@ public class GiftService implements IGiftService {
 
         for (Order order : orders) {
             // 주문 상품이 없는 경우 건너뜀
-            if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
-                productIds.add(order.getOrderItems().getFirst().getProductId());
+            if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
+                continue;
             }
+
+            // 본인에게 보낸 선물은 제외
+            if (order.getSenderId().equals(userId)) {
+                continue;
+            }
+
+            productIds.add(order.getOrderItems().getFirst().getProductId());
+
             if (order.getSenderId() != null) {
                 senderIds.add(order.getSenderId());
             }
