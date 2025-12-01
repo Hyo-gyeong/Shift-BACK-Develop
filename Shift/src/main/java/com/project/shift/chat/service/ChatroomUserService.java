@@ -8,7 +8,10 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.project.shift.chat.dao.ChatroomDAO;
 import com.project.shift.chat.dao.ChatroomUserDAO;
+import com.project.shift.chat.dto.ChatroomListDTO;
+import com.project.shift.chat.dto.ChatroomListProjection;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.DeletedChatroomUserInfoDTO;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
@@ -21,7 +24,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChatroomUserService {
 
-	private final ChatroomUserDAO dao;
+	private final ChatroomUserDAO chatroomUserDao;
+	private final ChatroomDAO chatroomDao;
 	
 	// 특정 채팅방에 참여
 	@Transactional
@@ -30,7 +34,7 @@ public class ChatroomUserService {
 		ChatroomUserDTO sender = dto.getSender();		
 		sender.setChatroomId(chatroomId);
 		sender.setConnectionStatus("ON");
-		dao.addChatroomUser(ChatroomUserEntity.toEntity(sender));
+		chatroomUserDao.addChatroomUser(ChatroomUserEntity.toEntity(sender));
 		
 		// 채팅 수신자 생성 후 저장
 		ChatroomUserDTO receiver = ChatroomUserDTO.builder()
@@ -40,7 +44,7 @@ public class ChatroomUserService {
 									.isDarkMode("N")
 									.chatroomName(dto.getSenderName()+"님과의 채팅")
 									.build();
-		dao.addChatroomUser(ChatroomUserEntity.toEntity(receiver));
+		chatroomUserDao.addChatroomUser(ChatroomUserEntity.toEntity(receiver));
 		return;
 	}
 	
@@ -48,20 +52,20 @@ public class ChatroomUserService {
 	@Transactional
 	public boolean deleteChatroomUser(long chatroomUserId) {
 		// 삭제된(초기화된) 행이 있으면 true 반환
-		return dao.initChatroomUserExceptKey(chatroomUserId);
+		return chatroomUserDao.initChatroomUserExceptKey(chatroomUserId);
 	}
 	
 	// 특정 채팅방에 참여한 모든 사용자 나가기 (생성된 key만 보존)
 	@Transactional
 	public boolean deleteAllChatroomUsers(long chatroomId) {
 		// 삭제된(초기화된) 행이 있으면 true 반환
-		return dao.initAllChatroomUsersExceptKey(chatroomId);
+		return chatroomUserDao.initAllChatroomUsersExceptKey(chatroomId);
 	}
 
 	// 특정 채팅방 유저 정보 반환
 	@Transactional(readOnly = true)
 	public Optional<ChatroomUserDTO> getChatroomUser(long chatroomId, long userId) {
-		Optional<ChatroomUserEntity> entityOpt = dao.getChatroomUser(chatroomId, userId);
+		Optional<ChatroomUserEntity> entityOpt = chatroomUserDao.getChatroomUser(chatroomId, userId);
 	    if (entityOpt.isEmpty()) {
 	        throw new UserNotFoundException("특정 채팅방의 유저 정보가 없습니다.");
 	    }
@@ -70,11 +74,39 @@ public class ChatroomUserService {
 	}
 	
 	@Transactional(readOnly = true)
+	public Optional<ChatroomListDTO> getChatroomListView(long chatroomUserId, long userId){
+		Optional<ChatroomListProjection> chatroomProjection = chatroomUserDao.getChatroomListView(chatroomUserId);
+		return chatroomProjection.map(p -> {
+				   ChatroomListDTO dto = ChatroomListDTO.builder()
+                	.chatroomUserId(p.getChatroomUserId())
+                    .chatroomId(p.getChatroomId())
+                    .chatroomName(p.getChatroomName())
+                    .lastMsgContent(p.getLastMsgContent())
+                    .lastMsgDate(toDate(p.getLastMsgDate()))
+                    .lastConnectionTime(toDate(p.getLastConnectionTime()))
+                    .createdTime(toDate(p.getCreatedTime()))
+                    .connectionStatus(p.getConnectionStatus())
+                    .isDarkMode(p.getIsDarkMode())
+                    .build();
+
+                // unreadCount 계산
+                dto.setUnreadCount(chatroomDao.countUnreadMessages(p.getChatroomId(), userId));
+
+                return dto;
+            });
+	}
+	
+	// Date 세팅
+	private Date toDate(java.sql.Timestamp ts) {
+        return ts != null ? new Date(ts.getTime()) : null;
+    }
+	
+	@Transactional(readOnly = true)
 	public Optional<ChatroomUserDTO> getChatroomWithReceiver(long userId, long receiverId){
 		List<Long> ids = new ArrayList<>();
 		ids.add(userId);
 		ids.add(receiverId);
-		Optional<Long> chatroomIdOpt = dao.getChatroomWithReceiver(ids, ids.size());
+		Optional<Long> chatroomIdOpt = chatroomUserDao.getChatroomWithReceiver(ids, ids.size());
 		if (chatroomIdOpt.isEmpty()) { // 한 번도 채팅을 한 적이 없는 사용자들
 			return Optional.empty();
 		} else { // 채팅방 삭제 여부와 관계 없이 한 번이라도 채팅을 한 사용자들
@@ -89,12 +121,12 @@ public class ChatroomUserService {
 		String senderChatroomName = dto.getReceiverName()+"님과의 채팅방";
 		String receiverChatroomName = dto.getSenderName()+"님과의 채팅방";
 		
-		dao.restoreChatroomUser(dto.getChatroomId(), dto.getSenderId(), "ON", now, senderChatroomName);
-		dao.restoreChatroomUser(dto.getChatroomId(), dto.getReceiverId(), "OF", now, receiverChatroomName);
+		chatroomUserDao.restoreChatroomUser(dto.getChatroomId(), dto.getSenderId(), "ON", now, senderChatroomName);
+		chatroomUserDao.restoreChatroomUser(dto.getChatroomId(), dto.getReceiverId(), "OF", now, receiverChatroomName);
 	}
 	
 	@Transactional
 	public int updateChatroomName(ChatroomUserDTO dto) {
-		return dao.updateChatroomName(dto.getChatroomUserId(), dto.getChatroomName());
+		return chatroomUserDao.updateChatroomName(dto.getChatroomUserId(), dto.getChatroomName());
 	}
 }

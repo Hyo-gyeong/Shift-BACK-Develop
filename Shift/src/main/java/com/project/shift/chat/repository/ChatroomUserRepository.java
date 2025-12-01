@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.project.shift.chat.dto.ChatroomListProjection;
 import com.project.shift.chat.entity.ChatroomUserEntity;
 
 public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity, Long>{
@@ -58,9 +59,9 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			c.createdTime = null, 
 			c.connectionStatus = 'DL', 
 			c.isDarkMode = 'N' 
-			WHERE c.chatroomId = :id
+			WHERE c.chatroomId = :chatroomId
 			""")
-	void initAllChatroomUsersExceptKey(@Param("id") long id);
+	void initAllChatroomUsersExceptKey(@Param("chatroomId") long chatroomId);
 
 	// 두 사용자가 속한 채팅방 ID 반환
 	@Query("""
@@ -109,10 +110,10 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			SET c.connectionStatus = 'OF',
 				c.createdTime = :now,
 				c.lastConnectionTime = :now
-			WHERE c.chatroomId = :id
+			WHERE c.chatroomId = :chatroomId
 				AND c.userId != :userId
 			""")
-	void updateReceiverConnectionStatus(@Param("id") long id,
+	void updateReceiverConnectionStatus(@Param("chatroomId") long chatroomId,
 										@Param("userId") long userId,
 										@Param("now") Date now);
 	
@@ -127,4 +128,22 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
     int updateChatroomName(@Param("id") long id,
     					   @Param("newChatroomName") String newChatroomName);
 	
+	// 채팅방 목록 조회
+	@Query(value = """
+			select
+				cu.chatroom_users_id as chatroomUserId,
+				cu.chatroom_id as chatroomId,
+				cu.chatroom_name as chatroomName,
+				cu.last_connection_time as lastConnectionTime,
+				cu.connection_status as connectionStatus,
+				cu.created_time as createdTime,
+				cu.is_dark_mode as isDarkMode,
+				c.last_msg_content as lastMsgContent,
+				c.last_msg_date as lastMsgDate
+			from chatroom_users cu 
+			join chatrooms c ON c.chatroom_id = cu.chatroom_id
+			where cu.chatroom_users_id = :id 
+				and cu.connection_status != 'DL'
+			""", nativeQuery = true)
+	Optional<ChatroomListProjection> findChatroomByChatroomUserId(@Param("id") long id);
 }

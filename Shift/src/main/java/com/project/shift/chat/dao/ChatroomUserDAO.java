@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.project.shift.chat.dto.ChatroomListProjection;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.entity.ChatroomUserEntity;
 import com.project.shift.chat.repository.ChatroomUserRepository;
@@ -78,5 +79,10 @@ public class ChatroomUserDAO {
 	// 채팅방 이름 변경
 	public int updateChatroomName(long chatroomUserId, String newChatroomName) {
 		return chatroomUserRepo.updateChatroomName(chatroomUserId, newChatroomName);
+	}
+	
+	// CHATROOM-08 : 특정 채팅방 정보 반환
+	public Optional<ChatroomListProjection> getChatroomListView(long chatroomUserId){
+		return chatroomUserRepo.findChatroomByChatroomUserId(chatroomUserId);
 	}
 }
