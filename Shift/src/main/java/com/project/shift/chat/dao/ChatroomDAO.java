@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.project.shift.chat.dto.ChatroomListProjection;
+import com.project.shift.chat.dto.MessageSearchResultProjection;
 import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.repository.ChatroomRepository;
 import com.project.shift.chat.repository.MessageRepository;
@@ -46,6 +47,16 @@ public class ChatroomDAO {
 	    }
 		// 채팅방이 없으면 삭제 불가
 	    return false;
+	}
+	
+	// 채팅 검색 - 채팅에 참여한 사용자 이름
+	public List<ChatroomListProjection> searchChatroomUsersName(String input, long userId){
+		return chatroomRepo.findChatroomUsersBySearchInput(input, userId);
+	}
+	
+	// 채팅 검색 - 참여한 모든 채팅방의 메시지 내용
+	public List<MessageSearchResultProjection> searchChatroomMessages(String input, long userId){
+		return chatroomRepo.findChatroomMessagesBySearchInput(input, userId);
 	}
 	
 }
