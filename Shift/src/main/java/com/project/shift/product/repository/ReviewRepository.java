@@ -35,7 +35,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 			join order_items o on r.order_item_id = o.order_item_id
 			join products p on p.product_id = o.product_id
 			join images i on i.product_id = p.product_id
-			where r.user_id = 1 
+			where r.user_id = :userId
 			    and i.is_representative = 'N'
 			order by r.created_date desc
     		""", nativeQuery = true)
