@@ -43,6 +43,7 @@ public class ChatroomUserService {
 									.userId(dto.getReceiverId())
 									.isDarkMode("N")
 									.chatroomName(dto.getSenderName()+"님과의 채팅")
+									.createdTime(dto.getMessage().getSendDate())
 									.build();
 		chatroomUserDao.addChatroomUser(ChatroomUserEntity.toEntity(receiver));
 		return;
