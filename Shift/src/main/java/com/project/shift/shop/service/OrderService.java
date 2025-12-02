@@ -351,7 +351,7 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public PaymentResponseDTO requestPayment(PaymentRequestDTO requestDTO) {
-    	Long uid = getUserIdOrNull();
+        Long uid = getUserIdOrNull();
 
         Order order = orderDAO.findById(requestDTO.getOrderId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."));
@@ -361,13 +361,16 @@ public class OrderService implements IOrderService {
         }
 
         int amount = requestDTO.getAmount();
-        if (amount <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "결제 금액은 0보다 커야 합니다.");
+        if (amount <= 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "결제 금액은 0보다 커야 합니다.");
 
         int pointUsed = (requestDTO.getPointUsed() == null ? 0 : requestDTO.getPointUsed());
-        if (pointUsed < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "포인트 사용 금액은 음수가 될 수 없습니다.");
+        if (pointUsed < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "포인트 사용 금액은 음수가 될 수 없습니다.");
 
         int cashAmount = amount - pointUsed;
-        if (cashAmount < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "포인트 사용 금액이 결제 금액을 초과했습니다.");
+        if (cashAmount < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "포인트 사용 금액이 결제 금액을 초과했습니다.");
 
         if (!order.getTotalPrice().equals(amount)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "결제 금액이 주문 금액과 일치하지 않습니다.");
@@ -391,6 +394,17 @@ public class OrderService implements IOrderService {
         order.setOrderStatus("S"); // 결제 완료
         orderDAO.save(order);
 
+        if (pointUsed > 0) {
+            PointTransaction tx = new PointTransaction();
+            tx.setUserId(sender.getUserId());
+            tx.setOrderId(order.getOrderId());
+            tx.setType("U");               // U = 포인트 사용
+            tx.setAmount(pointUsed);
+            tx.setCreatedAt(LocalDateTime.now());
+
+            pointTransactionRepository.save(tx);
+        }
+
         PaymentResponseDTO response = new PaymentResponseDTO();
         response.setOrderId(order.getOrderId());
         response.setCashAmount(cashAmount);
@@ -399,6 +413,7 @@ public class OrderService implements IOrderService {
         response.setApprovedAt(LocalDateTime.now());
         return response;
     }
+
 
     // SHOP-010 결제 결과 조회
     @Override
