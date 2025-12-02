@@ -1,5 +1,6 @@
 package com.project.shift.chat.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -86,5 +87,18 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 			WHERE c.chatroomId = :chatroomId
 			""")
 	void initChatroomExceptKey(@Param("chatroomId") long chatroomId);
+	
+	// 채팅방 마지막 메시지와 보낸 시간 업데이트
+	@Modifying
+	@Transactional
+	@Query("""
+			UPDATE ChatroomEntity c 
+			SET c.lastMsgContent = :content,
+				c.lastMsgDate = :date 
+			WHERE c.chatroomId = :chatroomId
+			""")
+	void updateLastMsgAndDate(@Param("chatroomId") long chatroomId,
+							  @Param("content") String content,
+							  @Param("date") Date date);
 	
 }

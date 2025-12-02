@@ -2,19 +2,24 @@ package com.project.shift.chat.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.project.shift.chat.dao.ChatroomDAO;
 import com.project.shift.chat.dao.ChatroomUserDAO;
 import com.project.shift.chat.dao.MessageDAO;
+import com.project.shift.chat.dto.ChatroomDTO;
 import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.dto.MessageUserDTO;
+import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.entity.MessageEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +32,7 @@ public class MessageService {
 	
 	private final MessageDAO messageDAO;
 	private final ChatroomUserDAO chatroomUserDAO;
+	private final ChatroomDAO chatroomDAO;
 	private final SimpMessagingTemplate messagingTemplate;
 
 	// 메시지 DB 저장
@@ -83,6 +89,10 @@ public class MessageService {
 			case CHAT :
 	        	// 메시지를 DB에 저장
 	        	messageDAO.saveMessage(MessageEntity.toEntity(messageDTO));
+	        	// 채팅방의 마지막 메시지와 시간을 업데이트
+	        	updateChatroomInfo(messageDTO, chatroomUserDTO);
+	        	// 받는 사람들에게 메시지가 왔다고 브로드캐스팅 (채팅방 목록 실시간 갱신용)
+	        	broadcastToChatUser(chatroomUserDTO);
 	        	break;
 	        default :
 	            break;
@@ -90,6 +100,41 @@ public class MessageService {
 		
 		// 메시지 브로드캐스팅 로직 호출
 		broadcastToChatroom(messageDTO);
+	}
+	
+	// 채팅방의 마지막 메시지와 시간을 업데이트
+	private void updateChatroomInfo(MessageDTO messageDTO, ChatroomUserDTO chatroomUserDTO) {
+		chatroomDAO.findChatroomById(chatroomUserDTO.getChatroomId())
+				   .ifPresent(chatroom -> {
+					   ChatroomDTO dto = ChatroomDTO.toDto(chatroom);
+					   chatroomDAO.updateLastMsgAndDate(dto.getChatroomId(), messageDTO.getContent(), messageDTO.getSendDate());
+				   });
+	}
+	
+	// 받는 사람들에게 메시지가 왔다고 브로드캐스팅 (채팅방 목록 실시간 갱신용)
+	private void broadcastToChatUser(ChatroomUserDTO chatroomUserDTO) {
+		try {
+			List<Long> receiverIds = chatroomUserDAO.getReceiverId(chatroomUserDTO.getChatroomId(), chatroomUserDTO.getUserId());
+			for (Long receiverId : receiverIds) {
+				Map<String, Object> data = new HashMap<>();
+				data.put("chatroomId", chatroomUserDTO.getChatroomId());
+				data.put("unreadCount", chatroomDAO.countUnreadMessages(chatroomUserDTO.getChatroomId(), receiverId));
+				chatroomUserDAO.getChatroomUser(chatroomUserDTO.getChatroomId(), receiverId)
+				.ifPresent(chatroomUserEntity -> data.put("chatroomUserId", chatroomUserEntity.getChatroomUserId()));
+				
+				messagingTemplate.convertAndSend("/sub/chatroom-list/" + receiverId, data);
+			}
+		} catch(MessagingException e) {
+			// 메시지 전송 실패 시 상세 로그 출력
+	        log.error("Failed to send message to chatroom {}: {}", 
+	        		chatroomUserDTO.getChatroomId(), e.getMessage(), e);
+	        // 런타임 예외
+	        throw new IllegalStateException("유저 메시지 전송 중 오류가 발생했습니다.", e);
+		} catch (Exception e) {
+	        log.error("Unexpected error during message broadcast: {}", e.getMessage(), e);
+	        throw new RuntimeException("예상치 못한 오류가 발생했습니다.", e);
+	    }
+		return;
 	}
 	
 	private void broadcastToChatroom(MessageDTO messageDTO) {
