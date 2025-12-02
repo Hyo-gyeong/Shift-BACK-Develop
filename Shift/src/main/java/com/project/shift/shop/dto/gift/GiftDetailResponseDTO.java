@@ -11,9 +11,9 @@ public class GiftDetailResponseDTO {
     private Long orderId;
     private String imageUrl;
     private String productName;
-    private String senderName; // 보낸 선물일 때 null 처리
-    private String receiverName; // 받은 선물일 때 null 처리
-    private String status; // 배송/주문 상태
+    private String senderName;
+    private String orderStatus; // 주문 상태
+    private String deliveryStatus; // 배송 상태
     private Integer quantity;
     private String deliveryAddress;
 }
