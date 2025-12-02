@@ -46,6 +46,9 @@ public class GiftService implements IGiftService {
         // 보낸 사람id 수집
         Set<Long> senderIds = new HashSet<>();
 
+        // 유효한 주문 목록
+        List<Order> validOrders = new ArrayList<>();
+
         for (Order order : orders) {
             // 주문 상품이 없는 경우 건너뜀
             if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
@@ -57,11 +60,14 @@ public class GiftService implements IGiftService {
                 continue;
             }
 
+            validOrders.add(order);
             productIds.add(order.getOrderItems().getFirst().getProductId());
+            senderIds.add(order.getSenderId());
+        }
 
-            if (order.getSenderId() != null) {
-                senderIds.add(order.getSenderId());
-            }
+        // 유효한 주문이 없으면 빈 리스트 반환
+        if (validOrders.isEmpty()) {
+            return new ArrayList<>();
         }
 
         // product 테이블에서 상품 정보 조회
@@ -79,11 +85,7 @@ public class GiftService implements IGiftService {
         // 결과값을 반환할 DTO 리스트 생성
         List<GiftListResponseDTO> result = new ArrayList<>();
 
-        for (Order order : orders) {
-            // 방어 로직
-            if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
-                continue; // 주문 항목이 없으면 건너뜀
-            }
+        for (Order order : validOrders) {
 
             Long productId = order.getOrderItems().getFirst().getProductId();
 
