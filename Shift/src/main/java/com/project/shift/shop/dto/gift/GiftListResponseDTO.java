@@ -10,11 +10,10 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 public class GiftListResponseDTO {
-    Long orderId;
-    String imageUrl;
-    String productName;
-    String senderName;
-    String status;
-    LocalDateTime orderDate;
-    String giftType;
+    private Long orderId;
+    private String imageUrl;
+    private String productName;
+    private String senderName;
+    private LocalDateTime orderDate;
+    private String giftType;
 }
