@@ -52,6 +52,7 @@ import com.project.shift.shop.dto.RefundRequestDTO;
 import com.project.shift.shop.dto.RefundResponseDTO;
 import com.project.shift.shop.entity.Order;
 import com.project.shift.shop.entity.OrderItem;
+import com.project.shift.shop.entity.Delivery;
 import com.project.shift.shop.repository.DeliveryRepository;
 import com.project.shift.shop.repository.OrderRepository;
 import com.project.shift.user.entity.UserEntity;
@@ -162,6 +163,21 @@ public class OrderService implements IOrderService {
     	    order.setTotalPrice(totalPrice);
 
     	    Order saved = orderDAO.save(order);
+    	    UserEntity receiver = userRepository.findById(saved.getReceiverId())
+    	            .orElse(null);
+
+    	    String recipientName   = (receiver != null && receiver.getName()   != null) ? receiver.getName()   : "수령인";
+    	    String recipientPhone  = (receiver != null && receiver.getPhone()  != null) ? receiver.getPhone()  : "00000000000";
+    	    String deliveryAddress = (receiver != null && receiver.getAddress() != null) ? receiver.getAddress() : "주소 미등록";
+
+    	    Delivery delivery = new Delivery();
+    	    delivery.setOrder(saved);
+    	    delivery.setRecipient(recipientName);
+    	    delivery.setRecipientPhone(recipientPhone);
+    	    delivery.setDeliveryAddress(deliveryAddress);
+    	    delivery.setDeliveryStatus("P"); // 배송준비
+
+    	    deliveryRepository.save(delivery);
 
     	    OrderDTO resp = new OrderDTO();
     	    resp.setOrderId(saved.getOrderId());
