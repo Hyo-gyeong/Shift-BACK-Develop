@@ -1,6 +1,7 @@
 package com.project.shift.product.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -65,6 +66,16 @@ public class ReviewController {
     @PatchMapping("/reviews")
     public void updateReview(@RequestBody ReviewOriginDTO dto){
     	reviewService.updateReview(dto);
+    }
+    
+    /** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
+    @GetMapping("/order-items/{orderItemId}/reviews/check")
+    public ResponseEntity<Map<String, Object>> checkReviewStatus(@PathVariable Long orderItemId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+
+        Map<String, Object> result = reviewService.checkReviewStatus(userId, orderItemId);
+        return ResponseEntity.ok(result);
     }
 
 }

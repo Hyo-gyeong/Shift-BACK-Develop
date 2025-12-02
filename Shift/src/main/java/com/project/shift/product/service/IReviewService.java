@@ -1,6 +1,7 @@
 package com.project.shift.product.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.project.shift.product.dto.ReviewOriginDTO;
 import com.project.shift.product.dto.ReviewDTO;
@@ -23,4 +24,6 @@ public interface IReviewService {
     void deleteReview(Long reviewId);
     /** [PROD-012] 리뷰 수정 */
     void updateReview(ReviewOriginDTO dto);
+    /** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
+    Map<String, Object> checkReviewStatus(Long userId, Long orderItemId);
 }

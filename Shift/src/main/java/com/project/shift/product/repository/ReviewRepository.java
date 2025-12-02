@@ -40,4 +40,19 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 			order by r.created_date desc
     		""", nativeQuery = true)
     List<UserReviewDetailProjection> findUserReviewDetails(@Param("userId") Long userId);
+    
+    /** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
+    @Query(value = """
+    	    SELECT COUNT(*)
+    	    FROM orders o
+    	    JOIN deliveries d ON o.order_id = d.order_id
+    	    JOIN order_items oi ON o.order_id = oi.order_id
+    	    WHERE o.receiver_id = :userId
+    	      AND oi.order_item_id = :orderItemId
+    	      AND o.order_status = 'D'
+    	      AND d.delivery_status = 'D'
+    	""", nativeQuery = true)
+    	int countDeliveredOrderItem(@Param("userId") Long userId,
+    	                            @Param("orderItemId") Long orderItemId);
+    boolean existsByOrderItem_OrderItemId(Long orderItemId);
 }

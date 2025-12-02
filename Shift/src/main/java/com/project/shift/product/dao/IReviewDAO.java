@@ -21,4 +21,7 @@ public interface IReviewDAO {
     void saveReview(ReviewOriginEntity dto);
     /** [PROD-011] 리뷰 삭제 */
     void deleteReview(Long reviewId);
+    /** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
+    boolean existsByOrderItemId(Long orderItemId);
+    int countDeliveredOrderItem(Long userId, Long orderItemId);
 }

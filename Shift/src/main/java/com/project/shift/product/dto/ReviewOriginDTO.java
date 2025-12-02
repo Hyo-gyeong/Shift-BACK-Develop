@@ -19,4 +19,5 @@ public class ReviewOriginDTO {
     private Integer rating;      // 평점 (1~5)
     private String content;      // 리뷰 내용
     private Date createdDate;    // 작성일
+    private Long orderItemId;    // 주문상품 ID
 }
