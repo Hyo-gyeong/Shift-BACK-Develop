@@ -22,6 +22,6 @@ public interface IReviewDAO {
     /** [PROD-011] 리뷰 삭제 */
     void deleteReview(Long reviewId);
     /** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
-    int countDeliveredProduct(Long userId, Long productId);
-	boolean existsByUser_UserIdAndProduct_Id(Long userId, Long productId);
+    boolean existsByOrderItemId(Long orderItemId);
+    int countDeliveredOrderItem(Long userId, Long orderItemId);
 }

@@ -48,11 +48,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     	    JOIN deliveries d ON o.order_id = d.order_id
     	    JOIN order_items oi ON o.order_id = oi.order_id
     	    WHERE o.receiver_id = :userId
-    	      AND oi.product_id = :productId
+    	      AND oi.order_item_id = :orderItemId
     	      AND o.order_status = 'D'
     	      AND d.delivery_status = 'D'
     	""", nativeQuery = true)
-    	int countDeliveredProduct(@Param("userId") Long userId,
-    	                          @Param("productId") Long productId);
-	boolean existsByUser_UserIdAndProduct_Id(Long userId, Long productId);
+    	int countDeliveredOrderItem(@Param("userId") Long userId,
+    	                            @Param("orderItemId") Long orderItemId);
+    boolean existsByOrderItem_OrderItemId(Long orderItemId);
 }

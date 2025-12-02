@@ -69,12 +69,12 @@ public class ReviewController {
     }
     
     /** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
-    @GetMapping("/{productId}/reviews/check")
-    public ResponseEntity<Map<String, Object>> checkReviewStatus(@PathVariable Long productId) {
+    @GetMapping("/order-items/{orderItemId}/reviews/check")
+    public ResponseEntity<Map<String, Object>> checkReviewStatus(@PathVariable Long orderItemId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getName());
 
-        Map<String, Object> result = reviewService.checkReviewStatus(userId, productId);
+        Map<String, Object> result = reviewService.checkReviewStatus(userId, orderItemId);
         return ResponseEntity.ok(result);
     }
 

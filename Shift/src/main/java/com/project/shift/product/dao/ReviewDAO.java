@@ -52,11 +52,12 @@ public class ReviewDAO implements IReviewDAO {
 	
 	/** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
 	@Override
-	public int countDeliveredProduct(Long userId, Long productId) {
-	    return reviewRepository.countDeliveredProduct(userId, productId);
+	public boolean existsByOrderItemId(Long orderItemId) {
+	    return reviewRepository.existsByOrderItem_OrderItemId(orderItemId);
 	}
+
 	@Override
-	public boolean existsByUser_UserIdAndProduct_Id(Long userId, Long productId) {
-	    return reviewRepository.existsByUser_UserIdAndProduct_Id(userId, productId);
+	public int countDeliveredOrderItem(Long userId, Long orderItemId) {
+	    return reviewRepository.countDeliveredOrderItem(userId, orderItemId);
 	}
 }

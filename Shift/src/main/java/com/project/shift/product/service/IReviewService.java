@@ -25,5 +25,5 @@ public interface IReviewService {
     /** [PROD-012] 리뷰 수정 */
     void updateReview(ReviewOriginDTO dto);
     /** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
-    Map<String, Object> checkReviewStatus(Long userId, Long productId);
+    Map<String, Object> checkReviewStatus(Long userId, Long orderItemId);
 }

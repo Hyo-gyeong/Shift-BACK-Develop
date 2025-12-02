@@ -47,6 +47,10 @@ public class ReviewOriginEntity {
     @Column(name = "PRODUCT_ID", nullable = false)
     private Long productId;
 
+    /** ⭐ 리뷰 단위 체크를 위해 반드시 필요 */
+    @Column(name = "ORDER_ITEM_ID", nullable = false)
+    private Long orderItemId;
+
     @Column(name = "RATING", nullable = false)
     private Integer rating;
 
@@ -62,9 +66,11 @@ public class ReviewOriginEntity {
                 .reviewId(dto.getReviewId())
                 .userId(dto.getUserId())
                 .productId(dto.getProductId())
+                .orderItemId(dto.getOrderItemId())   // ⭐ 추가
                 .rating(dto.getRating())
                 .content(dto.getContent())
                 .createdDate(dto.getCreatedDate())
                 .build();
     }
 }
+
