@@ -37,7 +37,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 			join images i on i.product_id = p.product_id
 			where r.user_id = 1 
 			    and i.is_representative = 'N'
-			order by r.created_date desc;
+			order by r.created_date desc
     		""", nativeQuery = true)
     List<UserReviewDetailProjection> findUserReviewDetails(@Param("userId") Long userId);
 }
