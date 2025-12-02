@@ -20,6 +20,8 @@ import com.project.shift.shop.dto.PointOrderCompleteDTO;
 import com.project.shift.shop.dto.PointOrderRequestDTO;
 import com.project.shift.shop.dto.PointOrderResponseDTO;
 import com.project.shift.shop.service.IOrderService;
+import com.project.shift.shop.dto.OrderStatusUpdateResponseDTO;
+
 
 import lombok.RequiredArgsConstructor;
 
@@ -79,6 +81,20 @@ public class OrderController {
             @PathVariable Long orderId) {
 
         PointOrderCompleteDTO response = orderService.completePointPayment(orderId);
+        return ResponseEntity.ok(response);
+    }
+    
+ // SHOP-019 선물 수락
+    @PutMapping("/{orderId}/gift/accept")
+    public ResponseEntity<OrderStatusUpdateResponseDTO> acceptGift(@PathVariable Long orderId) {
+        OrderStatusUpdateResponseDTO response = orderService.acceptGift(orderId);
+        return ResponseEntity.ok(response);
+    }
+
+    // SHOP-020 구매/수령 확정
+    @PutMapping("/{orderId}/confirm")
+    public ResponseEntity<OrderStatusUpdateResponseDTO> confirmOrder(@PathVariable Long orderId) {
+        OrderStatusUpdateResponseDTO response = orderService.confirmOrder(orderId);
         return ResponseEntity.ok(response);
     }
     
