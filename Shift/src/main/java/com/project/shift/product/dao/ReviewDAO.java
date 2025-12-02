@@ -49,5 +49,14 @@ public class ReviewDAO implements IReviewDAO {
 	public void deleteReview(Long reviewId) {
 		reviewEntityRepository.deleteById(reviewId);
 	}
-
+	
+	/** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
+	@Override
+	public int countDeliveredProduct(Long userId, Long productId) {
+	    return reviewRepository.countDeliveredProduct(userId, productId);
+	}
+	@Override
+	public boolean existsByUser_UserIdAndProduct_Id(Long userId, Long productId) {
+	    return reviewRepository.existsByUser_UserIdAndProduct_Id(userId, productId);
+	}
 }

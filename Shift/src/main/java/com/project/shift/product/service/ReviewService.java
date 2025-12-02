@@ -3,6 +3,7 @@ package com.project.shift.product.service;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
@@ -110,4 +111,24 @@ public class ReviewService implements IReviewService {
 		
 		reviewDAO.saveReview(entity);
 	}
+	
+	/** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
+	@Override
+	@Transactional(readOnly = true)
+	public Map<String, Object> checkReviewStatus(Long userId, Long productId) {
+
+	    boolean reviewWritten =
+	            reviewDAO.existsByUser_UserIdAndProduct_Id(userId, productId);
+
+	    boolean delivered =
+	            reviewDAO.countDeliveredProduct(userId, productId) > 0;
+
+	    boolean reviewAvailable = (!reviewWritten) && delivered;
+
+	    return Map.of(
+	            "reviewWritten", reviewWritten,
+	            "reviewAvailable", reviewAvailable
+	    );
+	}
+
 }
