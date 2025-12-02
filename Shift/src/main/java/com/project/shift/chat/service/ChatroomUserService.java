@@ -44,7 +44,7 @@ public class ChatroomUserService {
 									.isDarkMode("N")
 									.chatroomName(dto.getSenderName()+"님과의 채팅")
 									.createdTime(dto.getMessage().getSendDate())
-									.lastConnectionTime(new Date(dto.getMessage().getSendDate().getTime() - 86400000L)) // 안읽은 메시지 갯수 구하기 위해 하루 전으로 설정
+									.lastConnectionTime(new Date(dto.getMessage().getSendDate().getTime() - 1000L)) // 안읽은 메시지 갯수 구하기 위해 1초 전으로 설정
 									.build();
 		chatroomUserDao.addChatroomUser(ChatroomUserEntity.toEntity(receiver));
 		return;
