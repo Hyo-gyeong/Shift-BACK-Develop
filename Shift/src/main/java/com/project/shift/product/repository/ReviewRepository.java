@@ -19,7 +19,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     /** [PROD-008] 특정 상품 ID 기준 리뷰 조회 (최신 작성일 순) */
     List<Review> findByProduct_IdOrderByCreatedDateDesc(Long productId);
     
-    /** [PROD-009] 특정 사용자가 작성한 모든 리뷰 목록 조회 (최신 작성일 순) */
+    /** [PROD-009] 특정 사용자가 작성한 모든 디테일 리뷰 목록 조회 (최신 작성일 순) */
     @Query(value = """
     		select r.review_id as reviewId,
 			       r.rating, 
@@ -32,7 +32,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 			       p.seller,
 			       i.image_url as imageUrl
 			from reviews r
-			join order_items o on r.product_id = o.order_item_id
+			join order_items o on r.order_item_id = o.order_item_id
 			join products p on p.product_id = o.product_id
 			join images i on i.product_id = p.product_id
 			where r.user_id = 1 
