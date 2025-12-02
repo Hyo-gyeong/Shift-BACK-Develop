@@ -38,5 +38,11 @@ public interface IOrderService {
     
     // SHOP-017 금액권 결제 완료 (포인트 적립)
     PointOrderCompleteDTO completePointPayment(Long orderId);
+    
+    // SHOP-019 선물 수락
+    OrderStatusUpdateResponseDTO acceptGift(Long orderId);
+
+    // SHOP-020 구매/수령 확정
+    OrderStatusUpdateResponseDTO confirmOrder(Long orderId);
 	
 }

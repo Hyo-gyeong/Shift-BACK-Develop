@@ -52,6 +52,7 @@ import com.project.shift.shop.dto.PointOrderRequestDTO;
 import com.project.shift.shop.dto.PointOrderResponseDTO;
 import com.project.shift.shop.dto.RefundRequestDTO;
 import com.project.shift.shop.dto.RefundResponseDTO;
+import com.project.shift.shop.dto.OrderStatusUpdateResponseDTO;
 import com.project.shift.shop.entity.Order;
 import com.project.shift.shop.entity.OrderItem;
 import com.project.shift.shop.entity.Delivery;
@@ -81,6 +82,7 @@ public class OrderService implements IOrderService {
         return switch (code) {
             case "S" -> "PAID";
             case "C" -> "CANCELED";
+            case "D" -> "COMPLETED";
             case "P" -> "PENDING";
             default -> "PENDING";
         };
@@ -91,6 +93,7 @@ public class OrderService implements IOrderService {
 
         switch (orderStatus) {
             case "S":
+            case "D":
                 return new AbstractMap.SimpleEntry<>("SUCCESS", orderDate);
 
             case "C":
@@ -416,12 +419,13 @@ public class OrderService implements IOrderService {
         Integer cashUsed = order.getCashUsed() == null ? 0 : order.getCashUsed();
         Integer pointUsed = order.getPointUsed() == null ? 0 : order.getPointUsed();
 
-        String statusCode = order.getOrderStatus(); // P / S / C
+        String statusCode = order.getOrderStatus(); // P / S / D / C 
         String status;
         LocalDateTime approvedAt = null;
 
         switch (statusCode) {
             case "S":
+            case "D":
                 status = "SUCCESS";
                 approvedAt = order.getOrderDate();
                 break;
@@ -755,5 +759,130 @@ public class OrderService implements IOrderService {
                 .result(true)
                 .build();
     }
+    
+    // SHOP-019 선물 수락
+    @Override
+    @Transactional
+    public OrderStatusUpdateResponseDTO acceptGift(Long orderId) {
+        Long uid = getUserIdOrNull();
+        if (uid == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 후 이용 가능합니다.");
+        }
+
+        // 1) 주문 조회
+        Order order = orderDAO.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다. orderId=" + orderId));
+
+        // 2) 수신자만 선물 수락 가능
+        if (!uid.equals(order.getReceiverId())) {
+            throw new AccessDeniedException("선물 수신자만 선물을 수락할 수 있습니다.");
+        }
+
+        // 3) 상태 체크: 주문 S(결제완료), 배송 P(배송준비중) 상태에서만 수락 가능
+        if (!"S".equals(order.getOrderStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "결제 완료된 주문만 선물을 수락할 수 있습니다.");
+        }
+
+        Delivery delivery = deliveryRepository.findByOrder_OrderId(orderId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "배송 정보가 없습니다. orderId=" + orderId));
+
+        if (!"P".equals(delivery.getDeliveryStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "배송 준비중 상태에서만 선물을 수락할 수 있습니다.");
+        }
+
+        // 4) 선물 수락 → 배송 상태 S(배송중)로 변경
+        delivery.setDeliveryStatus("S");
+        deliveryRepository.save(delivery);
+
+        // 5) 응답 DTO 구성 (리뷰 버튼은 아직 비활성)
+        return OrderStatusUpdateResponseDTO.builder()
+                .orderId(order.getOrderId())
+                .senderId(order.getSenderId())
+                .receiverId(order.getReceiverId())
+                .orderStatus(order.getOrderStatus())     // S
+                .deliveryStatus(delivery.getDeliveryStatus()) // S
+                .reviewButtonEnabled(false)             // (주문,배송 둘 다 D가 아니므로 false)
+                .confirmedAt(null)
+                .result(true)
+                .build();
+    }
+    
+    // SHOP-020 구매/수령 확정
+    @Override
+    @Transactional
+    public OrderStatusUpdateResponseDTO confirmOrder(Long orderId) {
+        Long uid = getUserIdOrNull();
+        if (uid == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 후 이용 가능합니다.");
+        }
+
+        // 1) 주문 조회
+        Order order = orderDAO.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다. orderId=" + orderId));
+
+        boolean isSender   = uid.equals(order.getSenderId());
+        boolean isReceiver = uid.equals(order.getReceiverId());
+
+        if (!isSender && !isReceiver) {
+            throw new AccessDeniedException("해당 주문에 대한 권한이 없습니다.");
+        }
+
+        // 선물 플로우에서는 수신자만 수령 확정 가능
+        if (!order.getSenderId().equals(order.getReceiverId()) && !isReceiver) {
+            throw new AccessDeniedException("선물 수령확정은 수신자만 가능합니다.");
+        }
+
+        // 2) 상태 체크: 주문 S, 배송 S 인 경우에만 확정 가능
+        if (!"S".equals(order.getOrderStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "결제 완료된 주문만 구매/수령 확정할 수 있습니다.");
+        }
+
+        Delivery delivery = deliveryRepository.findByOrder_OrderId(orderId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "배송 정보가 없습니다. orderId=" + orderId));
+
+        boolean selfOrder = order.getSenderId().equals(order.getReceiverId());  // 나에게 구매 여부
+
+        if (selfOrder) {
+            // 나에게 구매: 배송상태가 P(배송준비)든 S(배송중)이든 상관없이 확정 가능
+            String deliveryStatus = delivery.getDeliveryStatus();
+            if (!"P".equals(deliveryStatus) && !"S".equals(deliveryStatus)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "나에게 구매는 배송 준비 또는 배송중 상태에서만 구매 확정이 가능합니다."
+                );
+            }
+        } else {
+            // 선물 플로우: 기존 로직 유지 - 배송중(S)에서만 확정 가능
+            if (!"S".equals(delivery.getDeliveryStatus())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "배송중 상태에서만 구매/수령 확정이 가능합니다.");
+            }
+        }
+        // 3) 주문/배송 상태를 D로 변경
+        order.setOrderStatus("D");
+        orderDAO.save(order);
+
+        delivery.setDeliveryStatus("D");
+        deliveryRepository.save(delivery);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 4) 응답 DTO 구성 (리뷰 버튼 활성화 상태)
+        return OrderStatusUpdateResponseDTO.builder()
+                .orderId(order.getOrderId())
+                .senderId(order.getSenderId())
+                .receiverId(order.getReceiverId())
+                .orderStatus(order.getOrderStatus())       // D
+                .deliveryStatus(delivery.getDeliveryStatus()) // D
+                .reviewButtonEnabled(true)                 // 주문/배송 모두 D → 리뷰 버튼 on
+                .confirmedAt(now)
+                .result(true)
+                .build();
+    }
+
+
 
 }
