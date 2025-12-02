@@ -106,7 +106,6 @@ public class GiftService implements IGiftService {
                     .productName(product.getName())
                     .senderName(senderName)
                     .imageUrl(thumbUrl)
-                    .status(order.getOrderStatus())
                     .orderDate(order.getOrderDate())
                     .giftType(type)
                     .build();
@@ -155,14 +154,16 @@ public class GiftService implements IGiftService {
         // user 정보 조회
         String senderName = userDAO.findById(senderId)
                 .map(UserEntity::getName).orElse("알 수 없음");
-        String receiverName = userDAO.findById(receiverId)
-                .map(UserEntity::getName).orElse("알 수 없음");
 
         // 배송지 정보 조회
         String deliveryAddress = null;
+        String deliveryStatus = "P"; // 기본값 설정
+
         try {
             Delivery delivery = deliveryDAO.findByOrderId(orderId);
             if (delivery != null) {
+                // 배송 상태 및 주소 설정
+                deliveryStatus = delivery.getDeliveryStatus();
                 deliveryAddress = delivery.getDeliveryAddress();
             }
         } catch (Exception e) {
@@ -174,7 +175,8 @@ public class GiftService implements IGiftService {
                 .productName(product.getName())
                 .imageUrl(imageUrl)
                 .senderName(senderName)
-                .status(order.getOrderStatus())
+                .orderStatus(order.getOrderStatus())
+                .deliveryStatus(deliveryStatus)
                 .quantity(quantity)
                 .deliveryAddress(deliveryAddress)
                 .build();
