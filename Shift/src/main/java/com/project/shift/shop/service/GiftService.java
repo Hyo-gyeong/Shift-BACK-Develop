@@ -28,85 +28,6 @@ public class GiftService implements IGiftService {
     private final IImageDAO imageDAO;
     private final IDeliveryDAO deliveryDAO;
 
-    @Override
-    public List<GiftListResponseDTO> getSentGifts(Long myUserId) {
-
-        // order 테이블에서 조건에 맞는 주문 조회(내가 보낸 선물)
-        List<Order> orders = orderDAO.findBySenderId(myUserId);
-        if (orders.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // 상품id 수집
-        Set<Long> productIds = new HashSet<>();
-
-        // 받는 사람id 수집
-        Set<Long> receiverIds = new HashSet<>();
-
-        for (Order order : orders) {
-            // 주문 상품이 없는 경우 건너뜀
-            if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
-                continue;
-            }
-
-            // 본인에게 보낸 선물은 제외
-            if (order.getReceiverId().equals(myUserId)) {
-                continue;
-            }
-
-            productIds.add(order.getOrderItems().getFirst().getProductId());
-
-            if (order.getReceiverId() != null) {
-                receiverIds.add(order.getReceiverId());
-            }
-        }
-
-        // product 테이블에서 상품 정보 조회
-        Map<Long, Product> productMap = getProductMap(productIds);
-
-        // users 테이블에서 받는 사람 이름 조회
-        Map<Long, String> receiverMap = getUserNameMap(receiverIds);
-
-        // image 테이블에서 대표 이미지 URL 조회
-        Map<Long, String> imageMap = getImageUrlMap(productIds);
-
-        // 결과값을 반환할 DTO 리스트 생성
-        List<GiftListResponseDTO> giftList = new ArrayList<>();
-        for (Order order : orders) {
-            if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
-                continue;
-            }
-
-            Long productId = order.getOrderItems().getFirst().getProductId();
-
-            // 상품 정보 조회
-            Product product = productMap.get(productId);
-            if (product == null) {
-                continue; // 상품이 없으면 건너뜀
-            }
-
-            // 받는 사람 이름 조회
-            String receiverName = receiverMap.getOrDefault(order.getReceiverId(), "알 수 없음");
-            String thumbUrl = imageMap.get(productId);
-
-            // 타입 결정
-            String type = (product.getCategory().getCategoryId() == 3L) ? "POINT" : "PRODUCT";
-
-            // DTO 생성
-            GiftListResponseDTO dto = GiftListResponseDTO.builder()
-                    .orderId(order.getOrderId())
-                    .productName(product.getName())
-                    .receiverName(receiverName)
-                    .imageUrl(thumbUrl)
-                    .status(order.getOrderStatus())
-                    .orderDate(order.getOrderDate())
-                    .giftType(type)
-                    .build();
-            giftList.add(dto);
-        }
-        return giftList;
-    }
-
     // 받은 선물 조회
     @Override
     @Transactional(readOnly = true)
@@ -206,7 +127,7 @@ public class GiftService implements IGiftService {
         Long receiverId = order.getReceiverId();
 
         // 접근 권한 확인
-        if (!userId.equals(senderId) && !userId.equals(receiverId)) {
+        if (!userId.equals(receiverId)) {
             throw new IllegalArgumentException("해당 선물에 대한 접근 권한이 없습니다.");
         }
 
@@ -242,11 +163,7 @@ public class GiftService implements IGiftService {
         try {
             Delivery delivery = deliveryDAO.findByOrderId(orderId);
             if (delivery != null) {
-                if (userId.equals(receiverId)) {
-                    deliveryAddress = delivery.getDeliveryAddress();
-                } else {
-                    deliveryAddress = null;
-                }
+                deliveryAddress = delivery.getDeliveryAddress();
             }
         } catch (Exception e) {
             // 배송 정보가 없을 경우 무시
@@ -257,7 +174,6 @@ public class GiftService implements IGiftService {
                 .productName(product.getName())
                 .imageUrl(imageUrl)
                 .senderName(senderName)
-                .receiverName(receiverName)
                 .status(order.getOrderStatus())
                 .quantity(quantity)
                 .deliveryAddress(deliveryAddress)

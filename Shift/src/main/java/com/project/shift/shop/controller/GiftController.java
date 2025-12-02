@@ -20,16 +20,7 @@ public class GiftController {
         this.giftService = giftService;
     }
 
-    // GIFT-01 보낸 선물 조회
-    @GetMapping("/sent")
-    public ResponseEntity<?> getSentGifts() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = Long.parseLong(auth.getName());
-
-        return ResponseEntity.ok(giftService.getSentGifts(userId));
-    }
-
-    // GIFT-02 받은 선물 조회
+    // GIFT-01 받은 선물 조회
     @GetMapping("/received")
     public ResponseEntity<?> getReceivedGifts() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -38,7 +29,7 @@ public class GiftController {
         return ResponseEntity.ok(giftService.getReceivedGifts(userId));
     }
 
-    // GIFT-03 선물 상세 조회
+    // GIFT-02 선물 상세 조회
     @GetMapping("/{orderId}")
     public ResponseEntity<?> getGiftDetails(@PathVariable Long orderId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

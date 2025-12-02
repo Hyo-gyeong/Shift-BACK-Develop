@@ -13,8 +13,7 @@ public class GiftListResponseDTO {
     Long orderId;
     String imageUrl;
     String productName;
-    String senderName; // 보낸 선물일 때 null 처리
-    String receiverName; // 받은 선물일 때 null 처리
+    String senderName;
     String status;
     LocalDateTime orderDate;
     String giftType;
