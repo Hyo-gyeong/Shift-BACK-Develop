@@ -16,4 +16,6 @@ public class GiftDetailResponseDTO {
     private String deliveryStatus; // 배송 상태
     private Integer quantity;
     private String deliveryAddress;
+    private Long productId;  
+    private Long orderItemId;
 }

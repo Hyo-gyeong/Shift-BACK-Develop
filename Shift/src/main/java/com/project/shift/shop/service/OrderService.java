@@ -255,6 +255,7 @@ public class OrderService implements IOrderService {
             dto.setProductId(oi.getProductId());
             dto.setQuantity(oi.getQuantity());
             dto.setItemPrice(oi.getItemPrice());
+            dto.setOrderItemId(oi.getOrderItemId());
 
             Product product = productMap.get(oi.getProductId());
             if (product != null) {
