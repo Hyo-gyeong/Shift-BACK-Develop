@@ -51,6 +51,6 @@ public interface IProductDAO {
     /** [PROD-004 + PROD-006] 카테고리 한정 정렬 상품 조회 */
     List<Product> findByCategorySorted(Long categoryId, Sort sort);
 
-    /** [PROD-009] 상품 저장 (시퀀스 기반 자동 ID 생성) */
+    /** 상품 저장 (시퀀스 기반 자동 ID 생성) */
     void saveProduct(Product product);
 }

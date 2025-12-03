@@ -84,7 +84,7 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
     
- // SHOP-019 선물 수락
+    // SHOP-019 선물 수락
     @PutMapping("/{orderId}/gift/accept")
     public ResponseEntity<OrderStatusUpdateResponseDTO> acceptGift(@PathVariable Long orderId) {
         OrderStatusUpdateResponseDTO response = orderService.acceptGift(orderId);

@@ -113,7 +113,6 @@ public class ReviewService implements IReviewService {
 	}
 	
 	/** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
-	/** [PROD-013] 리뷰 작성 여부 + 작성 가능 여부 확인 */
 	@Override
 	@Transactional(readOnly = true)
 	public Map<String, Object> checkReviewStatus(Long userId, Long orderItemId) {

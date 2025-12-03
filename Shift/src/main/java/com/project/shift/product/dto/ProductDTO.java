@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * 상품 상세 및 목록 조회용 DTO
- * - PROD-001, PROD-002, PROD-004, PROD-009 공통 사용
+ * - PROD-001, PROD-002, PROD-004 등 공통 사용
  */
 @Getter
 @Setter

@@ -19,7 +19,7 @@ import java.util.Map;
  * - PROD-005 : 상품 검색
  * - PROD-006 : 상품 정렬
  * - PROD-007 : 상품 이미지 조회
- * - PROD-009 : 상품 재고 조회
+ * - PROD-014 : 상품 재고 조회
  * ---------------------------------------------------------
  * ※ 금액권(Category_ID = 3)은 일반 상품 조회 대상에서 제외됨
  */
@@ -97,7 +97,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductImages(productId));
     }
 
-    /** [PROD-009] 상품 재고 조회 */
+    /** [PROD-014] 상품 재고 조회 */
     @GetMapping("/{productId}/stock")
     public ResponseEntity<ProductDTO> getProductStock(@PathVariable Long productId) {
         return ResponseEntity.ok(productService.getProductStock(productId));
