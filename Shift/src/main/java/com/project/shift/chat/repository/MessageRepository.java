@@ -42,8 +42,9 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long>{
 			SET m.unreadCount = m.unreadCount-1
 			WHERE m.chatroomId = :chatroomId AND
 				  m.unreadCount > 0 AND
-				  m.sendDate >= :lastConnectionTime
+				  m.sendDate >= :lastConnectionTime AND
+				  m.userId <> :userId
 			""")
-	void markMessagesAsRead(@Param("chatroomId") long chatroomId, @Param("lastConnectionTime") Date lastConnectionTime);
+	void markMessagesAsRead(@Param("chatroomId") long chatroomId, @Param("lastConnectionTime") Date lastConnectionTime, @Param("userId") long userId);
 	
 }

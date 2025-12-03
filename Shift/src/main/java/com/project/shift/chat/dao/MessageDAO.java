@@ -25,8 +25,8 @@ public class MessageDAO {
 		return messageRepo.findByChatroomId(chatroomId, createdDateTime);
 	}
 	
-	public void markMessagesAsRead(long chatroomId, Date lastConnectionTime) {
-		messageRepo.markMessagesAsRead(chatroomId, lastConnectionTime);
+	public void markMessagesAsRead(long chatroomId, Date lastConnectionTime, long userId) {
+		messageRepo.markMessagesAsRead(chatroomId, lastConnectionTime, userId);
 	}
 		
 }

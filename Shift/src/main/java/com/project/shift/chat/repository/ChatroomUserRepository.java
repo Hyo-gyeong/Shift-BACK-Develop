@@ -140,6 +140,19 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			""")
 	List<Long> getReceiverId(@Param("chatroomId") long chatroomUserId, @Param("userId") long userId);
 	
+	// 현재 채팅방에서 나를 제외하고 접속 중인 사용자의 수를 반환
+	@Query("""
+		    SELECT COUNT(r)
+		    FROM ChatroomUserEntity u, ChatroomUserEntity r
+		    WHERE u.chatroomId = r.chatroomId
+		      AND u.userId = :userId
+		      AND u.chatroomId = :chatroomId
+		      AND r.userId <> :userId
+		      AND r.connectionStatus = 'ON'
+			""")
+	int countOtherUsersOnline(@Param("chatroomId") long chatroomId,
+	        				  @Param("userId") long userId);
+	
 	// 채팅방 목록 조회
 	@Query(value = """
 			select
