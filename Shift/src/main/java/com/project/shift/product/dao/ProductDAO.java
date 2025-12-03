@@ -15,7 +15,6 @@ import java.util.List;
  * - PROD-004 : 카테고리별 상품 조회
  * - PROD-005 : 상품 검색 (공백포함/무시/다중키워드)
  * - PROD-006 : 상품 정렬
- * - PROD-009 : 상품 저장
  * ---------------------------------------------------------
  * ※ 금액권(Category_ID = 3)은 모든 일반 조회/검색/정렬에서 제외
  */
@@ -126,7 +125,7 @@ public class ProductDAO implements IProductDAO {
         return productRepository.findByCategory_CategoryId(categoryId, sort);
     }
 
-    /** [PROD-009] 상품 저장 (시퀀스 기반 자동 ID 생성) */
+    /** 상품 저장 (시퀀스 기반 자동 ID 생성) */
     @Override
     public void saveProduct(Product product) {
         productRepository.save(product);

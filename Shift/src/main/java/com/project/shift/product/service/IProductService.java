@@ -14,7 +14,7 @@ import java.util.List;
  * - PROD-005 : 상품 검색
  * - PROD-006 : 상품 정렬
  * - PROD-007 : 상품 이미지 조회
- * - PROD-009 : 상품 재고 조회
+ * - PROD-014 : 상품 재고 조회
  * ---------------------------------------------------------
  * ※ 금액권(Category_ID = 3)은 모든 일반 조회/검색/정렬에서 제외
  */
@@ -41,7 +41,7 @@ public interface IProductService {
     /** [PROD-007] 상품 이미지 목록 조회 */
     List<ImageDTO> getProductImages(Long productId);
 
-    /** [PROD-009] 상품 재고 조회 */
+    /** [PROD-014] 상품 재고 조회 */
     ProductDTO getProductStock(Long productId);
 
     /** 상품 저장 (시퀀스 기반 자동 ID 생성) */

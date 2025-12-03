@@ -3,7 +3,7 @@ package com.project.shift.product.dto;
 import lombok.*;
 
 /**
- * PROD-010 금액권 페이지 정보 응답 DTO
+ * PROD-015 금액권 페이지 정보 응답 DTO
  * - 금액권의 고정 템플릿 정보를 담는다.
  */
 @Getter

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * - PROD-005 : 상품 검색
  * - PROD-006 : 상품 정렬
  * - PROD-007 : 상품 이미지 조회
- * - PROD-009 : 상품 재고 조회
+ * - PROD-014 : 상품 재고 조회
  * ---------------------------------------------------------
  * ※ 금액권(Category_ID = 3)은 모든 일반 조회/검색/정렬에서 제외
  */
@@ -123,7 +123,7 @@ public class ProductService implements IProductService {
                 .collect(Collectors.toList());
     }
 
-    /** [PROD-009] 상품 재고 조회 */
+    /** [PROD-014] 상품 재고 조회 */
     @Override
     public ProductDTO getProductStock(Long productId) {
         Product product = productDAO.findById(productId);
