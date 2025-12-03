@@ -10,6 +10,7 @@ import com.project.shift.shop.dto.gift.GiftDetailResponseDTO;
 import com.project.shift.shop.dto.gift.GiftListResponseDTO;
 import com.project.shift.shop.entity.Delivery;
 import com.project.shift.shop.entity.Order;
+import com.project.shift.shop.entity.OrderItem;
 import com.project.shift.user.dao.IUserDAO;
 import com.project.shift.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
@@ -135,10 +136,12 @@ public class GiftService implements IGiftService {
         if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
             throw new IllegalArgumentException("해당 주문에 상품이 없습니다.");
         }
+        
+        OrderItem orderItem = order.getOrderItems().getFirst();
 
         // product 정보 조회
-        Long productId = order.getOrderItems().getFirst().getProductId();
-        Integer quantity = order.getOrderItems().getFirst().getQuantity();
+        Long productId = orderItem.getProductId();
+        Integer quantity = orderItem.getQuantity();
 
         Product product = productDAO.findById(productId);
         if (product == null) {
@@ -174,6 +177,8 @@ public class GiftService implements IGiftService {
 
         return GiftDetailResponseDTO.builder()
                 .orderId(order.getOrderId())
+                .productId(orderItem.getProductId())
+                .orderItemId(orderItem.getOrderItemId())
                 .productName(product.getName())
                 .imageUrl(imageUrl)
                 .senderName(senderName)
