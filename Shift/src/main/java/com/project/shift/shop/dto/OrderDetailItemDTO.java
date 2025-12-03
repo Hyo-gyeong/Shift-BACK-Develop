@@ -7,6 +7,7 @@ public class OrderDetailItemDTO {
     private Integer quantity;
     private Integer itemPrice;
     private Long categoryId;
+    private Long orderItemId;
 
 
     public Long getProductId() { return productId; }
@@ -23,4 +24,8 @@ public class OrderDetailItemDTO {
     
     public Long getCategoryId() { return categoryId; }
     public void setCategoryId(Long long1) { this.categoryId = long1; }
+    
+	public Long getOrderItemId() { return orderItemId; }
+	public void setOrderItemId(Long orderItemId) { this.orderItemId = orderItemId; }
+
 }
