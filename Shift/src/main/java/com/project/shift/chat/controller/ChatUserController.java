@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.project.shift.chat.dto.ChatUserMyPageInfoDTO;
 import com.project.shift.chat.dto.ChatUserSearchResultDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
+import com.project.shift.chat.exception.UserNotFoundException;
 import com.project.shift.chat.service.ChatUserService;
 import com.project.shift.chat.service.ChatroomUserService;
 import com.project.shift.global.jwt.JwtService;
@@ -56,10 +57,19 @@ public class ChatUserController {
 
 	// 전화번호로 사용자 검색 및 친구여부 반환
 	@GetMapping("/search/{phone}")
-	public ChatUserSearchResultDTO searchUser(HttpServletRequest request, @PathVariable String phone) {
+	public ResponseEntity<?> searchUser(HttpServletRequest request, @PathVariable String phone) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getName());
-		return chatUserService.searchUserByPhone(userId, phone);		
+        try {
+        	return ResponseEntity.ok(chatUserService.searchUserByPhone(userId, phone));
+        	
+        } catch (UserNotFoundException e) {
+        	return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    				.body("User not found");
+        } catch (Exception e) {
+        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error searching user: " + e.getMessage());
+        }
 	}
 	
 	// 채팅-마이페이지 개인 정보(ID, 이름, 핸드폰 번호) 반환, 프로필 이미지는 추후 추가 예정
