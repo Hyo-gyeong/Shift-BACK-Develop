@@ -91,4 +91,9 @@ public class ChatroomUserDAO {
 	public List<Long> getReceiverId(long chatroomUserId, long userId) {
 		return chatroomUserRepo.getReceiverId(chatroomUserId, userId);
 	}
+	
+	// 현재 채팅방에서 나를 제외하고 접속 중인 사용자의 수를 반환
+	public int countOtherUsersOnline(long chatroomId, long userId) {
+		return chatroomUserRepo.countOtherUsersOnline(chatroomId, userId);
+	}
 }

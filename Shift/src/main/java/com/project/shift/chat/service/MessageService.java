@@ -75,9 +75,11 @@ public class MessageService {
 	        case JOIN :
 	        	// 접속 상태 ON으로 세팅
 	        	chatroomUserDTO.setConnectionStatus("ON");
-	        	// 채팅방 최초 생성 시간 이후 모든 메시지 읽음 처리
+	        	// 채팅방 마지막 접속 시간 이후 모든 메시지 읽음 처리
 	        	messageDAO.markMessagesAsRead(messageDTO.getChatroomId(),
-	        									chatroomUserDTO.getLastConnectionTime());
+	        								  chatroomUserDTO.getLastConnectionTime(),
+	        								  chatroomUserDTO.getUserId());
+	        	chatroomUserDAO.updateChatUserInfo(chatroomUserDTO);
 	            break;	
 	        case LEAVE :
 	            // 접속 상태 OF로 세팅
@@ -87,6 +89,8 @@ public class MessageService {
 	        	chatroomUserDAO.updateChatUserInfo(chatroomUserDTO);
 	            break;
 			case CHAT :
+				// 현재 채팅방에 온라인 상태인 유저의 수를 구해서 메시지의 unreadCount를 세팅
+				setUnreadCount(messageDTO, chatroomUserDTO);
 	        	// 메시지를 DB에 저장
 	        	messageDAO.saveMessage(MessageEntity.toEntity(messageDTO));
 	        	// 채팅방의 마지막 메시지와 시간을 업데이트
@@ -109,6 +113,12 @@ public class MessageService {
 					   ChatroomDTO dto = ChatroomDTO.toDto(chatroom);
 					   chatroomDAO.updateLastMsgAndDate(dto.getChatroomId(), messageDTO.getContent(), messageDTO.getSendDate());
 				   });
+	}
+	
+	// 현재 채팅방에 온라인 상태인 유저의 수를 구해서 메시지의 unreadCount를 세팅
+	private void setUnreadCount(MessageDTO messageDTO, ChatroomUserDTO chatroomUserDTO) {
+		int unreadCount = Math.max(messageDTO.getUnreadCount() - chatroomUserDAO.countOtherUsersOnline(chatroomUserDTO.getChatroomId(), chatroomUserDTO.getUserId()), 0);
+		messageDTO.setUnreadCount(unreadCount);
 	}
 	
 	// 받는 사람들에게 메시지가 왔다고 브로드캐스팅 (채팅방 목록 실시간 갱신용)
