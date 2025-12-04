@@ -134,6 +134,7 @@ public class UserController {
         }
     }
 
+    // 회원 탈퇴
     @DeleteMapping
     public ResponseEntity<?> withdrawUser() {
         userService.withdrawUser();
