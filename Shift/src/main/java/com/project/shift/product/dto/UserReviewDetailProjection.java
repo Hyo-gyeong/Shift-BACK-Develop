@@ -9,6 +9,8 @@ public interface UserReviewDetailProjection {
     Date getCreatedDate();
     Integer getQuantity();
     Integer getItemPrice();
+    Long getOrderItemId();
+    Long getProductId();
     String getProductName();
     Integer getPrice();
     String getSeller();

@@ -70,6 +70,8 @@ public class ReviewService implements IReviewService {
 		                .createdDate(p.getCreatedDate())
 		                .quantity(p.getQuantity())
 		                .itemPrice(p.getItemPrice())
+		                .productId(p.getProductId())
+		                .orderItemId(p.getOrderItemId())
 		                .productName(p.getProductName())
 		                .price(p.getPrice())
 		                .seller(p.getSeller())

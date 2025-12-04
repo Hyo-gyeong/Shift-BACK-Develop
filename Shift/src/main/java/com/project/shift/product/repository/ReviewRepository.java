@@ -26,7 +26,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 			       r.content, 
 			       r.created_date as createdDate, 
 			       o.quantity, 
-			       o.item_price as itemPrice, 
+			       o.item_price as itemPrice,
+			       o.order_item_id as orderItemId,
+			       p.product_id as productId, 
 			       p.product_name as productName, 
 			       p.price, 
 			       p.seller

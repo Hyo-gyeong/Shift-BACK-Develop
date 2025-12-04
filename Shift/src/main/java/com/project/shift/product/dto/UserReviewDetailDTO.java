@@ -25,6 +25,9 @@ public class UserReviewDetailDTO {
 
     private int quantity;     // 주문한 수량
     private int itemPrice;    // 구매 당시 단가
+    
+    private Long productId;
+    private Long orderItemId;
 
     private String productName;
     private int price;        // 상품 현재 가격
