@@ -38,5 +38,9 @@ public class FriendDAO {
 		// 친구 관계가 없으면 삭제 불가
 		return false;
 	}
-	
+
+    // 탈퇴하는 사용자의 모든 친구 관계 삭제
+    public void deleteAllFriends(long userId) {
+        friendRepo.deleteFriendship(userId);
+    }
 }
