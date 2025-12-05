@@ -121,10 +121,10 @@ public class ChatroomUserService {
 	public void restoreChatroomBetweenUsers(DeletedChatroomUserInfoDTO dto) {
 		Date now = new Date();
 		String senderChatroomName = dto.getReceiverName()+"님과의 채팅방";
-		String receiverChatroomName = dto.getSenderName()+"님과의 채팅방";
+		//String receiverChatroomName = dto.getSenderName()+"님과의 채팅방";
 		
 		chatroomUserDao.restoreChatroomUser(dto.getChatroomId(), dto.getSenderId(), "ON", now, senderChatroomName);
-		chatroomUserDao.restoreChatroomUser(dto.getChatroomId(), dto.getReceiverId(), "OF", now, receiverChatroomName);
+		//chatroomUserDao.restoreChatroomUser(dto.getChatroomId(), dto.getReceiverId(), "OF", now, receiverChatroomName);
 	}
 	
 	@Transactional

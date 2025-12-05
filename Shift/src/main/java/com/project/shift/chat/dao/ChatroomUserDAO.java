@@ -72,8 +72,8 @@ public class ChatroomUserDAO {
 	}
 	
 	// 채팅방 접속 상태를 DL에서 OF로 변경
-	public void updateReceiverConnectionStatus(long chatroomId, long userId, Date now) {
-		chatroomUserRepo.updateReceiverConnectionStatus(chatroomId, userId, now);
+	public void updateReceiverConnectionStatus(long chatroomId, long userId, String newChatroomName, Date now) {
+		chatroomUserRepo.updateReceiverConnectionStatus(chatroomId, userId, newChatroomName, now);
 	}
 	
 	// 채팅방 이름 변경
