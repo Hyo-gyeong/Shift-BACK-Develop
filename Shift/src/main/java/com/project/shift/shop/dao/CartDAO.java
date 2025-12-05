@@ -9,6 +9,7 @@ import com.project.shift.user.entity.UserEntity;
 import com.project.shift.user.repository.UserRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import com.project.shift.product.entity.Image;
 
 import java.util.List;
 
@@ -106,7 +107,27 @@ public class CartDAO {
         dto.setProductName(entity.getProduct().getName());
         dto.setQuantity(entity.getQuantity());
         dto.setPrice(entity.getPrice());
-        dto.setImageUrl(null); 
+        String mainImageUrl = null;
+        //  대표 이미지 URL 추출 로직
+        var images = entity.getProduct().getImages();
+        if (images != null && !images.isEmpty()) {
+
+            // 1) 대표 이미지 Y 우선
+            var rep = images.stream()
+                    .filter(img -> "Y".equals(img.getIsRepresentative()))
+                    .findFirst()
+                    .orElse(null);
+
+            var target = rep != null ? rep : images.get(0);
+
+            // 여기서 상품목록과 동일한 규칙으로 full URL 생성
+            String rawPath = target.getImageUrl();             // "products/product_22s.jpg"
+            mainImageUrl = "http://localhost:8080/images/" + rawPath;
+            // 또는 imageBaseUrl + "/images/" + rawPath; 처럼 설정값 사용
+        }
+
+        dto.setImageUrl(mainImageUrl);
+        
         return dto;
     }
 }
