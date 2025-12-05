@@ -1,5 +1,6 @@
 package com.project.shift.product.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -38,16 +39,20 @@ public class ReviewController {
     @GetMapping("/{productId}/reviews")
     public ResponseEntity<List<ReviewDTO>> getProductReviews(@PathVariable Long productId) {
         List<ReviewDTO> reviews = reviewService.getReviewsByProductId(productId);
-        return reviews.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(reviews);
+        
+        // 리뷰가 없으면 빈 배열을 반환하도록 수정
+        return reviews.isEmpty() ? ResponseEntity.ok(Collections.emptyList()) : ResponseEntity.ok(reviews);
     }
     
     /** [PROD-009] 특정 사용자가 작성한 모든 리뷰 목록 조회 (최신 작성일 순) */
     @GetMapping("/users/reviews")
     public ResponseEntity<List<UserReviewDetailDTO>> getUserProductDetailReviews() {
-    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getName());
         List<UserReviewDetailDTO> reviewDetails = reviewService.getUserReviewDetails(userId);
-        return reviewDetails.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(reviewDetails);
+        
+        // 리뷰가 없으면 빈 배열을 반환하도록 수정
+        return reviewDetails.isEmpty() ? ResponseEntity.ok(Collections.emptyList()) : ResponseEntity.ok(reviewDetails);
     }
     
     /** [PROD-010] 리뷰 작성 */
