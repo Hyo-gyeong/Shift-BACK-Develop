@@ -353,9 +353,9 @@ public class OrderService implements IOrderService {
 
         // 메시지 생성
         if (isVoucherOrder) {
-            return "💳 금액권 선물이 도착했습니다!\n" + formattedPrice + "원";
+            return "💳 금액권 선물이 도착했습니다!\n" + formattedPrice + "원&" + order.getOrderId() + "&POINT";
         } else {
-            return "🎁 선물이 도착했습니다!";
+            return "🎁 선물이 도착했습니다!&" + order.getOrderId() + "&PRODUCT";
         }
     }
     
