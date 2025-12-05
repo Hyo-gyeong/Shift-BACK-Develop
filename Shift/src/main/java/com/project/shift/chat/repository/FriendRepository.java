@@ -3,6 +3,7 @@ package com.project.shift.chat.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,4 +28,8 @@ public interface FriendRepository extends JpaRepository<FriendEntity, Long>{
 
 	boolean existsByUserIdAndFriendId(long userId, long friendId);
 
+    // 친구 관계 삭제(탈퇴 시)
+    @Modifying
+    @Query(value = "DELETE FROM FriendEntity f WHERE f.userId = :userId OR f.friendId = :userId")
+    void deleteFriendship(@Param("userId") long userId);
 }

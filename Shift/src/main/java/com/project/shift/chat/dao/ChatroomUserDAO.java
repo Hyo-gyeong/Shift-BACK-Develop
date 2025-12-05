@@ -96,4 +96,10 @@ public class ChatroomUserDAO {
 	public int countOtherUsersOnline(long chatroomId, long userId) {
 		return chatroomUserRepo.countOtherUsersOnline(chatroomId, userId);
 	}
+
+    // 회원 탈퇴 시 처리
+    // 탈퇴하는 사용자의 모든 채팅방 관계 삭제
+    public void deleteChatroomUsersByUserId(long userId) {
+        chatroomUserRepo.updateStatusToDeletedByUserId(userId);
+    }
 }

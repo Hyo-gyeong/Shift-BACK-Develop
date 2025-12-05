@@ -37,4 +37,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 받은 선물 목록 조회
     List<Order> findByReceiverIdAndOrderStatusNotOrderByOrderDateDesc(Long receiverId, String status);
+    
+    // 탈퇴하려는 사용자가 sender 이면서 아직 완료/취소되지 않은 주문이 있는지 확인
+    boolean existsBySenderIdAndOrderStatusIn(Long senderId, List<String> statuses);
 }

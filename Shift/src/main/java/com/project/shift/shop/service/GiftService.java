@@ -98,7 +98,7 @@ public class GiftService implements IGiftService {
             }
 
             // 보낸 사람 이름 조회
-            String senderName = senderNameMap.getOrDefault(order.getSenderId(), "알 수 없음");
+            String senderName = senderNameMap.getOrDefault(order.getSenderId(), "탈퇴한 회원");
             String thumbUrl = imageMap.get(productId);
 
             // 타입 결정
@@ -191,7 +191,7 @@ public class GiftService implements IGiftService {
 
         // user 정보 조회
         String senderName = userDAO.findById(senderId)
-                .map(UserEntity::getName).orElse("알 수 없음");
+                .map(UserEntity::getName).orElse("탈퇴한 회원");
 
         // 배송지 정보 조회
         String deliveryAddress = null;
