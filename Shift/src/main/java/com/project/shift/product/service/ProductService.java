@@ -1,5 +1,6 @@
 package com.project.shift.product.service;
 
+import com.project.shift.global.image.ImageStorageService;
 import com.project.shift.product.dao.IImageDAO;
 import com.project.shift.product.dao.ProductDAO;
 import com.project.shift.product.dto.ImageDTO;
@@ -30,10 +31,13 @@ public class ProductService implements IProductService {
 
     private final ProductDAO productDAO;
     private final IImageDAO imageDAO;
+    private final ImageStorageService imageStorageService; // 저장 경로(storedPath)를 실제 URL로 변환하기 위한 빈 추가
 
-    public ProductService(ProductDAO productDAO, IImageDAO imageDAO) {
+
+    public ProductService(ProductDAO productDAO, IImageDAO imageDAO, ImageStorageService imageStorageService) {
         this.productDAO = productDAO;
         this.imageDAO = imageDAO;
+        this.imageStorageService = imageStorageService;
     }
 
     /** [PROD-001] 전체 상품 목록 조회 (금액권 제외) */
@@ -117,7 +121,7 @@ public class ProductService implements IProductService {
                 .map(img -> ImageDTO.builder()
                         .imageId(img.getId())
                         .productId(img.getProduct().getId())
-                        .imageUrl(img.getImageUrl())
+                        .imageUrl(imageStorageService.getImageUrl(img.getImageUrl()))
                         .isRepresentative(img.getIsRepresentative())
                         .build())
                 .collect(Collectors.toList());
@@ -141,6 +145,13 @@ public class ProductService implements IProductService {
 
     /** 엔티티 → DTO 변환 메서드 */
     private ProductDTO convertToDTO(Product product) {
+        List<String> imageUrls = (product.getImages() == null)
+        		? List.of()
+                        : product.getImages().stream()
+                            // DB에는 storedPath가 들어 있으므로, 여기서 전체 URL로 변환
+                            .map(image -> imageStorageService.getImageUrl(image.getImageUrl()))
+                            .collect(Collectors.toList());
+        
         return ProductDTO.builder()
                 .productId(product.getId().toString())
                 .productName(product.getName())
@@ -149,9 +160,7 @@ public class ProductService implements IProductService {
                 .registrationDate(product.getRegistrationDate().toString())
                 .seller(product.getSeller())
                 .categoryName(product.getCategory().getCategoryName())
-                .imageUrls(product.getImages().stream()
-                        .map(Image::getImageUrl)
-                        .collect(Collectors.toList()))
+                .imageUrls(imageUrls)
                 .build();
     }
 }
