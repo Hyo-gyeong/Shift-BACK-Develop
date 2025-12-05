@@ -205,9 +205,13 @@ public class OrderService implements IOrderService {
         Map<Long, String> nameCache = new HashMap<>();
         for (Order o : orders) {
             nameCache.computeIfAbsent(o.getSenderId(),
-                    id -> userRepository.findById(id).map(UserEntity::getName).orElse(null));
+                    id -> userRepository.findById(id)
+                            .map(UserEntity::getName)
+                            .orElse("탈퇴한 회원"));
             nameCache.computeIfAbsent(o.getReceiverId(),
-                    id -> userRepository.findById(id).map(UserEntity::getName).orElse(null));
+                    id -> userRepository.findById(id)
+                            .map(UserEntity::getName)
+                            .orElse("탈퇴한 회원"));
         }
 
         List<OrderListDTO> list = orders.stream().map(o -> {
@@ -280,9 +284,13 @@ public class OrderService implements IOrderService {
                 .orElse(null);
 
         // 이름
-        String senderName = userRepository.findById(order.getSenderId()).map(UserEntity::getName).orElse(null);
-        String receiverName = userRepository.findById(order.getReceiverId()).map(UserEntity::getName).orElse(null);
-        
+        String senderName = userRepository.findById(order.getSenderId())
+                .map(UserEntity::getName)
+                .orElse("탈퇴한 회원");
+        String receiverName = userRepository.findById(order.getReceiverId())
+                .map(UserEntity::getName)
+                .orElse("탈퇴한 회원");
+
         // 금액권 여부 판정
         boolean voucherOrder = !products.isEmpty() && products.stream().allMatch(p -> p.getCategoryId() == 3);
 
@@ -692,6 +700,10 @@ public class OrderService implements IOrderService {
         }
         if (chatroomId == null && receiverId == null)
         	throw new IllegalArgumentException("선물할 상대가 없습니다.");
+
+        // 받는 사람이 탈퇴한 회원인지 확인
+        userRepository.findById(receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 탈퇴한 회원에게는 선물할 수 없습니다."));
         
 //      기존 로직
 //      Long chatroomId = dto.getChatroomId();

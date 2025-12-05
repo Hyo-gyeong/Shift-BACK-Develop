@@ -1,21 +1,37 @@
 package com.project.shift.user.service;
 
+import com.project.shift.chat.dao.ChatroomUserDAO;
+import com.project.shift.chat.dao.FriendDAO;
+import com.project.shift.shop.dao.CartDAO;
+import com.project.shift.shop.repository.OrderRepository;
 import com.project.shift.user.dao.IUserDAO;
-import com.project.shift.user.dto.UserDTO;
 import com.project.shift.user.dto.LoginIdRequestDTO;
+import com.project.shift.user.dto.UserDTO;
 import com.project.shift.user.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private final String DELETED_USER_PREFIX = "deleted_";
+
     private final IUserDAO userDAO;
     private final PasswordEncoder passwordEncoder;
+    private final CartDAO cartDAO;
+    private final FriendDAO  friendDAO;
+    private final ChatroomUserDAO chatroomUserDAO;
+    private final OrderRepository orderRepository;
 
     @Transactional
     public Long join(UserDTO userDTO) {
@@ -83,7 +99,6 @@ public class UserService {
 
         return userDAO.existsByPhone(phone);
     }
-
 
     // 비밀번호 보안 규칙 검증
     public void validatePasswordRule(String password) {
@@ -199,5 +214,48 @@ public class UserService {
         if (userFindDTO.phone() == null || userFindDTO.phone().isBlank()) {
             throw new IllegalArgumentException("[SYSTEM] 연락처는 필수 입력 항목입니다.");
         }
+    }
+
+
+    @Transactional
+    public void withdrawUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        long userId = Long.parseLong(auth.getName());
+
+        log.info("[USER] 회원 탈퇴 시작 {}", userId);
+
+        // 진행 중인 주문이 있는지 확인
+        boolean hasActiveOrders = orderRepository.existsBySenderIdAndOrderStatusIn(userId, List.of("P", "S"));
+
+        if (hasActiveOrders) {
+            throw new IllegalStateException("진행 중인 주문이 있어 탈퇴할 수 없습니다.");
+        }
+
+        cartDAO.clearCartByUserId(userId); // 장바구니 비우기
+        friendDAO.deleteAllFriends(userId); // 친구 관계 삭제
+        chatroomUserDAO.deleteChatroomUsersByUserId(userId);
+
+        UserEntity user = userDAO.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 로그인 ID 변경 처리
+        user.setLoginId(DELETED_USER_PREFIX + user.getUserId());
+
+        // 비밀번호 폐기
+        user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+
+        // 기타 개인정보 초기화
+        user.setName("탈퇴한 사용자");
+        user.setPhone(null);
+        user.setAddress(null);
+        user.setRefreshToken(null);
+        user.setDeletedAt(new Timestamp(System.currentTimeMillis()));
+
+        userDAO.save(user);
+
+        // SecurityContext 초기화 (로그아웃 처리)
+        SecurityContextHolder.clearContext();
+
+        log.info("[USER] 회원 탈퇴 완료 {}", userId);
     }
 }

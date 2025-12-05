@@ -8,6 +8,7 @@ import com.project.shift.shop.dao.IDeliveryDAO;
 import com.project.shift.shop.dao.IOrderDAO;
 import com.project.shift.shop.dto.gift.GiftDetailResponseDTO;
 import com.project.shift.shop.dto.gift.GiftListResponseDTO;
+import com.project.shift.shop.dto.gift.GiftItemDTO;
 import com.project.shift.shop.entity.Delivery;
 import com.project.shift.shop.entity.Order;
 import com.project.shift.shop.entity.OrderItem;
@@ -97,7 +98,7 @@ public class GiftService implements IGiftService {
             }
 
             // 보낸 사람 이름 조회
-            String senderName = senderNameMap.getOrDefault(order.getSenderId(), "알 수 없음");
+            String senderName = senderNameMap.getOrDefault(order.getSenderId(), "탈퇴한 회원");
             String thumbUrl = imageMap.get(productId);
 
             // 타입 결정
@@ -119,6 +120,7 @@ public class GiftService implements IGiftService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public GiftDetailResponseDTO getDetailGift(Long userId, Long orderId) {
 
         // order 정보 조회
@@ -137,19 +139,50 @@ public class GiftService implements IGiftService {
             throw new IllegalArgumentException("해당 주문에 상품이 없습니다.");
         }
         
-        OrderItem orderItem = order.getOrderItems().getFirst();
+        List<OrderItem> orderItems = order.getOrderItems();
+        
+        List<GiftItemDTO> itemDTOs = new ArrayList<>();
 
-        // product 정보 조회
-        Long productId = orderItem.getProductId();
-        Integer quantity = orderItem.getQuantity();
 
-        Product product = productDAO.findById(productId);
-        if (product == null) {
+        for (OrderItem oi : orderItems) {
+            Long productId = oi.getProductId();
+            Product product = productDAO.findById(productId);
+            if (product == null) {
+                // 상품이 삭제된 경우 등은 건너뜀 (필요 시 예외로 바꿀 수 있음)
+                continue;
+            }
+
+            Long categoryId = null;
+            if (product.getCategory() != null) {
+                categoryId = product.getCategory().getCategoryId();
+            }
+
+            GiftItemDTO itemDTO = GiftItemDTO.builder()
+                    .orderItemId(oi.getOrderItemId())
+                    .productId(productId)
+                    .productName(product.getName())
+                    .quantity(oi.getQuantity())
+                    .categoryId(categoryId)
+                    .build();
+
+            itemDTOs.add(itemDTO);
+        }
+
+        if (itemDTOs.isEmpty()) {
+            throw new IllegalArgumentException("표시할 주문 상품이 없습니다.");
+        }
+
+        // 첫 번째 상품 기준으로 기존 단일 필드 채움 (하위 호환용)
+        GiftItemDTO firstItem = itemDTOs.get(0);
+        Long firstProductId = firstItem.getProductId();
+
+        Product firstProduct = productDAO.findById(firstProductId);
+        if (firstProduct == null) {
             throw new IllegalArgumentException("해당 상품이 존재하지 않습니다.");
         }
 
         // image 정보 조회
-        List<Image> images = imageDAO.findByProductId(productId);
+        List<Image> images = imageDAO.findByProductId(firstProductId);
         String imageUrl = images.stream()
                 .filter(img -> "Y".equals(img.getIsRepresentative()))
                 .findFirst()
@@ -158,7 +191,7 @@ public class GiftService implements IGiftService {
 
         // user 정보 조회
         String senderName = userDAO.findById(senderId)
-                .map(UserEntity::getName).orElse("알 수 없음");
+                .map(UserEntity::getName).orElse("탈퇴한 회원");
 
         // 배송지 정보 조회
         String deliveryAddress = null;
@@ -177,15 +210,16 @@ public class GiftService implements IGiftService {
 
         return GiftDetailResponseDTO.builder()
                 .orderId(order.getOrderId())
-                .productId(orderItem.getProductId())
-                .orderItemId(orderItem.getOrderItemId())
-                .productName(product.getName())
+                .productId(firstItem.getProductId())           // firstItem 기준
+                .orderItemId(firstItem.getOrderItemId())       // firstItem 기준
+                .productName(firstProduct.getName())
                 .imageUrl(imageUrl)
                 .senderName(senderName)
                 .orderStatus(order.getOrderStatus())
                 .deliveryStatus(deliveryStatus)
-                .quantity(quantity)
+                .quantity(firstItem.getQuantity())
                 .deliveryAddress(deliveryAddress)
+                .items(itemDTOs)
                 .build();
     }
 

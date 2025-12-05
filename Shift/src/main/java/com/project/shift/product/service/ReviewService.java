@@ -49,7 +49,7 @@ public class ReviewService implements IReviewService {
                 .reviewId(review.getId())
                 .userName(userDAO.findById(review.getUser().getUserId())
                         .map(u -> u.getName())
-                        .orElse("탈퇴한 사용자"))
+                        .orElse("탈퇴한 회원"))
                 .rating(review.getRating())
                 .content(review.getContent())
                 .createdDate(review.getCreatedDate())
