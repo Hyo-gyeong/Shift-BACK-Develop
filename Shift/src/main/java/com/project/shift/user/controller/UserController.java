@@ -108,7 +108,7 @@ public class UserController {
         String loginId = userService.findId(loginIdRequestDTO);
         return ResponseEntity.ok(Map.of("loginId", loginId));
     }
-    
+
     // SHOP-011 포인트 사용/적립 내역 조회
     @GetMapping("/{userId}/points")
     public ResponseEntity<PointHistoryResponseDTO> getPointHistory(@PathVariable Long userId) {
@@ -128,6 +128,25 @@ public class UserController {
             UserDTO user = userService.getUserInfo();
             return ResponseEntity.ok(Map.of(
                     "points", user.getPoints()
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // 비밀번호 인증
+    @PostMapping("/check/password")
+    public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> request) {
+        String password = request.get("password");
+        if (password == null || password.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("valid", false, "message", "비밀번호를 입력해주세요."));
+        }
+
+        try {
+            boolean isValid = userService.verifyPassword(password);
+            return ResponseEntity.ok(Map.of(
+                    "valid", isValid,
+                    "message", isValid ? "비밀번호 인증에 성공했습니다." : "비밀번호가 일치하지 않습니다."
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
