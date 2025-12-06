@@ -51,11 +51,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-                		// 정적 리소스(이미지 등)는 인증 없이 접근 허용
-                        .requestMatchers(
-                                "/images/**"   // 정적 리소스로 매핑된 이미지 경로
-                                // 필요하면 추가: "/css/**", "/js/**", "/favicon.ico" 등
-                        ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users", "/users/check/**", "/users/find-id").permitAll()
                         .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()

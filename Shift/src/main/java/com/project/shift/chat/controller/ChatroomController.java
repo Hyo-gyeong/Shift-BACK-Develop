@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.shift.chat.dto.ChatroomDTO;
@@ -130,20 +131,32 @@ public class ChatroomController {
 	 */
 	// 채팅방 검색 - 1. 검색 키워드가 참여한 채팅 목록의 상대방 이름에 포함될 때
 	@GetMapping("/search/name")
-	public List<ChatroomListDTO> searchChatroomUsersName(@RequestBody Map<String, String> body){
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = Long.parseLong(auth.getName());
-		List<ChatroomListDTO> chatroomList = chatroomService.searchChatroomUsersName(body.get("input"), userId);
-		return chatroomList;
+	public ResponseEntity<?> searchChatroomUsersName(@RequestParam String input){
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Long userId = Long.parseLong(auth.getName());
+			List<ChatroomListDTO> chatroomList = chatroomService.searchChatroomUsersName(input, userId);
+			return ResponseEntity.ok(chatroomList);
+			
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Chatroom not found");
+		}
 	}
 	
 	// 채팅방 검색 - 2. 검색 키워드가 참여한 채팅방의 메시지 내용에 포함될 때
 	@GetMapping("/search/messages")
-	public List<MessageSearchResultDTO> searchChatroomMessages(@RequestBody Map<String, String> body){
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = Long.parseLong(auth.getName());
-        List<MessageSearchResultDTO> messageList = chatroomService.searchChatroomMessages(body.get("input"), userId);
-		return messageList;
+	public ResponseEntity<?> searchChatroomMessages(@RequestParam String input){
+		try {
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			Long userId = Long.parseLong(auth.getName());
+			List<MessageSearchResultDTO> messageList = chatroomService.searchChatroomMessages(input, userId);
+			return ResponseEntity.ok(messageList);
+			
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Chatroom not found");
+		}
 	}
 
 }

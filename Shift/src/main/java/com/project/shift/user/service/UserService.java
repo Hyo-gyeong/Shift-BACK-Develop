@@ -216,7 +216,19 @@ public class UserService {
         }
     }
 
+    // 비밀번호 인증
+    @Transactional(readOnly = true)
+    public boolean verifyPassword(String password) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        long userId = Long.parseLong(auth.getName());
 
+        UserEntity user = userDAO.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    // 회원 탈퇴
     @Transactional
     public void withdrawUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
