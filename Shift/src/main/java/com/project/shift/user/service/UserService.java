@@ -223,7 +223,7 @@ public class UserService {
         long userId = Long.parseLong(auth.getName());
 
         UserEntity user = userDAO.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("비밀번호가 일치하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         return passwordEncoder.matches(password, user.getPassword());
     }
