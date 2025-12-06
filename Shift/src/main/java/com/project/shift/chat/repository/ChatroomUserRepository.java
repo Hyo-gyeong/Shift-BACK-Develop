@@ -40,10 +40,7 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	@Transactional
 	@Query("""
 			UPDATE ChatroomUserEntity c 
-			SET c.chatroomName = null, 
-			c.lastConnectionTime = null, 
-			c.createdTime = null, 
-			c.connectionStatus = 'DL', 
+			SET c.connectionStatus = 'DL', 
 			c.isDarkMode = 'N' 
 			WHERE c.chatroomUserId = :id
 			""")
@@ -54,10 +51,7 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	@Transactional
 	@Query("""
 			UPDATE ChatroomUserEntity c 
-			SET c.chatroomName = null, 
-			c.lastConnectionTime = null, 
-			c.createdTime = null, 
-			c.connectionStatus = 'DL', 
+			SET c.connectionStatus = 'DL', 
 			c.isDarkMode = 'N' 
 			WHERE c.chatroomId = :chatroomId
 			""")
@@ -107,14 +101,16 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	@Transactional
 	@Query("""
 			UPDATE ChatroomUserEntity c 
-			SET c.connectionStatus = 'OF',
+			SET c.chatroomName = :newChatroomName,
+				c.connectionStatus = 'OF',
 				c.createdTime = :now,
-				c.lastConnectionTime = :now
+				c.isDarkMode = 'N'
 			WHERE c.chatroomId = :chatroomId
 				AND c.userId != :userId
 			""")
 	void updateReceiverConnectionStatus(@Param("chatroomId") long chatroomId,
 										@Param("userId") long userId,
+										@Param("newChatroomName") String newChatroomName,
 										@Param("now") Date now);
 	
 	// 채팅방 이름 변경

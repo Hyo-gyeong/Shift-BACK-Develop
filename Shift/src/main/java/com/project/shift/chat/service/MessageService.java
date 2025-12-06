@@ -5,12 +5,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.project.shift.chat.dao.ChatUserDAO;
 import com.project.shift.chat.dao.ChatroomDAO;
 import com.project.shift.chat.dao.ChatroomUserDAO;
 import com.project.shift.chat.dao.MessageDAO;
@@ -19,6 +21,7 @@ import com.project.shift.chat.dto.ChatroomListDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.dto.MessageUserDTO;
+import com.project.shift.chat.entity.ChatUserEntity;
 import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.entity.MessageEntity;
 
@@ -33,6 +36,7 @@ public class MessageService {
 	private final MessageDAO messageDAO;
 	private final ChatroomUserDAO chatroomUserDAO;
 	private final ChatroomDAO chatroomDAO;
+	private final ChatUserDAO chatUserDAO;
 	private final SimpMessagingTemplate messagingTemplate;
 
 	// 메시지 DB 저장
@@ -60,8 +64,16 @@ public class MessageService {
 		// 채팅을 보내는 사람이 이전에 채팅방을 삭제한 적이 있는 경우 채팅방 생성시간과 마지막 접속 시간을 메시지를 보내기 직전으로 설정
 		if (chatroomUserDTO.getConnectionStatus().equals("DL")) {
 			Date now = new Date();
-			chatroomUserDTO.setCreatedTime(now);
 			chatroomUserDTO.setLastConnectionTime(now);
+			
+			long receiverId = chatroomUserDAO.getReceiverId(chatroomUserDTO.getChatroomId(), chatroomUserDTO.getUserId()).getFirst();
+			Optional<ChatUserEntity> receiverInfo = chatUserDAO.getChatUserInfo(receiverId);
+			
+			chatroomUserDAO.restoreChatroomUser(chatroomUserDTO.getChatroomId(),
+												chatroomUserDTO.getUserId(),
+												"OF",
+												now,
+												receiverInfo.get().getName() + "님과의 채팅방");
 		}
 		
 		// 채팅방을 완전히 처음 생성해서 메시지를 보내는 경우 메시지 전송 시간이 채팅방 생성시간과 동일하게 설정되어있음
@@ -173,8 +185,10 @@ public class MessageService {
 		// 상대방이 채팅방을 삭제한 상태인지 확인
 		boolean ifDeleted = checkReceiverConnectionStatus(chatroomId, userId);
 		if (ifDeleted) {
+			String newChatroomName = chatUserDAO.getChatUserInfo(userId).get().getName() + "님과의 채팅방";
+			
 			// 삭제했다면 채팅방 접속상태 'OF'로 변경
-			updateReceiverConnectionStatus(chatroomId, userId, now);
+			updateReceiverConnectionStatus(chatroomId, userId, newChatroomName, now);
 		}
 	}
 	
@@ -186,8 +200,8 @@ public class MessageService {
 	
 	// 상대방의 채팅방 접속 상태를 'DL'에서 'OF'로 변경
 	@Transactional
-	private void updateReceiverConnectionStatus(long chatroomId, long userId, Date now) {
-		chatroomUserDAO.updateReceiverConnectionStatus(chatroomId, userId, now);
+	private void updateReceiverConnectionStatus(long chatroomId, long userId, String newChatroomName, Date now) {
+		chatroomUserDAO.updateReceiverConnectionStatus(chatroomId, userId, newChatroomName, now);
 	}
 
 }
