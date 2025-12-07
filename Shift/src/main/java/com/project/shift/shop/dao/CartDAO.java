@@ -122,7 +122,7 @@ public class CartDAO {
 
             // 여기서 상품목록과 동일한 규칙으로 full URL 생성
             String rawPath = target.getImageUrl();             // "products/product_22s.jpg"
-            mainImageUrl = "http://localhost:8080/images/" + rawPath;
+            mainImageUrl = rawPath;
             // 또는 imageBaseUrl + "/images/" + rawPath; 처럼 설정값 사용
         }
 
