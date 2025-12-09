@@ -8,7 +8,6 @@ public class OrderDetailItemDTO {
     private Integer itemPrice;
     private Long categoryId;
     private Long orderItemId;
-    private Long Imageurl;
     private String imageUrl;
 
 
