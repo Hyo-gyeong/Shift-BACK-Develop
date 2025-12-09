@@ -8,6 +8,8 @@ public class OrderDetailItemDTO {
     private Integer itemPrice;
     private Long categoryId;
     private Long orderItemId;
+    private Long Imageurl;
+    private String imageUrl;
 
 
     public Long getProductId() { return productId; }
@@ -27,5 +29,8 @@ public class OrderDetailItemDTO {
     
 	public Long getOrderItemId() { return orderItemId; }
 	public void setOrderItemId(Long orderItemId) { this.orderItemId = orderItemId; }
+	
+	public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
 }

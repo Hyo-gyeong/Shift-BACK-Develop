@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import com.project.shift.chat.service.MessageService;
 import com.project.shift.product.dao.IPointDAO;
 import com.project.shift.product.entity.PointTransaction;
 import com.project.shift.product.entity.Product;
+import com.project.shift.product.entity.Image;
 import com.project.shift.product.repository.PointTransactionRepository;
 import com.project.shift.product.repository.ProductRepository;
 import com.project.shift.shop.dao.IOrderDAO;
@@ -259,12 +261,18 @@ public class OrderService implements IOrderService {
             dto.setProductId(oi.getProductId());
             dto.setQuantity(oi.getQuantity());
             dto.setItemPrice(oi.getItemPrice());
-            dto.setOrderItemId(oi.getOrderItemId());
+            dto.setOrderItemId(oi.getOrderItemId());            
 
             Product product = productMap.get(oi.getProductId());
             if (product != null) {
                 dto.setProductName(product.getName());
                 dto.setCategoryId(product.getCategoryId());
+                if (product.getImages() != null && !product.getImages().isEmpty()) {
+                    Image mainImage = product.getImages().get(0);
+                    
+                    String url = mainImage.getImageUrl();
+                    dto.setImageUrl(url);
+                }
             }
             return dto;
         }).toList();
