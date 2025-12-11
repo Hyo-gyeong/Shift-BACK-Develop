@@ -1,9 +1,7 @@
 package com.project.shift.user.dao;
 
 import java.util.Optional;
-import java.util.stream.Stream;
 
-import com.project.shift.product.entity.Review;
 import com.project.shift.user.entity.UserEntity;
 
 public interface IUserDAO {

@@ -1,19 +1,19 @@
 package com.project.shift.shop.service;
 
+import org.springframework.stereotype.Service;
+
 import com.project.shift.shop.dao.IDeliveryDAO;
 import com.project.shift.shop.dto.DeliveryDTO;
 import com.project.shift.shop.dto.DeliveryStatusUpdateRequestDTO;
 import com.project.shift.shop.entity.Delivery;
-import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class DeliveryService implements IDeliveryService {
 	
 	private final IDeliveryDAO deliveryDAO;
-
-    public DeliveryService(IDeliveryDAO deliveryDAO) {
-        this.deliveryDAO = deliveryDAO;
-    }
     
 	// SHOP-014 배송 조회
     @Override

@@ -1,29 +1,28 @@
 package com.project.shift.user.service;
 
-import com.project.shift.user.entity.UserEntity;
-import com.project.shift.user.repository.UserRepository;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Optional;
+
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.User.UserBuilder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import com.project.shift.user.entity.UserEntity;
+import com.project.shift.user.repository.UserRepository;
 
-import static org.springframework.security.core.userdetails.User.UserBuilder;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 // Spring Security 인증 과정에서 자동으로 호출되는 메서드
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
-
-    public UserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {

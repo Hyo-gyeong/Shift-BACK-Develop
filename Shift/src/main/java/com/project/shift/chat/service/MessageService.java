@@ -22,7 +22,6 @@ import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.dto.MessageUserDTO;
 import com.project.shift.chat.entity.ChatUserEntity;
-import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.entity.MessageEntity;
 
 import lombok.RequiredArgsConstructor;
