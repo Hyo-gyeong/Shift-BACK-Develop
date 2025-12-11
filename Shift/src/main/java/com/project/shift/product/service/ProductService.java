@@ -1,11 +1,17 @@
 package com.project.shift.product.service;
 
 import com.project.shift.product.dao.IImageDAO;
+import com.project.shift.product.dao.IReviewDAO;
 import com.project.shift.product.dao.ProductDAO;
 import com.project.shift.product.dto.ImageDTO;
 import com.project.shift.product.dto.ProductDTO;
 import com.project.shift.product.entity.Image;
 import com.project.shift.product.entity.Product;
+import com.project.shift.product.repository.ReviewEntityRepository;
+import com.project.shift.user.dao.IUserDAO;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -26,16 +32,11 @@ import java.util.stream.Collectors;
  * ※ 금액권(Category_ID = 3)은 모든 일반 조회/검색/정렬에서 제외
  */
 @Service
+@RequiredArgsConstructor
 public class ProductService implements IProductService {
 
     private final ProductDAO productDAO;
     private final IImageDAO imageDAO;
-
-
-    public ProductService(ProductDAO productDAO, IImageDAO imageDAO) {
-        this.productDAO = productDAO;
-        this.imageDAO = imageDAO;
-    }
 
     /** [PROD-001] 전체 상품 목록 조회 (금액권 제외) */
     @Override

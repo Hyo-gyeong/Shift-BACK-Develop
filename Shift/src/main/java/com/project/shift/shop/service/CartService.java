@@ -1,22 +1,26 @@
 package com.project.shift.shop.service;
 
-import com.project.shift.shop.dao.CartDAO;
-import com.project.shift.shop.dto.*;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.project.shift.shop.dao.CartDAO;
+import com.project.shift.shop.dto.CartClearResponseDTO;
+import com.project.shift.shop.dto.CartDeleteResponseDTO;
+import com.project.shift.shop.dto.CartItemDTO;
+import com.project.shift.shop.dto.CartResponseDTO;
+import com.project.shift.shop.dto.CartUpdateResponseDTO;
+
+import lombok.RequiredArgsConstructor;
 
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CartService implements ICartService {
 
     private final CartDAO cartDAO;
-
-    public CartService(CartDAO cartDAO) {
-        this.cartDAO = cartDAO;
-    }
 
     // SHOP-001
     @Override

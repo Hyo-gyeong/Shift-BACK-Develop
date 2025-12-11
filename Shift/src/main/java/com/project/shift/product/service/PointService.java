@@ -1,11 +1,12 @@
 package com.project.shift.product.service;
 
-import com.project.shift.product.dao.IPointDAO;
+import org.springframework.stereotype.Service;
+
 import com.project.shift.product.dto.PointCalcDTO;
 import com.project.shift.product.dto.PointDTO;
-import com.project.shift.product.entity.Product;
 import com.project.shift.product.repository.PointRepository;
-import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * [SERVICE-002] 금액권 관련 비즈니스 로직 처리 클래스
@@ -16,18 +17,13 @@ import org.springframework.stereotype.Service;
  * ※ category_id = 3 인 상품을 금액권 템플릿으로 사용
  */
 @Service
+@RequiredArgsConstructor
 public class PointService implements IPointService {
 
     private static final int DEFAULT_MIN_AMOUNT = 1000;
     private static final int DEFAULT_MAX_AMOUNT = 5000000;
 
-    private final IPointDAO pointDAO;
     private final PointRepository pointRepository;
-
-    public PointService(PointRepository pointRepository, IPointDAO pointDAO) {
-        this.pointRepository = pointRepository;
-        this.pointDAO = pointDAO;
-    }
 
     /** [PROD-015] 금액권 페이지 기본 정보 조회 */
     @Override

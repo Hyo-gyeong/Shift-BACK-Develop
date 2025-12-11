@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.project.shift.chat.dto.MessageDTO;
 import com.project.shift.chat.entity.MessageEntity;
 import com.project.shift.chat.repository.MessageRepository;
 

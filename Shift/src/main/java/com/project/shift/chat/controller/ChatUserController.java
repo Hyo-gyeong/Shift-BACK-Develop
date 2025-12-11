@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.shift.chat.dto.ChatUserMyPageInfoDTO;
-import com.project.shift.chat.dto.ChatUserSearchResultDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 import com.project.shift.chat.exception.UserNotFoundException;
 import com.project.shift.chat.service.ChatUserService;

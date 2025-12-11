@@ -1,13 +1,11 @@
 package com.project.shift.user.dao;
 
-import com.project.shift.product.entity.Review;
-import com.project.shift.user.entity.UserEntity;
-import com.project.shift.user.repository.UserRepository;
-
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
+
+import com.project.shift.user.entity.UserEntity;
+import com.project.shift.user.repository.UserRepository;
 
 @Service
 public class UserDAO implements IUserDAO {
