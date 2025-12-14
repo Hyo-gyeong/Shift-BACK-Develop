@@ -18,6 +18,7 @@ public class ChatroomListDTO {
 
 	private long chatroomUserId;
     private long chatroomId;
+    private long lastMsgSender;
     private String lastMsgContent;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastMsgDate;
@@ -30,5 +31,6 @@ public class ChatroomListDTO {
     private String chatroomName;
     @Setter
     private int unreadCount;
+    private long receiverId;
     
 }

@@ -102,12 +102,14 @@ public class ChatroomService {
             	.chatroomUserId(p.getChatroomUserId())
                 .chatroomId(p.getChatroomId())
                 .chatroomName(p.getChatroomName())
+                .lastMsgSender(p.getLastMsgSender())
                 .lastMsgContent(p.getLastMsgContent())
                 .lastMsgDate(toDate(p.getLastMsgDate()))
                 .lastConnectionTime(toDate(p.getLastConnectionTime()))
                 .createdTime(toDate(p.getCreatedTime()))
                 .connectionStatus(p.getConnectionStatus())
                 .isDarkMode(p.getIsDarkMode())
+                .receiverId(p.getReceiverId())
                 .build();
             // unreadCount 계산
             dto.setUnreadCount(dao.countUnreadMessages(p.getChatroomId(), userId));
@@ -128,6 +130,8 @@ public class ChatroomService {
                 .connectionStatus(p.getConnectionStatus())
                 .isDarkMode(p.getIsDarkMode())
                 .message(p.getMessage())
+                .sendDate(p.getSendDate())
+                .receiverId(p.getReceiverId())
                 .build();
            // unreadCount 계산
            dto.setUnreadCount(dao.countUnreadMessages(p.getChatroomId(), userId));

@@ -18,7 +18,8 @@ public interface FriendRepository extends JpaRepository<FriendEntity, Long>{
 				f.friendship_id as friendshipId,
 				f.friend_id as friendId,
 				u.name,
-				u.login_id as loginId
+				u.login_id as loginId,
+				u.phone
 			from friends f, users u
 			where f.friend_id = u.user_id
 				and f.user_id = :userId

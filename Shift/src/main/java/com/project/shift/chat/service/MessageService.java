@@ -90,6 +90,7 @@ public class MessageService {
 	        	messageDAO.markMessagesAsRead(messageDTO.getChatroomId(),
 	        								  chatroomUserDTO.getLastConnectionTime(),
 	        								  chatroomUserDTO.getUserId());
+	        	chatroomUserDTO.setLastConnectionTime(new Date());
 	        	chatroomUserDAO.updateChatUserInfo(chatroomUserDTO);
 	            break;	
 	        case LEAVE :

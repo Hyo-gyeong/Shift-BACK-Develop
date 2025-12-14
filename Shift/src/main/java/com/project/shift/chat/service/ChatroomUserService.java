@@ -89,6 +89,7 @@ public class ChatroomUserService {
                     .createdTime(toDate(p.getCreatedTime()))
                     .connectionStatus(p.getConnectionStatus())
                     .isDarkMode(p.getIsDarkMode())
+                    .receiverId(p.getReceiverId())
                     .build();
 
                 // unreadCount 계산
