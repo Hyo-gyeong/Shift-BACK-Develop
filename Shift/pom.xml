@@ -30,6 +30,18 @@
     <properties>
         <java.version>21</java.version>
     </properties>
+    <!-- AWS SDK v2 BOM 추가 -->
+    <dependencyManagement>
+	    <dependencies>
+	        <dependency>
+	            <groupId>software.amazon.awssdk</groupId>
+	            <artifactId>bom</artifactId>
+	            <version>2.25.65</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+	    </dependencies>
+	</dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -132,6 +144,15 @@
 			<artifactId>maven-war-plugin</artifactId>
 			<version>3.3.1</version>
 			<type>maven-plugin</type>
+		</dependency>
+		<!-- AWS S3 SDK -->
+		<dependency>
+		    <groupId>software.amazon.awssdk</groupId>
+		    <artifactId>s3</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>software.amazon.awssdk</groupId>
+		    <artifactId>auth</artifactId>
 		</dependency>
     </dependencies>
 
