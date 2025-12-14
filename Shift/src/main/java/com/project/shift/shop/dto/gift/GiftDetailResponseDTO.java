@@ -11,15 +11,11 @@ import java.util.List;
 @AllArgsConstructor
 public class GiftDetailResponseDTO {
     private Long orderId;
-    private String imageUrl;
-    private String productName;
+    private String orderDate;
     private String senderName;
     private String orderStatus; // 주문 상태
-    private String orderDate;
     private String deliveryStatus; // 배송 상태
-    private Integer quantity;
     private String deliveryAddress;
-    private Long productId;  
-    private Long orderItemId;
+
     private List<GiftItemDTO> items;
 }
