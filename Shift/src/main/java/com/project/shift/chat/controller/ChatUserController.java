@@ -8,8 +8,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.project.shift.chat.dto.ChatUserMyPageInfoDTO;
 import com.project.shift.chat.dto.ChatroomUserDTO;
@@ -88,5 +91,21 @@ public class ChatUserController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 	                             .body("Error searching chatroom user: " + e.getMessage());
 	    }
+	}
+	
+	// 프로필 이미지 업로드
+	@PostMapping("/uploadProfileImage")
+	public ResponseEntity<?> uploadProfileImage(@RequestParam("file") MultipartFile file) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.parseLong(auth.getName());
+        
+        try {
+            chatUserService.uploadProfileImage(userId, file);
+            return ResponseEntity.ok("프로필 이미지 업로드 완료");
+        } catch (Exception e) {
+            log.error("프로필 이미지 업로드 실패 userId={}", userId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("프로필 이미지 업로드 실패: " + e.getMessage());
+        }
 	}
 }

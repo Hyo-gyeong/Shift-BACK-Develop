@@ -15,5 +15,6 @@ public class FriendInfoDTO {
     private long friendId;     // PK
     private String name; // 이름
     private String loginId; // ID(로그인에 사용)
+    private String phone; // 전화번호
     
 }

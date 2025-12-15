@@ -28,4 +28,7 @@ public class MessageSearchResultDTO {
     @Setter
     private int unreadCount;
     private String message;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date sendDate;
+    private long receiverId;
 }

@@ -12,4 +12,6 @@ public interface MessageSearchResultProjection {
     String getConnectionStatus();
     String getIsDarkMode();
     String getMessage();
+    java.sql.Timestamp getSendDate();
+    Long getReceiverId();
 }

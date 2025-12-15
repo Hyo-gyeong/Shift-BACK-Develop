@@ -21,7 +21,8 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long>{
 			where cu.user_id = :userId and
 				  cu.chatroom_id = :chatroomId and
 				  m.chatroom_id = cu.chatroom_id and
-				  m.send_date >= GREATEST(cu.last_connection_time, cu.created_time)
+				  m.send_date >= GREATEST(cu.last_connection_time, cu.created_time) and
+				  m.user_id <> :userId
 			""", nativeQuery = true)
 	int countUnreadMessages(@Param("chatroomId") long chatroomId, @Param("userId") long userId);
 

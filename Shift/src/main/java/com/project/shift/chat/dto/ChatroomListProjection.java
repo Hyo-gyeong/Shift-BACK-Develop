@@ -6,10 +6,12 @@ public interface ChatroomListProjection {
     String getChatroomName();
     String getLastMsgContent();
 
+    Long getLastMsgSender();
     java.sql.Timestamp getLastMsgDate();
     java.sql.Timestamp getLastConnectionTime();
     java.sql.Timestamp getCreatedTime();
 
     String getConnectionStatus();
     String getIsDarkMode();
+    Long getReceiverId();
 }

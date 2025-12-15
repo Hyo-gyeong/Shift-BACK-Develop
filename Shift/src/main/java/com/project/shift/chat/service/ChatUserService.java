@@ -2,8 +2,16 @@ package com.project.shift.chat.service;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import com.project.shift.chat.dao.ChatUserDAO;
 import com.project.shift.chat.dao.FriendDAO;
@@ -12,6 +20,7 @@ import com.project.shift.chat.dto.ChatUserSearchResultDTO;
 import com.project.shift.chat.entity.ChatUserEntity;
 import com.project.shift.chat.exception.UserNotFoundException;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -20,6 +29,30 @@ public class ChatUserService {
 
 	private final ChatUserDAO chatUserDAO;
 	private final FriendDAO friendDAO;
+	
+	@Value("${cloud.aws.s3.bucket}")
+	private String bucketName;
+	
+	@Value("${cloud.aws.region}")
+	private String region;
+	
+	@Value("${cloud.aws.credentials.access-key}")
+	private String accessKey;
+	
+	@Value("${cloud.aws.credentials.secret-key}")
+	private String secretKey;
+    
+    private S3Client s3;
+
+    @PostConstruct
+    public void initS3() {
+        AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accessKey, secretKey);
+
+        this.s3 = S3Client.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+                .build();
+    }
 	
 	@Transactional(readOnly = true)
 	public ChatUserSearchResultDTO searchUserByPhone(long userId, String phone) {
@@ -52,6 +85,33 @@ public class ChatUserService {
 					.build());
 		}
 		return Optional.empty();
+	}
+	
+	// 프로필 이미지 업로드
+	@Transactional
+	public void uploadProfileImage(long userId, MultipartFile file) {
+	    if (file == null || file.isEmpty()) {
+	        throw new IllegalArgumentException("업로드할 파일이 없습니다.");
+	    }
+
+	    String key = "user_profile/" + userId + ".png";
+
+	    try {
+	        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+	                .bucket(bucketName)
+	                .key(key)
+	                .contentType(file.getContentType())
+	                .build();
+
+	        s3.putObject(putObjectRequest,
+	                software.amazon.awssdk.core.sync.RequestBody.fromInputStream(
+	                        file.getInputStream(),
+	                        file.getSize()
+	                ));
+
+	    } catch (Exception e) {
+	        throw new RuntimeException("S3 업로드 실패", e);
+	    }
 	}
 	
 }
