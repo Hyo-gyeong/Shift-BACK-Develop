@@ -110,6 +110,7 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 		      and cu_me.user_id = :userId
 		      and m.send_date > cu_me.created_time
 		      and m.content like '%' || :keyword || '%'
+		      and m.is_gift = 'N'
 			""", nativeQuery = true)
 	List<MessageSearchResultProjection> findChatroomMessagesBySearchInput(@Param("keyword") String keyword,
 			  															  @Param("userId") long userId);
