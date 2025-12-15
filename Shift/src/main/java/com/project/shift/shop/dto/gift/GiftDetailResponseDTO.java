@@ -17,5 +17,5 @@ public class GiftDetailResponseDTO {
     private String deliveryStatus; // 배송 상태
     private String deliveryAddress;
     private String giftType;
-    private List<GiftItemDTO> items;
+    private List<GiftItemDetailDTO> items;
 }

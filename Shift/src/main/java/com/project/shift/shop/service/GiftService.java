@@ -9,7 +9,7 @@ import com.project.shift.shop.dao.IDeliveryDAO;
 import com.project.shift.shop.dao.IOrderDAO;
 import com.project.shift.shop.dto.gift.GiftDetailResponseDTO;
 import com.project.shift.shop.dto.gift.GiftListResponseDTO;
-import com.project.shift.shop.dto.gift.GiftItemDTO;
+import com.project.shift.shop.dto.gift.GiftItemDetailDTO;
 import com.project.shift.shop.entity.Delivery;
 import com.project.shift.shop.entity.Order;
 import com.project.shift.shop.entity.OrderItem;
@@ -144,7 +144,7 @@ public class GiftService implements IGiftService {
         List<OrderItem> orderItems = order.getOrderItems();
 
         // 상품 목록
-        List<GiftItemDTO> itemDTOs = new ArrayList<>();
+        List<GiftItemDetailDTO> itemDTOs = new ArrayList<>();
 
         for (OrderItem oi : orderItems) {
             Long productId = oi.getProductId();
@@ -168,7 +168,7 @@ public class GiftService implements IGiftService {
             // 리뷰 작성 여부 확인
             boolean isWritten = reviewDAO.existsByOrderItemId(oi.getOrderItemId());
 
-            GiftItemDTO itemDTO = GiftItemDTO.builder()
+            GiftItemDetailDTO itemDTO = GiftItemDetailDTO.builder()
                     .orderItemId(oi.getOrderItemId())
                     .productId(productId)
                     .productName(product.getName())

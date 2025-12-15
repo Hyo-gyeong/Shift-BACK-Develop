@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GiftItemDTO {
+public class GiftItemDetailDTO {
     private Long orderItemId;
     private Long productId;
     private String productName;
