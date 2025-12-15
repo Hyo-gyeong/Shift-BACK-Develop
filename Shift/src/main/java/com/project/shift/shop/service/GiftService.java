@@ -2,13 +2,14 @@ package com.project.shift.shop.service;
 
 import com.project.shift.product.dao.IImageDAO;
 import com.project.shift.product.dao.IProductDAO;
+import com.project.shift.product.dao.IReviewDAO;
 import com.project.shift.product.entity.Image;
 import com.project.shift.product.entity.Product;
 import com.project.shift.shop.dao.IDeliveryDAO;
 import com.project.shift.shop.dao.IOrderDAO;
 import com.project.shift.shop.dto.gift.GiftDetailResponseDTO;
 import com.project.shift.shop.dto.gift.GiftListResponseDTO;
-import com.project.shift.shop.dto.gift.GiftItemDTO;
+import com.project.shift.shop.dto.gift.GiftItemDetailDTO;
 import com.project.shift.shop.entity.Delivery;
 import com.project.shift.shop.entity.Order;
 import com.project.shift.shop.entity.OrderItem;
@@ -29,6 +30,7 @@ public class GiftService implements IGiftService {
     private final IUserDAO userDAO;
     private final IImageDAO imageDAO;
     private final IDeliveryDAO deliveryDAO;
+    private final IReviewDAO reviewDAO;
 
     // 받은 선물 조회
     @Override
@@ -138,31 +140,43 @@ public class GiftService implements IGiftService {
         if (order.getOrderItems() == null || order.getOrderItems().isEmpty()) {
             throw new IllegalArgumentException("해당 주문에 상품이 없습니다.");
         }
-        
-        List<OrderItem> orderItems = order.getOrderItems();
-        
-        List<GiftItemDTO> itemDTOs = new ArrayList<>();
 
+        List<OrderItem> orderItems = order.getOrderItems();
+
+        // 상품 목록
+        List<GiftItemDetailDTO> itemDTOs = new ArrayList<>();
 
         for (OrderItem oi : orderItems) {
             Long productId = oi.getProductId();
             Product product = productDAO.findById(productId);
-            if (product == null) {
-                // 상품이 삭제된 경우 등은 건너뜀 (필요 시 예외로 바꿀 수 있음)
-                continue;
-            }
+
+            if (product == null) continue; // 상품이 없으면 건너뜀
 
             Long categoryId = null;
             if (product.getCategory() != null) {
                 categoryId = product.getCategory().getCategoryId();
             }
 
-            GiftItemDTO itemDTO = GiftItemDTO.builder()
+            // 상품별 이미지 조회
+            List<Image> images = imageDAO.findByProductId(productId);
+            String productImageUrl = images.stream()
+                    .filter(img -> "Y".equals(img.getIsRepresentative()))
+                    .findFirst()
+                    .map(Image::getImageUrl)
+                    .orElse(null); // 이미지가 없으면 null
+
+            // 리뷰 작성 여부 확인
+            boolean isWritten = reviewDAO.existsByOrderItemId(oi.getOrderItemId());
+
+            GiftItemDetailDTO itemDTO = GiftItemDetailDTO.builder()
                     .orderItemId(oi.getOrderItemId())
                     .productId(productId)
                     .productName(product.getName())
                     .quantity(oi.getQuantity())
+                    .price(oi.getItemPrice())
+                    .imageUrl(productImageUrl)
                     .categoryId(categoryId)
+                    .reviewWritten(isWritten)
                     .build();
 
             itemDTOs.add(itemDTO);
@@ -171,23 +185,6 @@ public class GiftService implements IGiftService {
         if (itemDTOs.isEmpty()) {
             throw new IllegalArgumentException("표시할 주문 상품이 없습니다.");
         }
-
-        // 첫 번째 상품 기준으로 기존 단일 필드 채움 (하위 호환용)
-        GiftItemDTO firstItem = itemDTOs.get(0);
-        Long firstProductId = firstItem.getProductId();
-
-        Product firstProduct = productDAO.findById(firstProductId);
-        if (firstProduct == null) {
-            throw new IllegalArgumentException("해당 상품이 존재하지 않습니다.");
-        }
-
-        // image 정보 조회
-        List<Image> images = imageDAO.findByProductId(firstProductId);
-        String imageUrl = images.stream()
-                .filter(img -> "Y".equals(img.getIsRepresentative()))
-                .findFirst()
-                .map(Image::getImageUrl)
-                .orElse(null); // 이미지가 없으면 null
 
         // user 정보 조회
         String senderName = userDAO.findById(senderId)
@@ -208,18 +205,20 @@ public class GiftService implements IGiftService {
             // 배송 정보가 없을 경우 무시
         }
 
+        // 선물 타입 결정
+        String giftType = itemDTOs.stream()
+                .anyMatch(item -> item.getCategoryId() != null && item.getCategoryId() == 3L)
+                ? "POINT" : "PRODUCT";
+
         return GiftDetailResponseDTO.builder()
                 .orderId(order.getOrderId())
-                .productId(firstItem.getProductId())           // firstItem 기준
-                .orderItemId(firstItem.getOrderItemId())       // firstItem 기준
-                .productName(firstProduct.getName())
-                .imageUrl(imageUrl)
+                .orderDate(order.getOrderDate().toLocalDate().toString())
                 .senderName(senderName)
                 .orderStatus(order.getOrderStatus())
                 .deliveryStatus(deliveryStatus)
-                .quantity(firstItem.getQuantity())
                 .deliveryAddress(deliveryAddress)
-                .items(itemDTOs)
+                .giftType(giftType)
+                .items(itemDTOs) // 모든 선물 정보 포함
                 .build();
     }
 
