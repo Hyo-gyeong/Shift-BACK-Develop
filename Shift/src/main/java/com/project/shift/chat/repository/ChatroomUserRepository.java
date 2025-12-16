@@ -161,11 +161,13 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 				cu.is_dark_mode as isDarkMode,
 				c.last_msg_content as lastMsgContent,
 				c.last_msg_date as lastMsgDate,
-				cu2.user_id as receiverId
+				cu2.user_id as receiverId,
+				u.name as receiverName
 			from chatroom_users cu 
 			join chatrooms c ON c.chatroom_id = cu.chatroom_id
 			join chatroom_users cu2 on cu2.chatroom_id = cu.chatroom_id
 			 						and cu2.chatroom_users_id != cu.chatroom_users_id
+			join users u on u.user_id = cu2.user_id
 			where cu.chatroom_users_id = :id 
 				and cu.connection_status != 'DL'
 			""", nativeQuery = true)

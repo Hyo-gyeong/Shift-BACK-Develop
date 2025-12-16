@@ -110,6 +110,7 @@ public class ChatroomService {
                 .connectionStatus(p.getConnectionStatus())
                 .isDarkMode(p.getIsDarkMode())
                 .receiverId(p.getReceiverId())
+                .receiverName(p.getReceiverName())
                 .build();
             // unreadCount 계산
             dto.setUnreadCount(dao.countUnreadMessages(p.getChatroomId(), userId));

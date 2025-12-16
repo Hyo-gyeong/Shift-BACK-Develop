@@ -14,4 +14,5 @@ public interface ChatroomListProjection {
     String getConnectionStatus();
     String getIsDarkMode();
     Long getReceiverId();
+    String getReceiverName();
 }

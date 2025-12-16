@@ -32,5 +32,6 @@ public class ChatroomListDTO {
     @Setter
     private int unreadCount;
     private long receiverId;
+    private String receiverName;
     
 }
