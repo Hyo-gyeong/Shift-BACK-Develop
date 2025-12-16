@@ -4,6 +4,7 @@ import com.project.shift.global.AuthEntryPoint;
 import com.project.shift.global.filter.AuthenticationFilter;
 import com.project.shift.user.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,6 +25,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
 
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationFilter authenticationFilter;
@@ -65,7 +69,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000"); // 프론트엔드 주소
+        // 개발용
+        configuration.addAllowedOrigin("http://localhost:3000");
+        // 배포용
+        if (allowedOrigins != null && !allowedOrigins.isBlank()) {
+            configuration.addAllowedOrigin(allowedOrigins.trim()); // 프론트엔드 주소
+        }
         configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
         configuration.addExposedHeader("Set-Cookie"); // Set-Cookie 헤더 노출
