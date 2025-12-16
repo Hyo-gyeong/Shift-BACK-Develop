@@ -90,6 +90,7 @@ public class ChatroomUserService {
                     .connectionStatus(p.getConnectionStatus())
                     .isDarkMode(p.getIsDarkMode())
                     .receiverId(p.getReceiverId())
+                    .receiverName(p.getReceiverName())
                     .build();
 
                 // unreadCount 계산
