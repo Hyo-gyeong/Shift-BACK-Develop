@@ -22,6 +22,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -69,12 +71,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 개발용
-        configuration.addAllowedOrigin("http://localhost:3000");
-        // 배포용
-        if (allowedOrigins != null && !allowedOrigins.isBlank()) {
-            configuration.addAllowedOrigin(allowedOrigins.trim()); // 프론트엔드 주소
-        }
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
         configuration.addAllowedHeader("*"); // 모든 헤더 허용
         configuration.addExposedHeader("Set-Cookie"); // Set-Cookie 헤더 노출
