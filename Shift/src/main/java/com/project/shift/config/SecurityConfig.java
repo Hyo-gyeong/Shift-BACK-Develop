@@ -57,11 +57,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
+                        // preflight 요청 허용
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users", "/users/check/**", "/users/find-id").permitAll()
                         .requestMatchers(HttpMethod.GET, "/products/**", "/categories/**").permitAll()
                         .requestMatchers("/ws/**", "/").permitAll() // WebSocket 연결 허용
-                        .anyRequest().authenticated()) // 배포 전까지 모두 허용
+                        .anyRequest().authenticated())
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(exceptionHandler));
         return http.build();
