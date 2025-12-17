@@ -28,7 +28,8 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 			    c.last_msg_content as lastMsgContent,
 			    c.last_msg_date as lastMsgDate,
 			    lm.user_id as lastMsgSender,
-			    cu2.user_id as receiverId
+			    cu2.user_id as receiverId,
+			    u.name as receiverName
 			from chatroom_users cu
 			join chatrooms c
 			  on c.chatroom_id = cu.chatroom_id
@@ -49,6 +50,8 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 			join chatroom_users cu2
 			  on cu2.chatroom_id = cu.chatroom_id
 			 and cu2.user_id != :userId
+			join users u
+			  on u.user_id = cu2.user_id
 			where cu.user_id = :userId
 			  and cu.connection_status != 'DL'
 			""", nativeQuery = true)
@@ -66,6 +69,7 @@ public interface ChatroomRepository extends JpaRepository<ChatroomEntity, Long>{
 		        cu_me.is_dark_mode as isDarkMode,
 		        lm.user_id as lastMsgSender,
 		        cu_other.user_id as receiverId,
+		        u.name as receiverName
 		        c.last_msg_content as lastMsgContent,
 		        c.last_msg_date as lastMsgDate
 		    from chatroom_users cu_me
