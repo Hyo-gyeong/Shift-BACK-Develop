@@ -40,4 +40,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     
     // 탈퇴하려는 사용자가 sender 이면서 아직 완료/취소되지 않은 주문이 있는지 확인
     boolean existsBySenderIdAndOrderStatusIn(Long senderId, List<String> statuses);
+
+    // 결제 미완료(P) 데이터 조회용
+    List<Order> findAllBySenderIdAndOrderStatus(Long senderId, String orderStatus);
 }

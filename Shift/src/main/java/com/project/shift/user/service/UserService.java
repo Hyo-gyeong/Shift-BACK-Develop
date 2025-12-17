@@ -3,6 +3,8 @@ package com.project.shift.user.service;
 import com.project.shift.chat.dao.ChatroomUserDAO;
 import com.project.shift.chat.dao.FriendDAO;
 import com.project.shift.shop.dao.CartDAO;
+import com.project.shift.shop.entity.Order;
+import com.project.shift.shop.repository.DeliveryRepository;
 import com.project.shift.shop.repository.OrderRepository;
 import com.project.shift.user.dao.IUserDAO;
 import com.project.shift.user.dto.LoginIdRequestDTO;
@@ -29,9 +31,10 @@ public class UserService {
     private final IUserDAO userDAO;
     private final PasswordEncoder passwordEncoder;
     private final CartDAO cartDAO;
-    private final FriendDAO  friendDAO;
+    private final FriendDAO friendDAO;
     private final ChatroomUserDAO chatroomUserDAO;
     private final OrderRepository orderRepository;
+    private final DeliveryRepository deliveryRepository;
 
     @Transactional
     public Long join(UserDTO userDTO) {
@@ -236,11 +239,17 @@ public class UserService {
 
         log.info("[USER] 회원 탈퇴 시작 {}", userId);
 
-        // 진행 중인 주문이 있는지 확인
-        boolean hasActiveOrders = orderRepository.existsBySenderIdAndOrderStatusIn(userId, List.of("P", "S"));
+        // 결제 미완료/에러(P) 자동 삭제
+        List<Order> errorOrders = orderRepository.findAllBySenderIdAndOrderStatus(userId, "P");
+        if (!errorOrders.isEmpty()) {
+            log.info("[탈퇴] 결제 미완료 주문 {}건 자동 삭제 처리", errorOrders.size());
+            orderRepository.deleteAll(errorOrders);
+        }
 
+        // 진행 중인 주문이 있는지 확인
+        boolean hasActiveOrders = deliveryRepository.existsByOrder_SenderIdAndDeliveryStatusIn(userId, List.of("S"));
         if (hasActiveOrders) {
-            throw new IllegalStateException("진행 중인 주문이 있어 탈퇴할 수 없습니다.");
+            throw new IllegalStateException("현재 배송 중인 상품이 있어 탈퇴할 수 없습니다.\n상품이 도착하여 구매 확정(배송 완료)된 후 다시 시도해주세요.");
         }
 
         cartDAO.clearCartByUserId(userId); // 장바구니 비우기
@@ -260,6 +269,7 @@ public class UserService {
         user.setName("탈퇴한 사용자");
         user.setPhone(null);
         user.setAddress(null);
+        user.setPoints(0);
         user.setRefreshToken(null);
         user.setDeletedAt(new Timestamp(System.currentTimeMillis()));
 
