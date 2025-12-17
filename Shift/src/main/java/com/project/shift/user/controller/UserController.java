@@ -156,7 +156,13 @@ public class UserController {
     // 회원 탈퇴
     @DeleteMapping
     public ResponseEntity<?> withdrawUser() {
-        userService.withdrawUser();
-        return ResponseEntity.ok("회원 탈퇴가 성공적으로 처리되었습니다.");
+        try {
+            userService.withdrawUser();
+            return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 처리되었습니다."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "회원 탈퇴 중 서버 오류 발생"));
+        }
     }
 }
