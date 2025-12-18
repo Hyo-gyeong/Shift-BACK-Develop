@@ -28,7 +28,7 @@ public class MessageController {
     
 	@MessageMapping("/send")
     public void sendMessage(@Payload MessageUserDTO dto) {
-		Date now = new Date();
+		Date now = dto.getMessageDTO().getSendDate();
 		messageService.checkAndUpdateReceiverConnectionStatus(dto, now);
 		messageService.sendAndSaveMessage(dto.getMessageDTO(), dto.getChatroomUserDTO());
     }
