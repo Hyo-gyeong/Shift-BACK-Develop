@@ -4,13 +4,17 @@ import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.shift.chat.dto.ChatroomUserDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -39,11 +43,17 @@ public class ChatroomUserEntity {
     @Column(name = "CHATROOM_USERS_ID", nullable = false)
     private long chatroomUserId;
     
-    @Column(name = "CHATROOM_ID", nullable = false)
-    private long chatroomId;
+    // ✅ 연관관계 추가 - Chatroom
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CHATROOM_ID", nullable = false)
+    @JsonIgnore
+    private ChatroomEntity chatroom;
     
-    @Column(name = "USER_ID")
-    private long userId;
+    // ✅ 연관관계 추가 - User
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID")
+    @JsonIgnore
+    private ChatUserEntity user;
 
     @Column(name = "CHATROOM_NAME", length = 30)
     private String chatroomName;
@@ -65,8 +75,7 @@ public class ChatroomUserEntity {
     // DTO -> Entity 변환
     public static ChatroomUserEntity toEntity(ChatroomUserDTO dto) {
         return ChatroomUserEntity.builder()
-                .chatroomId(dto.getChatroomId())
-                .userId(dto.getUserId())
+        		.chatroomUserId(dto.getChatroomUserId())
                 .chatroomName(dto.getChatroomName())
                 .lastConnectionTime(dto.getLastConnectionTime())
                 .createdTime(dto.getCreatedTime())
@@ -75,4 +84,21 @@ public class ChatroomUserEntity {
                 .build();
     }
 
+    // ✅ 편의 메서드
+    public void setChatroom(ChatroomEntity chatroom) {
+        this.chatroom = chatroom;
+    }
+    
+    public void setUser(ChatUserEntity user) {
+        this.user = user;
+    }
+    
+    // ✅ 기존 코드 호환용 getter
+    public Long getChatroomId() {
+        return chatroom != null ? chatroom.getChatroomId() : null;
+    }
+    
+    public Long getUserId() {
+        return user != null ? user.getUserId() : null;
+    }
 }
