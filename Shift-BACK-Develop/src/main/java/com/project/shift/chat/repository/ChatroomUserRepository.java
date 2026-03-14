@@ -14,6 +14,26 @@ import com.project.shift.chat.dto.ChatroomListProjection;
 import com.project.shift.chat.entity.ChatroomUserEntity;
 
 public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity, Long>{
+	
+	// 채팅방 목록 조회시 필요한 정보 1 - 채팅방, 사용자 정보
+	@Query("""
+	        SELECT cu FROM ChatroomUserEntity cu
+	        JOIN FETCH cu.chatroom
+	        JOIN FETCH cu.user
+	        WHERE cu.user.userId = :userId
+	        AND cu.connectionStatus != 'DL' -- 내가 나온 채팅방은 안보이도록
+			""")
+    List<ChatroomUserEntity> findActiveByUserId(@Param("userId") long userId);
+
+	// 채팅방 목록 조회시 필요한 정보 2 - 상대방 정보
+    @Query("""
+	        SELECT cu FROM ChatroomUserEntity cu
+	        JOIN FETCH cu.user
+	        WHERE cu.chatroom.chatroomId IN :chatroomIds
+	        AND cu.user.userId != :userId
+    		""")
+    List<ChatroomUserEntity> findReceiversByChatroomIds(@Param("chatroomIds") List<Long> chatroomIds,
+                                                        @Param("userId") long userId);
 
 	// 사용자 채팅방 접속 정보 수정
 	@Modifying
