@@ -1,16 +1,21 @@
 package com.project.shift.chat.entity;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.SQLRestriction;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.shift.chat.dto.ChatUserDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -66,6 +71,12 @@ public class ChatUserEntity {
     
     @Column(name = "DELETED_AT")
     private Timestamp deletedAt;
+    
+    // ✅ 양방향 매핑 - 이 유저가 참여한 채팅방들
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    @Builder.Default
+    private List<ChatroomUserEntity> chatroomUsers = new ArrayList<>();
     
     // DTO -> Entity 변환
     public static ChatUserEntity toEntity(ChatUserDTO dto) {
