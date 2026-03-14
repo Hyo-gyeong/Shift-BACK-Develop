@@ -22,7 +22,6 @@ import com.project.shift.chat.dto.MessageSearchResultDTO;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.service.ChatroomService;
 import com.project.shift.chat.service.ChatroomUserService;
-import com.project.shift.chat.service.MessageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,6 @@ public class ChatroomController {
 	
 	private final ChatroomService chatroomService;
 	private final ChatroomUserService chatroomUserService;
-	private final MessageService messageService;
 	
 	// 사용자가 참여한 채팅방 목록 반환
 	@GetMapping
@@ -65,19 +63,8 @@ public class ChatroomController {
 	
 	// 새로운 채팅방 추가 및 메시지 DB저장 & 브로드캐스팅
 	@PostMapping
-	public long addChatroom(@RequestBody MessageWithSenderDTO payload) {		
-	    // 채팅방 생성 (Chatrooms) 및 생성된 채팅방 pk 반환
-		// 내부 로직에 객체간 동일한 시간 설정 포함됨
-		long newChatroomId = chatroomService.addChatroom(payload);
-		// 새로 생성된 채팅방 pk MessageDTO에 세팅
-		payload.getMessage().setChatroomId(newChatroomId);
-		
-		// 두 사용자의 새로운 채팅방 정보 추가 (ChatroomUsers)
-	    chatroomUserService.addChatroomUsers(payload, newChatroomId);
-	    
-	    // 메시지 DB저장 & 브로드캐스팅
-	    messageService.sendAndSaveMessage(payload.getMessage(), payload.getSender());
-	    return newChatroomId;
+	public long addChatroom(@RequestBody MessageWithSenderDTO payload) {
+		return chatroomService.addChatroom(payload);
 	}
 	
 	// 특정 채팅방에 참여한 모든 사용자의 채팅방 삭제
