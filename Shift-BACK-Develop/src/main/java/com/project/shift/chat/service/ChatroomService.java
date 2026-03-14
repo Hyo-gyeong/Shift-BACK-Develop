@@ -2,7 +2,9 @@ package com.project.shift.chat.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +16,11 @@ import com.project.shift.chat.dto.ChatroomListProjection;
 import com.project.shift.chat.dto.MessageSearchResultDTO;
 import com.project.shift.chat.dto.MessageSearchResultProjection;
 import com.project.shift.chat.dto.MessageWithSenderDTO;
+import com.project.shift.chat.dto.UnreadCountProjection;
 import com.project.shift.chat.entity.ChatroomEntity;
+import com.project.shift.chat.entity.ChatroomUserEntity;
+import com.project.shift.chat.repository.ChatroomUserRepository;
+import com.project.shift.chat.repository.MessageRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +30,8 @@ public class ChatroomService {
 
 	private final ChatroomDAO dao;
 	private final ChatroomUserService chatroomUserService;
+	private final MessageRepository messageRepo;
+	private final ChatroomUserRepository chatroomUserRepo;
 	
 	// 특정 채팅방 정보 반환
 	@Transactional(readOnly = true)
@@ -49,8 +57,59 @@ public class ChatroomService {
 	// 사용자가 참여한 채팅방 목록 반환
 	@Transactional(readOnly = true)
 	public List<ChatroomListDTO> getUserChatrooms(long userId){
-		List<ChatroomListProjection> chatroomList = dao.getUserChatrooms(userId);
-		return chatroomListDTOBuilder(chatroomList, userId);
+//		List<ChatroomListProjection> chatroomList = dao.getUserChatrooms(userId);
+//		return chatroomListDTOBuilder(chatroomList, userId);
+		
+		// 쿼리 1: 내 채팅방 목록 + chatroom 정보 (JOIN FETCH)
+	    List<ChatroomUserEntity> myChatrooms = chatroomUserRepo.findActiveByUserId(userId);
+	    if (myChatrooms.isEmpty()) {
+	    	return List.of();
+	    }
+
+	    List<Long> chatroomIds = myChatrooms.stream()
+	        .map(cu -> cu.getChatroom().getChatroomId())
+	        .toList();
+
+	    // 쿼리 2: 상대방 정보 배치 조회
+	    Map<Long, ChatroomUserEntity> receiverMap =
+	        chatroomUserRepo.findReceiversByChatroomIds(chatroomIds, userId)
+	            .stream()
+	            .collect(Collectors.toMap(
+	                cu -> cu.getChatroom().getChatroomId(),
+	                cu -> cu
+	            ));
+
+	    // 쿼리 3: 안읽은 메시지 배치 조회 (N+1 해결)
+	    Map<Long, Long> unreadCountMap =
+	        messageRepo.countUnreadMessagesBatch(chatroomIds, userId)
+	            .stream()
+	            .collect(Collectors.toMap(
+	                UnreadCountProjection::getChatroomId,
+	                UnreadCountProjection::getUnreadCount
+	            ));
+
+	    return myChatrooms.stream().map(cu -> {
+	        ChatroomEntity chatroom = cu.getChatroom();
+	        Long cId = chatroom.getChatroomId();
+	        ChatroomUserEntity receiver = receiverMap.get(cId);
+
+	        ChatroomListDTO dto = ChatroomListDTO.builder()
+	            .chatroomUserId(cu.getChatroomUserId())
+	            .chatroomId(cId)
+	            .chatroomName(cu.getChatroomName())
+	            .lastMsgContent(chatroom.getLastMsgContent())
+	            .lastMsgDate(chatroom.getLastMsgDate())
+	            .lastConnectionTime(cu.getLastConnectionTime())
+	            .connectionStatus(cu.getConnectionStatus())
+	            .isDarkMode(cu.getIsDarkMode())
+	            .createdTime(cu.getCreatedTime())
+	            .receiverId(receiver != null ? receiver.getUser().getUserId() : null)
+	            .receiverName(receiver != null ? receiver.getUser().getName() : null)
+	            .build();
+
+	        dto.setUnreadCount(unreadCountMap.getOrDefault(cId, 0L).intValue());
+	        return dto;
+	    }).toList();
 	}
 	
 	// Date 세팅
