@@ -59,7 +59,7 @@ public class MessageService {
 	
 	// 채팅 메시지 전송시 메시지 DB에 저장 및 브로드캐스팅
 	@Transactional
-	public void sendAndSaveMessage(MessageDTO messageDTO, ChatroomUserDTO chatroomUserDTO) {
+	public boolean sendAndSaveMessage(MessageDTO messageDTO, ChatroomUserDTO chatroomUserDTO) {
 		// 채팅을 보내는 사람이 이전에 채팅방을 삭제한 적이 있는 경우 채팅방 생성시간과 마지막 접속 시간을 메시지를 보내기 직전으로 설정
 		if (chatroomUserDTO.getConnectionStatus().equals("DL")) {
 			Date now = new Date();
@@ -116,6 +116,7 @@ public class MessageService {
 		
 		// 메시지 브로드캐스팅 로직 호출
 		broadcastToChatroom(messageDTO);
+		return true;
 	}
 	
 	// 채팅방의 마지막 메시지와 시간을 업데이트
