@@ -1,6 +1,8 @@
 package com.project.shift.chat.entity;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -15,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -69,12 +72,11 @@ public class MessageEntity {
     @Column(name = "UNREAD_COUNT", nullable = false)
     private int unreadCount;
     
-// // ✅ 양방향 매핑 - 이 메시지에 달린 이모티콘들
-//    아직 사용하지 않으므로 주석처리
-//    @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
-//    @JsonIgnore
-//    @Builder.Default
-//    private List<ReplyEmoticonEntity> replyEmoticons = new ArrayList<>();
+    // ✅ 양방향 매핑 - 이 메시지에 달린 이모티콘들
+    @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
+    @JsonIgnore
+    @Builder.Default
+    private List<ReplyEmoticonEntity> replyEmoticons = new ArrayList<>();
 
     // DTO -> Entity 변환
     public static MessageEntity toEntity(MessageDTO dto) {
