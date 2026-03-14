@@ -19,6 +19,7 @@ import com.project.shift.chat.dto.MessageWithSenderDTO;
 import com.project.shift.chat.dto.UnreadCountProjection;
 import com.project.shift.chat.entity.ChatroomEntity;
 import com.project.shift.chat.entity.ChatroomUserEntity;
+import com.project.shift.chat.repository.ChatroomRepository;
 import com.project.shift.chat.repository.ChatroomUserRepository;
 import com.project.shift.chat.repository.MessageRepository;
 
@@ -32,6 +33,8 @@ public class ChatroomService {
 	private final ChatroomUserService chatroomUserService;
 	private final MessageRepository messageRepo;
 	private final ChatroomUserRepository chatroomUserRepo;
+	private final ChatroomRepository chatroomRepo;
+	private final MessageService messageService;
 	
 	// 특정 채팅방 정보 반환
 	@Transactional(readOnly = true)
@@ -119,17 +122,34 @@ public class ChatroomService {
 	
 	@Transactional
 	public long addChatroom(MessageWithSenderDTO dto) {
-		// 채팅방을 만들면서 전송한 메시지를 이용해서 채팅방 생성
-		ChatroomDTO newChatroom = new ChatroomDTO();
-		// 채팅방 생성 시간, 메시지 전송 시간, 채팅방에 전송된 최신 메시지 전송 시간 동일하게 세팅
-		setTimestamps(dto, newChatroom);
-		newChatroom.setLastMsgContent(dto.getMessage().getContent());
-				
-		// 저장 후 DB에서 생성된 PK 가져오기
-		ChatroomEntity entity = ChatroomEntity.toEntity(newChatroom);
-	    ChatroomEntity savedEntity = dao.saveChatroom(entity);
+		// 1. 타임스탬프 세팅
+		// 채팅방 생성 시간 = 첫 메시지 전송 시간 = 마지막 메시지 전송시간 = 마지막 접속 시간
+	    Date now = new Date();
+	    dto.getMessage().setSendDate(now);           // 첫 메시지 전송 시간
+	    dto.getSender().setCreatedTime(now);         // 채팅방 생성 시간
+	    dto.getSender().setLastConnectionTime(now);  // 마지막 접속 시간
+
+	    // 2. 채팅방 생성 → 실패시 이후 로직 실행 안됨
+	    ChatroomEntity chatroom = ChatroomEntity.builder()
+	        .lastMsgContent(dto.getMessage().getContent())
+	        .lastMsgDate(now)  // 마지막 메시지 전송시간
+	        .build();
+	    // 새로운 채팅방 저장
+	    ChatroomEntity savedChatroom = chatroomRepo.save(chatroom);
+	    // 채팅방 저장하면서 생긴 pk
+	    long newChatroomId = savedChatroom.getChatroomId();
+	    if (newChatroomId <= 0) throw new RuntimeException("채팅방 생성 실패");
 	    
-	    return savedEntity.getChatroomId();
+	    // 3. 채팅방 유저 추가
+	    dto.getMessage().setChatroomId(newChatroomId);
+	    chatroomUserService.addChatroomUsers(dto, newChatroomId);
+	    // addChatroomUsers 내부에서 예외 발생 시 전체 롤백
+	    
+	    // 4. 메시지 저장 & 브로드캐스팅
+	    boolean messageSent = messageService.sendAndSaveMessage(dto.getMessage(), dto.getSender());
+	    if (!messageSent) throw new RuntimeException("메시지 저장 실패");
+
+	    return newChatroomId;
 	}
 	
 	// 특정 채팅방에 참여한 모든 사용자, 특정 채팅방 정보 전체 삭제됨
@@ -145,15 +165,15 @@ public class ChatroomService {
 		return false;
 	}
 	
-	// 채팅방 생성 시간, 메시지 전송 시간, 채팅방에 전송된 최신 메시지 전송 시간 동일하게 세팅
-	private void setTimestamps(MessageWithSenderDTO payload, ChatroomDTO chatroomDTO) {
-		Date now = new Date();
-		payload.getMessage().setSendDate(now);
-		payload.getSender().setCreatedTime(now);
-		chatroomDTO.setLastMsgDate(now);
-		// 채팅방 최초 생성시 해당 시점 이후의 채팅을 읽음처리 하기 위한 기준
-		payload.getSender().setLastConnectionTime(now);
-	}
+	// 채팅방 생성 시간, 메시지 전송 시간, 채팅방에 전송된 최신 메시지 전송 시간 동일하게 세팅 - dto 불필요
+//	private void setTimestamps(MessageWithSenderDTO payload, ChatroomDTO chatroomDTO) {
+//		Date now = new Date();
+//		payload.getMessage().setSendDate(now);
+//		payload.getSender().setCreatedTime(now);
+//		chatroomDTO.setLastMsgDate(now);
+//		// 채팅방 최초 생성시 해당 시점 이후의 채팅을 읽음처리 하기 위한 기준
+//		payload.getSender().setLastConnectionTime(now);
+//	}
 	
 	private List<ChatroomListDTO> chatroomListDTOBuilder(List<ChatroomListProjection> chatroomList, long userId){
 		return chatroomList.stream().map(p -> {
