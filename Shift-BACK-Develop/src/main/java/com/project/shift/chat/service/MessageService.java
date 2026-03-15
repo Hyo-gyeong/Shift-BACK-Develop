@@ -39,24 +39,24 @@ public class MessageService {
 	private final SimpMessagingTemplate messagingTemplate;
 
 	// 메시지 DB 저장
-	@Transactional
-	public void addMessage(MessageDTO message) {
-		messageDAO.saveMessage(MessageEntity.toEntity(message));
-	}
-	
-	// 채팅방 최초 접속 시간 이후 모든 채팅방 메시지 반환
-	@Transactional(readOnly = true)
-	public List<MessageDTO> getMessageHistory(ChatroomListDTO dto){
-		long chatroomId = dto.getChatroomId();
-		Date createdDateTime = dto.getCreatedTime();
-		List<MessageEntity> entityList = messageDAO.getMessageHistory(chatroomId, createdDateTime);
-		List<MessageDTO> dtoList = new ArrayList<MessageDTO>();
-		for (MessageEntity e : entityList) {
-			dtoList.add(MessageDTO.toDto(e));
-		}
-		return dtoList;
-	}
-	
+//	@Transactional
+//	public void addMessage(MessageDTO message) {
+//		messageDAO.saveMessage(MessageEntity.toEntity(message));
+//	}
+//	
+//	// 채팅방 최초 접속 시간 이후 모든 채팅방 메시지 반환
+//	@Transactional(readOnly = true)
+//	public List<MessageDTO> getMessageHistory(ChatroomListDTO dto){
+//		long chatroomId = dto.getChatroomId();
+//		Date createdDateTime = dto.getCreatedTime();
+//		List<MessageEntity> entityList = messageDAO.getMessageHistory(chatroomId, createdDateTime);
+//		List<MessageDTO> dtoList = new ArrayList<MessageDTO>();
+//		for (MessageEntity e : entityList) {
+//			dtoList.add(MessageDTO.toDto(e));
+//		}
+//		return dtoList;
+//	}
+//	
 	// 채팅 메시지 전송시 메시지 DB에 저장 및 브로드캐스팅
 	@Transactional
 	public boolean sendAndSaveMessage(MessageDTO messageDTO, ChatroomUserDTO chatroomUserDTO) {
@@ -176,33 +176,33 @@ public class MessageService {
 	    }
 		return;
 	}
-	
-	// 상대방의 채팅방 접속 상태 확인 후 변경
-	public void checkAndUpdateReceiverConnectionStatus(MessageUserDTO messageUserDTO, Date now) {
-		ChatroomUserDTO chatroomUserDTO = messageUserDTO.getChatroomUserDTO();
-		// 채팅 메시지를 보낸 사용자ID
-		long userId = messageUserDTO.getMessageDTO().getUserId();
-		long chatroomId = chatroomUserDTO.getChatroomId();
-		// 상대방이 채팅방을 삭제한 상태인지 확인
-		boolean ifDeleted = checkReceiverConnectionStatus(chatroomId, userId);
-		if (ifDeleted) {
-			String newChatroomName = chatUserDAO.getChatUserInfo(userId).get().getName() + "님과의 채팅방";
-			
-			// 삭제했다면 채팅방 접속상태 'OF'로 변경
-			updateReceiverConnectionStatus(chatroomId, userId, newChatroomName, now);
-		}
-	}
-	
-	// 상대방의 채팅방 connectionStatus가 'DL'인지 확인
-	@Transactional(readOnly = true)
-	private boolean checkReceiverConnectionStatus(long chatroomId, long userId) {
-		return chatroomUserDAO.checkIfChatroomDeleted(chatroomId, userId);
-	}
-	
-	// 상대방의 채팅방 접속 상태를 'DL'에서 'OF'로 변경
-	@Transactional
-	private void updateReceiverConnectionStatus(long chatroomId, long userId, String newChatroomName, Date now) {
-		chatroomUserDAO.updateReceiverConnectionStatus(chatroomId, userId, newChatroomName, now);
-	}
+//	
+//	// 상대방의 채팅방 접속 상태 확인 후 변경
+//	public void checkAndUpdateReceiverConnectionStatus(MessageUserDTO messageUserDTO, Date now) {
+//		ChatroomUserDTO chatroomUserDTO = messageUserDTO.getChatroomUserDTO();
+//		// 채팅 메시지를 보낸 사용자ID
+//		long userId = messageUserDTO.getMessageDTO().getUserId();
+//		long chatroomId = chatroomUserDTO.getChatroomId();
+//		// 상대방이 채팅방을 삭제한 상태인지 확인
+//		boolean ifDeleted = checkReceiverConnectionStatus(chatroomId, userId);
+//		if (ifDeleted) {
+//			String newChatroomName = chatUserDAO.getChatUserInfo(userId).get().getName() + "님과의 채팅방";
+//			
+//			// 삭제했다면 채팅방 접속상태 'OF'로 변경
+//			updateReceiverConnectionStatus(chatroomId, userId, newChatroomName, now);
+//		}
+//	}
+//	
+//	// 상대방의 채팅방 connectionStatus가 'DL'인지 확인
+//	@Transactional(readOnly = true)
+//	private boolean checkReceiverConnectionStatus(long chatroomId, long userId) {
+//		return chatroomUserDAO.checkIfChatroomDeleted(chatroomId, userId);
+//	}
+//	
+//	// 상대방의 채팅방 접속 상태를 'DL'에서 'OF'로 변경
+//	@Transactional
+//	private void updateReceiverConnectionStatus(long chatroomId, long userId, String newChatroomName, Date now) {
+//		chatroomUserDAO.updateReceiverConnectionStatus(chatroomId, userId, newChatroomName, now);
+//	}
 
 }

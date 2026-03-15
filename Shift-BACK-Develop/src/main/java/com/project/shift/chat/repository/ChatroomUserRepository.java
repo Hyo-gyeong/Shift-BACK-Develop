@@ -21,7 +21,7 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	        JOIN FETCH cu.chatroom
 	        JOIN FETCH cu.user
 	        WHERE cu.user.userId = :userId
-	        AND cu.connectionStatus != 'DL' -- 내가 나온 채팅방은 안보이도록
+	        AND cu.connectionStatus != 'DL'
 			""")
     List<ChatroomUserEntity> findActiveByUserId(@Param("userId") long userId);
 
@@ -50,42 +50,42 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	// 특정 채팅방 유저 정보 반환
 	@Query("""
 			SELECT c FROM ChatroomUserEntity c
-			WHERE c.chatroomId = :id AND c.userId = :userId
+			WHERE c.chatroom.chatroomId = :id AND c.user.userId = :userId
 			""")
 	Optional<ChatroomUserEntity> getChatroomUser(@Param("id") long id,
 											  	 @Param("userId") long userId);
 	
 	// 특정 채팅방의 특정 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
-	@Modifying
-	@Transactional
-	@Query("""
-			UPDATE ChatroomUserEntity c 
-			SET c.connectionStatus = 'DL', 
-			c.isDarkMode = 'N' 
-			WHERE c.chatroomUserId = :id
-			""")
-	void initChatroomUserExceptKey(@Param("id") long id);
+//	@Modifying
+//	@Transactional
+//	@Query("""
+//			UPDATE ChatroomUserEntity c 
+//			SET c.connectionStatus = 'DL', 
+//			c.isDarkMode = 'N' 
+//			WHERE c.chatroomUserId = :id
+//			""")
+//	void initChatroomUserExceptKey(@Param("id") long id);
 	
 	// 특정 채팅방의 모든 유저의 채팅방 삭제시 pk, fk 빼고 전부 초기화
-	@Modifying
-	@Transactional
-	@Query("""
-			UPDATE ChatroomUserEntity c 
-			SET c.connectionStatus = 'DL', 
-			c.isDarkMode = 'N' 
-			WHERE c.chatroomId = :chatroomId
-			""")
-	void initAllChatroomUsersExceptKey(@Param("chatroomId") long chatroomId);
+//	@Modifying
+//	@Transactional
+//	@Query("""
+//			UPDATE ChatroomUserEntity c 
+//			SET c.connectionStatus = 'DL', 
+//			c.isDarkMode = 'N' 
+//			WHERE c.chatroomId = :chatroomId
+//			""")
+//	void initAllChatroomUsersExceptKey(@Param("chatroomId") long chatroomId);
 
 	// 두 사용자가 속한 채팅방 ID 반환
-	@Query("""
-			SELECT c.chatroomId
-		    FROM ChatroomUserEntity c
-		    WHERE c.userId IN :ids
-		    GROUP BY c.chatroomId
-		    HAVING COUNT(DISTINCT c.userId) = :countUsers 
-			""")
-	Optional<Long> findChatroomWithUsers(@Param("ids") List<Long> ids, @Param("countUsers") long countUsers);
+//	@Query("""
+//			SELECT c.chatroomId
+//		    FROM ChatroomUserEntity c
+//		    WHERE c.userId IN :ids
+//		    GROUP BY c.chatroomId
+//		    HAVING COUNT(DISTINCT c.userId) = :countUsers 
+//			""")
+//	Optional<Long> findChatroomWithUsers(@Param("ids") List<Long> ids, @Param("countUsers") long countUsers);
 	
 	// 채팅방 생성 시 두 사용자간 삭제된 채팅방 복구
 	@Modifying
@@ -96,8 +96,8 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 			    c.lastConnectionTime = :now,
 			    c.connectionStatus = :connectionStatus,
 			    c.chatroomName = :chatroomName
-			WHERE c.chatroomId = :chatroomId
-				AND c.userId = :userId
+			WHERE c.chatroom.chatroomId = :chatroomId
+				AND c.user.userId = :userId
 				AND c.connectionStatus = 'DL'
 			""")
 	void restoreChatroomUser(@Param("chatroomId") long chatroomId,
@@ -111,27 +111,27 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 		    SELECT COUNT(c)
 		    FROM ChatroomUserEntity c
 		    WHERE c.connectionStatus = 'DL'
-		      AND c.chatroomId = :id
-		      AND c.userId != :userId
+		      AND c.chatroom.chatroomId = :id
+		      AND c.user.userId != :userId
 		""")
 	int checkIfChatroomDeleted(@Param("id") long id, @Param("userId") long userId);
 
 	// 상대방의 채팅방 접속 상태를 'DL'에서 'OF'로 변경 및 채팅방 생성 시간과 마지막 접속시간 변경
-	@Modifying
-	@Transactional
-	@Query("""
-			UPDATE ChatroomUserEntity c 
-			SET c.chatroomName = :newChatroomName,
-				c.connectionStatus = 'OF',
-				c.createdTime = :now,
-				c.isDarkMode = 'N'
-			WHERE c.chatroomId = :chatroomId
-				AND c.userId != :userId
-			""")
-	void updateReceiverConnectionStatus(@Param("chatroomId") long chatroomId,
-										@Param("userId") long userId,
-										@Param("newChatroomName") String newChatroomName,
-										@Param("now") Date now);
+//	@Modifying
+//	@Transactional
+//	@Query("""
+//			UPDATE ChatroomUserEntity c 
+//			SET c.chatroomName = :newChatroomName,
+//				c.connectionStatus = 'OF',
+//				c.createdTime = :now,
+//				c.isDarkMode = 'N'
+//			WHERE c.chatroomId = :chatroomId
+//				AND c.userId != :userId
+//			""")
+//	void updateReceiverConnectionStatus(@Param("chatroomId") long chatroomId,
+//										@Param("userId") long userId,
+//										@Param("newChatroomName") String newChatroomName,
+//										@Param("now") Date now);
 	
 	// 채팅방 이름 변경
 	@Modifying
@@ -147,12 +147,12 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	// chatroomUserId와 userId로 해당 채팅방의 모든 ReceiverId를 반환하는 함수
 	// 메시지가 전송됐다는 알림을 모든 수신자들에게 보내기 위한 함수 (실시간 채팅방 목록 관련)
 	@Query("""
-			SELECT r.userId 
+			SELECT r.user.userId 
 			FROM ChatroomUserEntity u, ChatroomUserEntity r 
-			WHERE u.chatroomId = r.chatroomId 
-			AND u.userId = :userId
-			AND u.chatroomId = :chatroomId 
-			AND r.userId <> :userId
+			WHERE u.chatroom.chatroomId = r.chatroom.chatroomId 
+			AND u.user.userId = :userId
+			AND u.chatroom.chatroomId = :chatroomId 
+			AND r.user.userId <> :userId
 			""")
 	List<Long> getReceiverId(@Param("chatroomId") long chatroomUserId, @Param("userId") long userId);
 	
@@ -160,42 +160,42 @@ public interface ChatroomUserRepository extends JpaRepository<ChatroomUserEntity
 	@Query("""
 		    SELECT COUNT(r)
 		    FROM ChatroomUserEntity u, ChatroomUserEntity r
-		    WHERE u.chatroomId = r.chatroomId
-		      AND u.userId = :userId
-		      AND u.chatroomId = :chatroomId
-		      AND r.userId <> :userId
+		    WHERE u.chatroom.chatroomId = r.chatroom.chatroomId
+		      AND u.user.userId = :userId
+		      AND u.chatroom.chatroomId = :chatroomId
+		      AND r.user.userId <> :userId
 		      AND r.connectionStatus = 'ON'
 			""")
 	int countOtherUsersOnline(@Param("chatroomId") long chatroomId,
 	        				  @Param("userId") long userId);
 	
 	// 채팅방 목록 조회
-	@Query(value = """
-			select
-				cu.chatroom_users_id as chatroomUserId,
-				cu.chatroom_id as chatroomId,
-				cu.chatroom_name as chatroomName,
-				cu.last_connection_time as lastConnectionTime,
-				cu.connection_status as connectionStatus,
-				cu.created_time as createdTime,
-				cu.is_dark_mode as isDarkMode,
-				c.last_msg_content as lastMsgContent,
-				c.last_msg_date as lastMsgDate,
-				cu2.user_id as receiverId,
-				u.name as receiverName
-			from chatroom_users cu 
-			join chatrooms c ON c.chatroom_id = cu.chatroom_id
-			join chatroom_users cu2 on cu2.chatroom_id = cu.chatroom_id
-			 						and cu2.chatroom_users_id != cu.chatroom_users_id
-			join users u on u.user_id = cu2.user_id
-			where cu.chatroom_users_id = :id 
-				and cu.connection_status != 'DL'
-			""", nativeQuery = true)
-	Optional<ChatroomListProjection> findChatroomByChatroomUserId(@Param("id") long id);
+//	@Query(value = """
+//			select
+//				cu.chatroom_users_id as chatroomUserId,
+//				cu.chatroom_id as chatroomId,
+//				cu.chatroom_name as chatroomName,
+//				cu.last_connection_time as lastConnectionTime,
+//				cu.connection_status as connectionStatus,
+//				cu.created_time as createdTime,
+//				cu.is_dark_mode as isDarkMode,
+//				c.last_msg_content as lastMsgContent,
+//				c.last_msg_date as lastMsgDate,
+//				cu2.user_id as receiverId,
+//				u.name as receiverName
+//			from chatroom_users cu 
+//			join chatrooms c ON c.chatroom_id = cu.chatroom_id
+//			join chatroom_users cu2 on cu2.chatroom_id = cu.chatroom_id
+//			 						and cu2.chatroom_users_id != cu.chatroom_users_id
+//			join users u on u.user_id = cu2.user_id
+//			where cu.chatroom_users_id = :id 
+//				and cu.connection_status != 'DL'
+//			""", nativeQuery = true)
+//	Optional<ChatroomListProjection> findChatroomByChatroomUserId(@Param("id") long id);
 
     // -- 탈퇴 시 처리 --
     // 탈퇴 시 특정 사용자의 모든 채팅방 접속 상태를 DL로 변경
-    @Modifying
-    @Query(value = "UPDATE ChatroomUserEntity cu SET cu.connectionStatus = 'DL', cu.chatroomName = null WHERE cu.userId = :userId")
-    void updateStatusToDeletedByUserId(@Param("userId") long userId);
+//    @Modifying
+//    @Query(value = "UPDATE ChatroomUserEntity cu SET cu.connectionStatus = 'DL', cu.chatroomName = null WHERE cu.userId = :userId")
+//    void updateStatusToDeletedByUserId(@Param("userId") long userId);
 }

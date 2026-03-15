@@ -1,7 +1,7 @@
 package com.project.shift.user.service;
 
 import com.project.shift.chat.dao.ChatroomUserDAO;
-import com.project.shift.chat.dao.FriendDAO;
+//import com.project.shift.chat.dao.FriendDAO;
 import com.project.shift.shop.dao.CartDAO;
 import com.project.shift.shop.entity.Order;
 import com.project.shift.shop.repository.DeliveryRepository;
@@ -31,7 +31,7 @@ public class UserService {
     private final IUserDAO userDAO;
     private final PasswordEncoder passwordEncoder;
     private final CartDAO cartDAO;
-    private final FriendDAO friendDAO;
+//    private final FriendDAO friendDAO;
     private final ChatroomUserDAO chatroomUserDAO;
     private final OrderRepository orderRepository;
     private final DeliveryRepository deliveryRepository;
@@ -253,8 +253,8 @@ public class UserService {
         }
 
         cartDAO.clearCartByUserId(userId); // 장바구니 비우기
-        friendDAO.deleteAllFriends(userId); // 친구 관계 삭제
-        chatroomUserDAO.deleteChatroomUsersByUserId(userId);
+//        friendDAO.deleteAllFriends(userId); // 친구 관계 삭제
+//        chatroomUserDAO.deleteChatroomUsersByUserId(userId);
 
         UserEntity user = userDAO.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));

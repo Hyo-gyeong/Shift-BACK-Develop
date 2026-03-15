@@ -328,9 +328,9 @@ public class OrderService implements IOrderService {
                 .content(content)
                 .userId(userId)
                 .build();
-
-        ChatroomUserDTO chatroomUserDTO = chatroomUserService.getChatroomUser(chatroomId, userId).get();
-        messageService.sendAndSaveMessage(messageDTO, chatroomUserDTO);
+//
+//        ChatroomUserDTO chatroomUserDTO = chatroomUserService.getChatroomUser(chatroomId, userId).get();
+//        messageService.sendAndSaveMessage(messageDTO, chatroomUserDTO);
 
         return dto;
     }

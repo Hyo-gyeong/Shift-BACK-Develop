@@ -34,9 +34,9 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long>{
 		        ON cu.chatroom.chatroomId = m.chatroom.chatroomId
 		        AND cu.user.userId = :userId
 		    WHERE m.chatroom.chatroomId IN :chatroomIds
-		      AND m.sendDate > cu.lastConnectionTime   -- 내가 마지막으로 접속한 이후 메시지만
-		      AND m.user.userId != :userId             -- 내가 보낸 메시지 제외
-		    GROUP BY cu.chatroom.chatroomId           -- 채팅방별로 카운트
+		      AND m.sendDate > cu.lastConnectionTime
+		      AND m.user.userId != :userId
+		    GROUP BY cu.chatroom.chatroomId
 			""")
 	List<UnreadCountProjection> countUnreadMessagesBatch(@Param("chatroomIds") List<Long> chatroomIds,
 		                                                     @Param("userId") long userId);

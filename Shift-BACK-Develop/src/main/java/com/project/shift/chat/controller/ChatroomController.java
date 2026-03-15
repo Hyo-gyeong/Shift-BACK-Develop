@@ -45,21 +45,21 @@ public class ChatroomController {
 	}
 	
 	// 특정 채팅방 반환
-	@GetMapping("/{chatroomId}")
-	public ResponseEntity<?> getChatroom(@PathVariable long chatroomId){
-		try {
-			Optional<ChatroomDTO> chatroomDTO = chatroomService.getChatroom(chatroomId);
-			if (chatroomDTO.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Chatroom not found");
-	        } else {
-				return ResponseEntity.ok(chatroomDTO);
-	        }
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                             .body("Error searching chatroom: " + e.getMessage());
-	    }
-	}
+//	@GetMapping("/{chatroomId}")
+//	public ResponseEntity<?> getChatroom(@PathVariable long chatroomId){
+//		try {
+//			Optional<ChatroomDTO> chatroomDTO = chatroomService.getChatroom(chatroomId);
+//			if (chatroomDTO.isEmpty()) {
+//				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                        .body("Chatroom not found");
+//	        } else {
+//				return ResponseEntity.ok(chatroomDTO);
+//	        }
+//	    } catch (Exception e) {
+//	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//	                             .body("Error searching chatroom: " + e.getMessage());
+//	    }
+//	}
 	
 	// 새로운 채팅방 추가 및 메시지 DB저장 & 브로드캐스팅
 	@PostMapping
@@ -67,82 +67,82 @@ public class ChatroomController {
 		return chatroomService.addChatroom(payload);
 	}
 	
-	// 특정 채팅방에 참여한 모든 사용자의 채팅방 삭제
-	// → 실제 데이터 삭제가 아닌 pk, fk 빼고 초기화
-	@DeleteMapping("/{chatroomId}") // 브로드캐스팅 추가 (채팅방 나감)
-	public ResponseEntity<?> deleteChatroom(@PathVariable long chatroomId) {
-	    try {
-	        boolean deleted = chatroomService.deleteChatroomAndChatroomUsers(chatroomId);
-	        if (deleted) {
-	            return ResponseEntity.ok("Chatroom and ChatroomUsers deleted successfully");
-	        } else {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                                 .body("Chatroom not found");
-	        }
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                             .body("Error deleting chatroom: " + e.getMessage());
-	    }
-	}
-	
-	// 특정 채팅방에 참여한 일부 사용자 채팅방 삭제
-	// → 실제 데이터 삭제가 아닌 pk, fk 빼고 초기화
-	@DeleteMapping("/users/{chatroomUserId}") // 브로드캐스팅 추가 (채팅방 나감)
-	public ResponseEntity<?> deleteUsersChatroom(@PathVariable long chatroomUserId) {
-	    try {	    				
-	        boolean deleted = chatroomUserService.deleteChatroomUser(chatroomUserId);
-	        if (deleted) {
-	            return ResponseEntity.ok("Chatroom deleted successfully");
-	        } else {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                                 .body("Chatroom not found");
-	        }
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                             .body("Error deleting chatroom: " + e.getMessage());
-	    }
-	}
-	
-	/*
-	 * ## 채팅 검색 ##
-	 * 검색 방법에는 두 가지가 있음
-	 * 1. 검색 키워드가 참여한 채팅 목록의 상대방 이름에 포함될 때
-	 * 2. 검색 키워드가 참여한 채팅방의 메시지 내용에 포함될 때
-	 * 
-	 * 각각의 경우가 반환 타입이 다름
-	 * 1. 기존의 채팅방 목록 형태와 일치
-	 * 2. 기존의 채팅방 목록에 메시지 내용이 추가되고 채팅방의 최신 메시지와 최신 메시지 전송 시간이 빠짐
-	 * 
-	 * 사용자가 검색을 하면 두 API를 호출하면 되고 검색 결과 UI를 위, 아래로 나누어 보여주는 것을 고려하여 설계
-	 */
-	// 채팅방 검색 - 1. 검색 키워드가 참여한 채팅 목록의 상대방 이름에 포함될 때
-	@GetMapping("/search/name")
-	public ResponseEntity<?> searchChatroomUsersName(@RequestParam String input){
-		try {
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			Long userId = Long.parseLong(auth.getName());
-			List<ChatroomListDTO> chatroomList = chatroomService.searchChatroomUsersName(input, userId);
-			return ResponseEntity.ok(chatroomList);
-			
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Chatroom not found");
-		}
-	}
-	
-	// 채팅방 검색 - 2. 검색 키워드가 참여한 채팅방의 메시지 내용에 포함될 때
-	@GetMapping("/search/messages")
-	public ResponseEntity<?> searchChatroomMessages(@RequestParam String input){
-		try {
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			Long userId = Long.parseLong(auth.getName());
-			List<MessageSearchResultDTO> messageList = chatroomService.searchChatroomMessages(input, userId);
-			return ResponseEntity.ok(messageList);
-			
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Chatroom not found");
-		}
-	}
+//	// 특정 채팅방에 참여한 모든 사용자의 채팅방 삭제
+//	// → 실제 데이터 삭제가 아닌 pk, fk 빼고 초기화
+//	@DeleteMapping("/{chatroomId}") // 브로드캐스팅 추가 (채팅방 나감)
+//	public ResponseEntity<?> deleteChatroom(@PathVariable long chatroomId) {
+//	    try {
+//	        boolean deleted = chatroomService.deleteChatroomAndChatroomUsers(chatroomId);
+//	        if (deleted) {
+//	            return ResponseEntity.ok("Chatroom and ChatroomUsers deleted successfully");
+//	        } else {
+//	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//	                                 .body("Chatroom not found");
+//	        }
+//	    } catch (Exception e) {
+//	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//	                             .body("Error deleting chatroom: " + e.getMessage());
+//	    }
+//	}
+//	
+//	// 특정 채팅방에 참여한 일부 사용자 채팅방 삭제
+//	// → 실제 데이터 삭제가 아닌 pk, fk 빼고 초기화
+//	@DeleteMapping("/users/{chatroomUserId}") // 브로드캐스팅 추가 (채팅방 나감)
+//	public ResponseEntity<?> deleteUsersChatroom(@PathVariable long chatroomUserId) {
+//	    try {	    				
+//	        boolean deleted = chatroomUserService.deleteChatroomUser(chatroomUserId);
+//	        if (deleted) {
+//	            return ResponseEntity.ok("Chatroom deleted successfully");
+//	        } else {
+//	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//	                                 .body("Chatroom not found");
+//	        }
+//	    } catch (Exception e) {
+//	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//	                             .body("Error deleting chatroom: " + e.getMessage());
+//	    }
+//	}
+//	
+//	/*
+//	 * ## 채팅 검색 ##
+//	 * 검색 방법에는 두 가지가 있음
+//	 * 1. 검색 키워드가 참여한 채팅 목록의 상대방 이름에 포함될 때
+//	 * 2. 검색 키워드가 참여한 채팅방의 메시지 내용에 포함될 때
+//	 * 
+//	 * 각각의 경우가 반환 타입이 다름
+//	 * 1. 기존의 채팅방 목록 형태와 일치
+//	 * 2. 기존의 채팅방 목록에 메시지 내용이 추가되고 채팅방의 최신 메시지와 최신 메시지 전송 시간이 빠짐
+//	 * 
+//	 * 사용자가 검색을 하면 두 API를 호출하면 되고 검색 결과 UI를 위, 아래로 나누어 보여주는 것을 고려하여 설계
+//	 */
+//	// 채팅방 검색 - 1. 검색 키워드가 참여한 채팅 목록의 상대방 이름에 포함될 때
+//	@GetMapping("/search/name")
+//	public ResponseEntity<?> searchChatroomUsersName(@RequestParam String input){
+//		try {
+//			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//			Long userId = Long.parseLong(auth.getName());
+//			List<ChatroomListDTO> chatroomList = chatroomService.searchChatroomUsersName(input, userId);
+//			return ResponseEntity.ok(chatroomList);
+//			
+//		} catch (Exception e) {
+//			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body("Chatroom not found");
+//		}
+//	}
+//	
+//	// 채팅방 검색 - 2. 검색 키워드가 참여한 채팅방의 메시지 내용에 포함될 때
+//	@GetMapping("/search/messages")
+//	public ResponseEntity<?> searchChatroomMessages(@RequestParam String input){
+//		try {
+//			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//			Long userId = Long.parseLong(auth.getName());
+//			List<MessageSearchResultDTO> messageList = chatroomService.searchChatroomMessages(input, userId);
+//			return ResponseEntity.ok(messageList);
+//			
+//		} catch (Exception e) {
+//			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body("Chatroom not found");
+//		}
+//	}
 
 }
