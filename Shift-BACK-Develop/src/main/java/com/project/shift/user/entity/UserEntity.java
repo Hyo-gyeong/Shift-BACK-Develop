@@ -45,13 +45,10 @@ public class UserEntity {
     @Column(name = "LOGIN_ID")
     private String loginId;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String name;
 
-    @Column(unique = true)
     private String phone;
 
     @Column
@@ -65,7 +62,6 @@ public class UserEntity {
 
     @Column(
             name = "ADMIN_FLAG",
-            nullable = false,
             columnDefinition = "CHAR(1)"
     )
     private String adminFlag; // default 'N'
