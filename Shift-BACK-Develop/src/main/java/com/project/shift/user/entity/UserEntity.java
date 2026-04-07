@@ -51,10 +51,8 @@ public class UserEntity {
 
     private String phone;
 
-    @Column
     private String address;
 
-    @Column
     private Integer points; // default 0
 
     @Column(name = "REFRESH_TOKEN")
