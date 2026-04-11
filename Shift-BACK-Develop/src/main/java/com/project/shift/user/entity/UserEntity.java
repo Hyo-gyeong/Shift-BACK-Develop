@@ -78,8 +78,8 @@ public class UserEntity {
     
     // 논리적 탈퇴
     public void withdraw() {
-        this.loginId = UserConstants.DELETED_USER_ID_PREFIX + this.getUserId();
-        this.password = UserConstants.DELETED_USER_PW_PREFIX;
+        this.loginId = UserConstants.DELETED_USER_PREFIX + this.getUserId();
+        this.password = UserConstants.DELETED_USER_PASSWORD;
         this.name = "탈퇴한 사용자";
         this.phone = null;
         this.address = null;
