@@ -1,8 +1,10 @@
 package com.project.shift.user.entity;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.SQLRestriction;
+
+import com.project.shift.user.UserConstants;
 
 // 가독성이 떨어지고 클래스 충돌 가능성이 있고 유지보수가 어렵기 때문에 하나 씩 import
 import jakarta.persistence.Column;
@@ -23,7 +25,6 @@ import lombok.Setter;
 @Table(name = "USERS")
 @SQLRestriction("DELETED_AT IS NULL") //모든 SQL 쿼리에 공통된 WHERE 조건을 추가, DELETED_AT이 NULL인 값만 조회
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -55,6 +56,7 @@ public class UserEntity {
 
     private Integer points; // default 0
 
+    @Setter
     @Column(name = "REFRESH_TOKEN")
     private String refreshToken;
 
@@ -65,7 +67,7 @@ public class UserEntity {
     private String adminFlag; // default 'N'
 
     @Column(name = "DELETED_AT")
-    private Timestamp deletedAt;
+    private LocalDateTime deletedAt;
 
     //수정 가능 필드만 메서드로 제공
     public void updateInfo(String name, String phone, String address) {
@@ -73,4 +75,16 @@ public class UserEntity {
         this.phone = phone;
         this.address = address;
     }
+    
+    // 논리적 탈퇴
+    public void withdraw() {
+        this.loginId = UserConstants.DELETED_USER_ID_PREFIX + this.getUserId();
+        this.password = UserConstants.DELETED_USER_PW_PREFIX;
+        this.name = "탈퇴한 사용자";
+        this.phone = null;
+        this.address = null;
+        this.points = 0;
+        this.refreshToken = null;
+        this.deletedAt = LocalDateTime.now();
+	}
 }

@@ -1,38 +1,33 @@
 package com.project.shift.user.service;
 
-import com.project.shift.chat.dao.ChatroomUserDAO;
-//import com.project.shift.chat.dao.FriendDAO;
-import com.project.shift.shop.dao.CartDAO;
-import com.project.shift.shop.entity.Order;
-import com.project.shift.shop.repository.DeliveryRepository;
-import com.project.shift.shop.repository.OrderRepository;
-import com.project.shift.user.dao.IUserDAO;
-import com.project.shift.user.dto.LoginIdRequestDTO;
-import com.project.shift.user.dto.UserDTO;
-import com.project.shift.user.entity.UserEntity;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.UUID;
+import com.project.shift.shop.dao.CartDAO;
+import com.project.shift.shop.entity.Order;
+import com.project.shift.shop.repository.DeliveryRepository;
+import com.project.shift.shop.repository.OrderRepository;
+import com.project.shift.user.UserConstants;
+import com.project.shift.user.dto.LoginIdRequestDTO;
+import com.project.shift.user.dto.UserDTO;
+import com.project.shift.user.entity.UserEntity;
+import com.project.shift.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final String DELETED_USER_PREFIX = "deleted_";
-
-    private final IUserDAO userDAO;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CartDAO cartDAO;
-//    private final FriendDAO friendDAO;
-    private final ChatroomUserDAO chatroomUserDAO;
     private final OrderRepository orderRepository;
     private final DeliveryRepository deliveryRepository;
 
@@ -42,7 +37,7 @@ public class UserService {
         validateTermsAgreement(userDTO); //약관 동의 검증
 
         UserEntity userEntity = convertToEntity(userDTO);
-        UserEntity savedEntity = userDAO.save(userEntity);
+        UserEntity savedEntity = userRepository.save(userEntity);
 
         return savedEntity.getUserId();
     }
@@ -76,11 +71,11 @@ public class UserService {
             throw new IllegalArgumentException("아이디는 영문과 숫자만 사용할 수 있습니다.");
         }
 
-        if (loginId.toLowerCase().startsWith("deleted")) {
+        if (loginId.toLowerCase().startsWith(UserConstants.DELETED_USER_ID_PREFIX)) {
             throw new IllegalArgumentException("'deleted'로 시작하는 ID는 사용할 수 없습니다.");
         }
 
-        return userDAO.existsByLoginId(loginId);
+        return userRepository.existsByLoginId(loginId);
     }
 
     //약관 동의 검증
@@ -100,7 +95,7 @@ public class UserService {
             throw new IllegalArgumentException("연락처는 11자리 숫자만 입력 가능합니다.");
         }
 
-        return userDAO.existsByPhone(phone);
+        return userRepository.existsByPhone(phone);
     }
 
     // 비밀번호 보안 규칙 검증
@@ -148,7 +143,7 @@ public class UserService {
         Long userId = Long.parseLong(auth.getName());
 
         //DB에서 회원 조회
-        UserEntity userEntity = userDAO.findById(userId)
+        UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         //비밀번호 제외하고 DTO로 변환하여 반환
@@ -167,14 +162,14 @@ public class UserService {
     public UserDTO updateUserInfo(UserDTO userDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getName());
-
+        
         //DB에서 회원 조회
-        UserEntity userEntity = userDAO.findById(userId)
+        UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         // 연락처 변경 시 중복 검증
         if (!userEntity.getPhone().equals(userDTO.getPhone())
-                && userDAO.existsByPhone(userDTO.getPhone())) {
+                && userRepository.existsByPhone(userDTO.getPhone())) {
             throw new IllegalArgumentException("이미 사용중인 연락처 입니다.");
         }
 
@@ -196,7 +191,7 @@ public class UserService {
     public String findId(LoginIdRequestDTO loginIdRequestDTO) {
         validateDTO(loginIdRequestDTO);
 
-        UserEntity userEntity = userDAO.findByNameAndPhone(loginIdRequestDTO.name(), loginIdRequestDTO.phone())
+        UserEntity userEntity = userRepository.findByNameAndPhone(loginIdRequestDTO.name(), loginIdRequestDTO.phone())
                 .orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
 
         return maskLoginId(userEntity.getLoginId());
@@ -225,9 +220,9 @@ public class UserService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         long userId = Long.parseLong(auth.getName());
 
-        UserEntity user = userDAO.findById(userId)
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-
+        
         return passwordEncoder.matches(password, user.getPassword());
     }
 
@@ -253,27 +248,10 @@ public class UserService {
         }
 
         cartDAO.clearCartByUserId(userId); // 장바구니 비우기
-//        friendDAO.deleteAllFriends(userId); // 친구 관계 삭제
-//        chatroomUserDAO.deleteChatroomUsersByUserId(userId);
 
-        UserEntity user = userDAO.findById(userId)
+        UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        // 로그인 ID 변경 처리
-        user.setLoginId(DELETED_USER_PREFIX + user.getUserId());
-
-        // 비밀번호 폐기
-        user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-
-        // 기타 개인정보 초기화
-        user.setName("탈퇴한 사용자");
-        user.setPhone(null);
-        user.setAddress(null);
-        user.setPoints(0);
-        user.setRefreshToken(null);
-        user.setDeletedAt(new Timestamp(System.currentTimeMillis()));
-
-        userDAO.save(user);
+        user.withdraw();
 
         // SecurityContext 초기화 (로그아웃 처리)
         SecurityContextHolder.clearContext();
