@@ -8,4 +8,5 @@ public final class UserConstants {
     // isLoginIdAvailable()의 차단 로직("deleted"로 시작)과 반드시 일치해야 함
     public static final String DELETED_USER_PREFIX = "deleted_id_";
     public static final String DELETED_USER_PASSWORD  = "DELETED_USER_PW";
+    public static final String DELETED_USER = "탈퇴한 사용자";
 }

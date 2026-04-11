@@ -80,7 +80,7 @@ public class UserEntity {
     public void withdraw() {
         this.loginId = UserConstants.DELETED_USER_PREFIX + this.getUserId();
         this.password = UserConstants.DELETED_USER_PASSWORD;
-        this.name = "탈퇴한 사용자";
+        this.name = UserConstants.DELETED_USER;
         this.phone = null;
         this.address = null;
         this.points = 0;
