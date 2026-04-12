@@ -7,6 +7,8 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -106,16 +108,17 @@ public class UserController {
     // 본인 정보 조회
     // 응답: UserResponseDTO (userId, loginId, name, phone, address, points)
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDTO> getMyInfo() {
-    	UserResponseDTO user = userService.getUserInfo();
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserResponseDTO> getMyInfo(@AuthenticationPrincipal UserDetails userDetails) {
+    	Long userId = Long.parseLong(userDetails.getUsername());
+        return ResponseEntity.ok(userService.getUserInfo(userId));
     }
 
     // 본인 정보 수정
     @PutMapping("/info")
-    public ResponseEntity<UserResponseDTO> updateMyInfo(@RequestBody UserUpdateRequestDTO userDTO) {
-    	UserResponseDTO updatedUser = userService.updateUserInfo(userDTO);
-        return ResponseEntity.ok(updatedUser);
+    public ResponseEntity<UserResponseDTO> updateMyInfo(@AuthenticationPrincipal UserDetails userDetails,
+    													@RequestBody UserUpdateRequestDTO request) {
+    	Long userId = Long.parseLong(userDetails.getUsername());
+        return ResponseEntity.ok(userService.updateUserInfo(userId, request));
     }
 
     // 아이디 찾기
@@ -137,9 +140,10 @@ public class UserController {
 
     // 마이포인트 조회
     @GetMapping("/points")
-    public ResponseEntity<?> getMyPoints() {
+    public ResponseEntity<?> getMyPoints(@AuthenticationPrincipal UserDetails userDetails) {
         try {
-        	UserResponseDTO user = userService.getUserInfo();
+        	Long userId = Long.parseLong(userDetails.getUsername());
+        	UserResponseDTO user = userService.getUserInfo(userId);
             return ResponseEntity.ok(Map.of("points", user.getPoints()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -148,7 +152,9 @@ public class UserController {
 
     // 비밀번호 인증
     @PostMapping("/check/password")
-    public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> verifyPassword(@AuthenticationPrincipal UserDetails userDetails,
+    										@RequestBody Map<String, String> request) {
+    	Long userId = Long.parseLong(userDetails.getUsername());
         String password = request.get("password");
         if (password == null || password.isBlank()) {
             return ResponseEntity.badRequest()
@@ -156,7 +162,7 @@ public class UserController {
         }
 
         try {
-            boolean isValid = userService.verifyPassword(password);
+            boolean isValid = userService.verifyPassword(userId, password);
             return ResponseEntity.ok(Map.of(
                     "valid", isValid,
                     "message", isValid
@@ -170,9 +176,10 @@ public class UserController {
 
     // 회원 탈퇴
     @DeleteMapping
-    public ResponseEntity<?> withdrawUser() {
+    public ResponseEntity<?> withdrawUser(@AuthenticationPrincipal UserDetails userDetails) {
         try {
-            userService.withdrawUser();
+        	Long userId = Long.parseLong(userDetails.getUsername());
+            userService.withdrawUser(userId);
             return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 처리되었습니다."));
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));

@@ -2,7 +2,6 @@ package com.project.shift.user.service;
 
 import java.util.List;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -150,10 +149,7 @@ public class UserService {
 
     // 로그인 ID로 본인 정보 조회
     @Transactional(readOnly = true)
-    public UserResponseDTO getUserInfo() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = Long.parseLong(auth.getName());
-
+    public UserResponseDTO getUserInfo(Long userId) {
         //DB에서 회원 조회
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
@@ -171,10 +167,7 @@ public class UserService {
 
     // 로그인 ID로 본인 정보 수정
     @Transactional
-    public UserResponseDTO updateUserInfo(UserUpdateRequestDTO userDTO) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = Long.parseLong(auth.getName());
-        
+    public UserResponseDTO updateUserInfo(Long userId, UserUpdateRequestDTO userDTO) {
         //DB에서 회원 조회
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
@@ -228,10 +221,7 @@ public class UserService {
 
     // 비밀번호 인증
     @Transactional(readOnly = true)
-    public boolean verifyPassword(String password) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        long userId = Long.parseLong(auth.getName());
-
+    public boolean verifyPassword(Long userId, String password) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         
@@ -240,10 +230,7 @@ public class UserService {
 
     // 회원 탈퇴
     @Transactional
-    public void withdrawUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        long userId = Long.parseLong(auth.getName());
-
+    public void withdrawUser(Long userId) {
         log.info("[USER] 회원 탈퇴 시작 {}", userId);
 
         // 결제 미완료/에러(P) 자동 삭제
