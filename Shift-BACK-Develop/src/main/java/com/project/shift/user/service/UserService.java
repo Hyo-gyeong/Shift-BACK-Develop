@@ -14,7 +14,9 @@ import com.project.shift.shop.repository.DeliveryRepository;
 import com.project.shift.shop.repository.OrderRepository;
 import com.project.shift.user.UserConstants;
 import com.project.shift.user.dto.LoginIdRequestDTO;
-import com.project.shift.user.dto.UserDTO;
+import com.project.shift.user.dto.UserRegisterRequestDTO;
+import com.project.shift.user.dto.UserResponseDTO;
+import com.project.shift.user.dto.UserUpdateRequestDTO;
 import com.project.shift.user.entity.UserEntity;
 import com.project.shift.user.repository.UserRepository;
 
@@ -32,7 +34,7 @@ public class UserService {
     private final DeliveryRepository deliveryRepository;
 
     @Transactional
-    public Long join(UserDTO userDTO) {
+    public Long join(UserRegisterRequestDTO userDTO) {
     	// 1단계: 입력값 형식 검증
         validateName(userDTO);  //사용자 이름 검증
         validateTermsAgreement(userDTO); //약관 동의 검증
@@ -44,7 +46,6 @@ public class UserService {
         if (isPhoneAvailable(userDTO.getPhone())) {
             throw new IllegalArgumentException("이미 사용중인 연락처입니다.");
         }
-        isPhoneAvailable(userDTO.getPhone());            // 전화번호 형식 + 중복
 
         // 2단계: 저장
         UserEntity userEntity = convertToEntity(userDTO);
@@ -54,7 +55,7 @@ public class UserService {
     }
 
     //사용자 이름 검증
-    private void validateName(UserDTO userDTO) {
+    private void validateName(UserRegisterRequestDTO userDTO) {
         if (userDTO.getName() == null || userDTO.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("이름을 입력해야 합니다.");
         }
@@ -90,7 +91,7 @@ public class UserService {
     }
 
     //약관 동의 검증
-    private void validateTermsAgreement(UserDTO userDTO) {
+    private void validateTermsAgreement(UserRegisterRequestDTO userDTO) {
         if (userDTO.getTermsAgreed() == null || !userDTO.getTermsAgreed()) {
             throw new IllegalArgumentException("이용약관에 동의해야 합니다.");
         }
@@ -135,7 +136,7 @@ public class UserService {
     }
 
     //DTO를 Entity로 변환 및 암호화된 비밀번호 설정
-    private UserEntity convertToEntity(UserDTO userDTO) {
+    private UserEntity convertToEntity(UserRegisterRequestDTO userDTO) {
         return UserEntity.builder()
                 .loginId(userDTO.getLoginId())
                 .password(passwordEncoder.encode(userDTO.getPassword()))
@@ -149,7 +150,7 @@ public class UserService {
 
     // 로그인 ID로 본인 정보 조회
     @Transactional(readOnly = true)
-    public UserDTO getUserInfo() {
+    public UserResponseDTO getUserInfo() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getName());
 
@@ -158,7 +159,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         //비밀번호 제외하고 DTO로 변환하여 반환
-        return UserDTO.builder()
+        return UserResponseDTO.builder()
                 .userId(userEntity.getUserId())
                 .loginId(userEntity.getLoginId())
                 .name(userEntity.getName())
@@ -170,7 +171,7 @@ public class UserService {
 
     // 로그인 ID로 본인 정보 수정
     @Transactional
-    public UserDTO updateUserInfo(UserDTO userDTO) {
+    public UserResponseDTO updateUserInfo(UserUpdateRequestDTO userDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.parseLong(auth.getName());
         
@@ -187,7 +188,7 @@ public class UserService {
         //회원 정보 수정(Entity 업데이트)
         userEntity.updateInfo(userDTO.getName(), userDTO.getPhone(), userDTO.getAddress());
 
-        return UserDTO.builder()
+        return UserResponseDTO.builder()
                 .userId(userEntity.getUserId())
                 .loginId(userEntity.getLoginId())
                 .name(userEntity.getName())

@@ -1,19 +1,30 @@
 package com.project.shift.user.controller;
 
-import com.project.shift.shop.dto.PointHistoryResponseDTO;
-import com.project.shift.shop.service.IOrderService;
-import com.project.shift.user.dto.LoginIdRequestDTO;
-import com.project.shift.user.dto.UserDTO;
-import com.project.shift.user.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.annotation.*;
+import static com.project.shift.global.security.CurrentUser.getUserIdOrNull;
 
 import java.util.Map;
 
-import static com.project.shift.global.security.CurrentUser.getUserIdOrNull;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.project.shift.shop.dto.PointHistoryResponseDTO;
+import com.project.shift.shop.service.IOrderService;
+import com.project.shift.user.dto.LoginIdRequestDTO;
+import com.project.shift.user.dto.UserRegisterRequestDTO;
+import com.project.shift.user.dto.UserResponseDTO;
+import com.project.shift.user.dto.UserUpdateRequestDTO;
+import com.project.shift.user.service.UserService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/users")
@@ -23,19 +34,20 @@ public class UserController {
     private final IOrderService orderService;
 
     @PostMapping
-    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<?> registerUser(@RequestBody UserRegisterRequestDTO requestDTO) {
         try {
             //서버 회원가입 요청
-            Long userId = userService.join(userDTO);
-
+            Long userId = userService.join(requestDTO);
             //성공 응답(201 Created)
-            return new ResponseEntity<>("회원가입 성공. 할당된 사용자 ID:" + userId, HttpStatus.CREATED);
+            return new ResponseEntity<>(
+            		"회원가입 성공. 할당된 사용자 ID:" + userId, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             //클라이언트 오류 응답(409 Conflict)
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         } catch (Exception e) {
             //서버 오류 응답(500 Internal Server Error)
-            return new ResponseEntity<>("회원가입 중 서버 오류 발생", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(
+            		"회원가입 중 서버 오류 발생", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -47,7 +59,9 @@ public class UserController {
             boolean isDuplicate = userService.isPhoneAvailable(phone);
             return ResponseEntity.ok(Map.of(
                     "available", !isDuplicate,
-                    "message", isDuplicate ? "이미 사용중인 연락처입니다." : "사용 가능한 연락처입니다."
+                    "message", isDuplicate
+                    	? "이미 사용중인 연락처입니다."
+                    	: "사용 가능한 연락처입니다."
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -62,7 +76,9 @@ public class UserController {
             boolean isDuplicate = userService.isLoginIdAvailable(loginId);
             return ResponseEntity.ok(Map.of(
                     "available", !isDuplicate,
-                    "message", isDuplicate ? "이미 사용중인 아이디입니다." : "사용 가능한 아이디입니다."
+                    "message", isDuplicate
+                    	? "이미 사용중인 아이디입니다."
+                    	: "사용 가능한 아이디입니다."
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -88,17 +104,17 @@ public class UserController {
     }
 
     // 본인 정보 조회
+    // 응답: UserResponseDTO (userId, loginId, name, phone, address, points)
     @GetMapping("/me")
-    public ResponseEntity<UserDTO> getMyInfo() {
-        UserDTO user = userService.getUserInfo();
+    public ResponseEntity<UserResponseDTO> getMyInfo() {
+    	UserResponseDTO user = userService.getUserInfo();
         return ResponseEntity.ok(user);
     }
 
     // 본인 정보 수정
     @PutMapping("/info")
-    public ResponseEntity<UserDTO> updateMyInfo(
-            @RequestBody UserDTO userDTO) {
-        UserDTO updatedUser = userService.updateUserInfo(userDTO);
+    public ResponseEntity<UserResponseDTO> updateMyInfo(@RequestBody UserUpdateRequestDTO userDTO) {
+    	UserResponseDTO updatedUser = userService.updateUserInfo(userDTO);
         return ResponseEntity.ok(updatedUser);
     }
 
@@ -112,12 +128,10 @@ public class UserController {
     // SHOP-011 포인트 사용/적립 내역 조회
     @GetMapping("/{userId}/points")
     public ResponseEntity<PointHistoryResponseDTO> getPointHistory(@PathVariable Long userId) {
-
         // JWT 우선 적용 — 본인 계정만 조회 가능
         Long uid = getUserIdOrNull();
         if (uid != null && !uid.equals(userId))
             throw new AccessDeniedException("본인 계정만 조회 가능합니다.");
-
         return ResponseEntity.ok(orderService.getPointHistory(userId));
     }
 
@@ -125,10 +139,8 @@ public class UserController {
     @GetMapping("/points")
     public ResponseEntity<?> getMyPoints() {
         try {
-            UserDTO user = userService.getUserInfo();
-            return ResponseEntity.ok(Map.of(
-                    "points", user.getPoints()
-            ));
+        	UserResponseDTO user = userService.getUserInfo();
+            return ResponseEntity.ok(Map.of("points", user.getPoints()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -139,14 +151,17 @@ public class UserController {
     public ResponseEntity<?> verifyPassword(@RequestBody Map<String, String> request) {
         String password = request.get("password");
         if (password == null || password.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of("valid", false, "message", "비밀번호를 입력해주세요."));
+            return ResponseEntity.badRequest()
+            		.body(Map.of("valid", false, "message", "비밀번호를 입력해주세요."));
         }
 
         try {
             boolean isValid = userService.verifyPassword(password);
             return ResponseEntity.ok(Map.of(
                     "valid", isValid,
-                    "message", isValid ? "비밀번호 인증에 성공했습니다." : "비밀번호가 일치하지 않습니다."
+                    "message", isValid
+                    	? "비밀번호 인증에 성공했습니다."
+                    	: "비밀번호가 일치하지 않습니다."
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -162,7 +177,8 @@ public class UserController {
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "회원 탈퇴 중 서버 오류 발생"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            		.body(Map.of("message", "회원 탈퇴 중 서버 오류 발생"));
         }
     }
 }
