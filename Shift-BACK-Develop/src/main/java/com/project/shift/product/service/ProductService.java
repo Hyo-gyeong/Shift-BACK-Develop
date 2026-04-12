@@ -1,22 +1,19 @@
 package com.project.shift.product.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import com.project.shift.product.dao.IImageDAO;
-import com.project.shift.product.dao.IReviewDAO;
 import com.project.shift.product.dao.ProductDAO;
 import com.project.shift.product.dto.ImageDTO;
 import com.project.shift.product.dto.ProductDTO;
 import com.project.shift.product.entity.Image;
 import com.project.shift.product.entity.Product;
-import com.project.shift.product.repository.ReviewEntityRepository;
-import com.project.shift.user.dao.IUserDAO;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * [SERVICE-001] 상품 관련 비즈니스 로직 처리 클래스
