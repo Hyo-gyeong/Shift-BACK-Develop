@@ -33,9 +33,20 @@ public class UserService {
 
     @Transactional
     public Long join(UserDTO userDTO) {
+    	// 1단계: 입력값 형식 검증
         validateName(userDTO);  //사용자 이름 검증
         validateTermsAgreement(userDTO); //약관 동의 검증
+        validatePasswordRule(userDTO.getPassword());     // 비밀번호 규칙
+        // 중복 체크: true = 이미 존재 = 가입 불가
+        if (isLoginIdAvailable(userDTO.getLoginId())) {
+            throw new IllegalArgumentException("이미 사용중인 아이디입니다.");
+        }
+        if (isPhoneAvailable(userDTO.getPhone())) {
+            throw new IllegalArgumentException("이미 사용중인 연락처입니다.");
+        }
+        isPhoneAvailable(userDTO.getPhone());            // 전화번호 형식 + 중복
 
+        // 2단계: 저장
         UserEntity userEntity = convertToEntity(userDTO);
         UserEntity savedEntity = userRepository.save(userEntity);
 
@@ -71,7 +82,7 @@ public class UserService {
             throw new IllegalArgumentException("아이디는 영문과 숫자만 사용할 수 있습니다.");
         }
 
-        if (loginId.toLowerCase().startsWith(UserConstants.DELETED_USER_ID_PREFIX)) {
+        if (loginId.toLowerCase().startsWith(UserConstants.DELETED_USER_PREFIX)) {
             throw new IllegalArgumentException("'deleted'로 시작하는 ID는 사용할 수 없습니다.");
         }
 
