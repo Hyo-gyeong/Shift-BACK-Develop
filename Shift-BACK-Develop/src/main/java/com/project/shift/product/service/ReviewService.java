@@ -19,7 +19,7 @@ import com.project.shift.product.dto.UserReviewDetailProjection;
 import com.project.shift.product.entity.Review;
 import com.project.shift.product.entity.ReviewOriginEntity;
 import com.project.shift.product.repository.ReviewEntityRepository;
-import com.project.shift.user.dao.IUserDAO;
+import com.project.shift.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -35,8 +35,8 @@ import lombok.RequiredArgsConstructor;
 public class ReviewService implements IReviewService {
 
     private final IReviewDAO reviewDAO;
-    private final IUserDAO userDAO;
     private final ReviewEntityRepository reviewEntityRepository;
+    private final UserRepository userRepo;
 
 
     /** [PROD-008] 특정 상품의 리뷰 목록 조회 */
@@ -47,7 +47,7 @@ public class ReviewService implements IReviewService {
 
         return reviews.stream().map(review -> ReviewDTO.builder()
                 .reviewId(review.getId())
-                .userName(userDAO.findById(review.getUser().getUserId())
+                .userName(userRepo.findById(review.getUser().getUserId())
                         .map(u -> u.getName())
                         .orElse("탈퇴한 회원"))
                 .rating(review.getRating())
