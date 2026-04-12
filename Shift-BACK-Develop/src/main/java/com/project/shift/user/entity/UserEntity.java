@@ -54,6 +54,7 @@ public class UserEntity {
 
     private String address;
 
+    @Setter
     private Integer points; // default 0
 
     @Setter
