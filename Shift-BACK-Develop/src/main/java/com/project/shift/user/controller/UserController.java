@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import com.project.shift.user.dto.LoginIdRequestDTO;
 import com.project.shift.user.dto.UserRegisterRequestDTO;
 import com.project.shift.user.dto.UserResponseDTO;
 import com.project.shift.user.dto.UserUpdateRequestDTO;
+import com.project.shift.user.facade.WithdrawFacade;
 import com.project.shift.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
     private final UserService userService;
     private final IOrderService orderService;
+    private final WithdrawFacade withdrawFacade;
 
     @PostMapping
     public ResponseEntity<?> registerUser(@RequestBody UserRegisterRequestDTO requestDTO) {
@@ -179,7 +182,12 @@ public class UserController {
     public ResponseEntity<?> withdrawUser(@AuthenticationPrincipal UserDetails userDetails) {
         try {
         	Long userId = Long.parseLong(userDetails.getUsername());
-            userService.withdrawUser(userId);
+        	withdrawFacade.withdraw(userId);
+        	
+        	// SecurityContextHolder 처리는 Security 인프라 관심사
+            // 도메인 로직(Facade)과 분리해서 Controller에서 처리
+            SecurityContextHolder.clearContext();
+            
             return ResponseEntity.ok(Map.of("message", "회원 탈퇴가 성공적으로 처리되었습니다."));
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
