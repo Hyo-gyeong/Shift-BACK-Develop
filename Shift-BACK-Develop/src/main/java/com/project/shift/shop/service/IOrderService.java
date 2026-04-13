@@ -42,4 +42,9 @@ public interface IOrderService {
     // SHOP-020 구매/수령 확정
     OrderStatusUpdateResponseDTO confirmOrder(Long orderId);
 	
+    // WithdrawFacade 전용 — 탈퇴 시 결제 미완료(P) 주문 삭제
+    void cancelPendingOrders(Long userId);
+
+    // WithdrawFacade 전용 — 탈퇴 시 배송 중(S) 주문 존재 여부 확인
+    boolean hasActiveDeliveries(Long userId);
 }

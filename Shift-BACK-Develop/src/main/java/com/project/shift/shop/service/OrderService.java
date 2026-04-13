@@ -57,7 +57,9 @@ import com.project.shift.user.entity.UserEntity;
 import com.project.shift.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor // 생성자 주입을 임의의 코드없이 자동으로 설정해주는 어노테이션
 public class OrderService implements IOrderService {
@@ -912,6 +914,22 @@ public class OrderService implements IOrderService {
                 .build();
     }
 
+    @Override
+    @Transactional
+    public void cancelPendingOrders(Long userId) {
+        List<Order> pendingOrders = orderRepository
+                .findAllBySenderIdAndOrderStatus(userId, "P");
+        if (!pendingOrders.isEmpty()) {
+            log.info("[탈퇴] 결제 미완료 주문 {}건 자동 삭제", pendingOrders.size());
+            orderRepository.deleteAll(pendingOrders);
+        }
+    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public boolean hasActiveDeliveries(Long userId) {
+        return deliveryRepository
+                .existsByOrder_SenderIdAndDeliveryStatusIn(userId, List.of("S"));
+    }
 
 }
