@@ -28,14 +28,6 @@ public class UserService {
         validateName(userDTO);
         validateTermsAgreement(userDTO);
         validatePasswordRule(userDTO.getPassword());
-
-        if (isLoginIdAvailable(userDTO.getLoginId())) {
-            throw new IllegalArgumentException("이미 사용중인 아이디입니다.");
-        }
-        if (isPhoneAvailable(userDTO.getPhone())) {
-            throw new IllegalArgumentException("이미 사용중인 연락처입니다.");
-        }
-
         UserEntity userEntity = convertToEntity(userDTO);
         return userRepository.save(userEntity).getUserId();
     }
