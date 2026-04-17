@@ -211,13 +211,10 @@ public class AuthService {
     //     - save() 호출은 Hibernate가 알아서 INSERT/UPDATE 결정
     //
     //   expiredAt:
-    //     - JwtService는 토큰 발급 시 내부적으로 만료 시각을 결정하지만,
-    //       현재 JwtService에서 만료 시각을 외부로 노출하지 않음.
-    //     - 보수적으로 refreshToken 유효기간을 DB에도 기록하기 위해
-    //       JwtService 상수와 동일한 7일을 사용 (추후 JwtService 개선 시 대체).
+    //     - JwtService.getRefreshTokenValidity()로 실제 설정값을 읽어 DB와 동기화.
     // ================================================================
     private void saveRefreshToken(UserEntity foundUser, String newTokenValue) {
-        LocalDateTime newExpiredAt = LocalDateTime.now().plusDays(7);
+        LocalDateTime newExpiredAt = LocalDateTime.now().plus(jwtService.getRefreshTokenValidity());
 
         Optional<RefreshTokenEntity> existingOpt =
                 refreshTokenRepository.findById(foundUser.getUserId());

@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.util.Date;
 
 @Component
@@ -110,6 +111,10 @@ public class JwtService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public Duration getRefreshTokenValidity() {
+        return Duration.ofMillis(refreshTokenValidityMs);
     }
 
     // 토큰 재발급 시 Refresh Token 인지 체크
