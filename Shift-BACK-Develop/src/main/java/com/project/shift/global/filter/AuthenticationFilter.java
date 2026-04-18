@@ -40,6 +40,7 @@ public class AuthenticationFilter extends OncePerRequestFilter { // 모든 API �
             UserEntity userEntity = userRepository.findById(userId).orElse(null);
 
             if (userEntity != null) {
+            	// principal에 Long 타입으로 userId를 저장 -> @AuthenticationPrincipal Long userId로 사용
                 Authentication authentication = new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 filterChain.doFilter(request, response);

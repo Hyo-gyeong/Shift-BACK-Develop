@@ -113,6 +113,7 @@ public class JwtService {
         }
     }
 
+    // 토큰 만료 설정값 반환
     public Duration getRefreshTokenValidity() {
         return Duration.ofMillis(refreshTokenValidityMs);
     }
