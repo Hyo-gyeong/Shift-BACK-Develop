@@ -21,24 +21,6 @@ import com.project.shift.user.entity.UserEntity;
 
 import lombok.extern.slf4j.Slf4j;
 
-// ================================================================
-// [REFACTOR 2026-04-14] 항목 3: AuthService의 RefreshToken 저장소 분리
-//   변경 요약:
-//     1) foundUser.setRefreshToken() + authDao.updateUser() 패턴 제거
-//        -> RefreshTokenRepository.save()로 단독 테이블만 갱신
-//     2) foundUser.getRefreshToken() 대신 RefreshTokenRepository.findById() 사용
-//     3) 로그아웃 시 authDao.updateRefreshToken() 대신
-//        RefreshTokenRepository.deleteById() 사용
-//
-//   성능 및 구조적 효과:
-//     - USERS 테이블의 Row Lock 경합 제거
-//       (로그인/리프레시 시 USERS UPDATE가 완전히 사라짐)
-//     - 유저 정보 조회 쿼리(/users/me, /users/points 등)와 토큰 갱신이
-//       서로 다른 물리 Row를 건드리므로 동시성 향상
-//     - JwtService의 refreshToken 만료 시각을 엔티티에 명시적으로 저장하여
-//       "토큰 값 일치 여부 + 만료 여부" 이중 검증 가능 (JWT 자체 만료와 독립)
-//     - 추후 Redis 이관 시 이 Service 내부만 Repository 교체로 처리 가능
-// ================================================================
 @Slf4j
 @Service
 public class AuthService {
@@ -84,13 +66,6 @@ public class AuthService {
         String accessToken = jwtService.createAccessToken(userId, name);
         String refreshToken = jwtService.createRefreshToken(userId);
 
-        // ================================================================
-        // [REFACTOR 2026-04-14] 항목 3: USERS 업데이트 -> REFRESH_TOKENS upsert
-        //   변경 전:
-        //     foundUser.setRefreshToken(refreshToken);
-        //     authDao.updateUser(foundUser);
-        //   변경 후: saveRefreshToken() 헬퍼 메서드 추출
-        // ================================================================
         saveRefreshToken(foundUser, refreshToken);
 
         log.info("[AUTH] 리프레시 토큰 갱신 완료 UserId: {}", userId);
@@ -202,18 +177,9 @@ public class AuthService {
 
         return foundUser;
     }
-
-    // ================================================================
-    // [REFACTOR 2026-04-14] 항목 3: RefreshToken 저장/갱신 헬퍼
-    //   upsert 전략:
-    //     - @MapsId 공유 PK 특성상 findById(userId)로 존재 여부 확인 후
-    //       있으면 내부 상태 변경(refreshToken), 없으면 신규 Builder 생성
-    //     - save() 호출은 Hibernate가 알아서 INSERT/UPDATE 결정
-    //
-    //   expiredAt:
-    //     - JwtService.getRefreshTokenValidity()로 실제 설정값을 읽어 DB와 동기화.
-    // ================================================================
+    
     private void saveRefreshToken(UserEntity foundUser, String newTokenValue) {
+    	// expiredAt : 실제 설정값을 읽어 DB와 동기화 (7일)
         LocalDateTime newExpiredAt = LocalDateTime.now().plus(jwtService.getRefreshTokenValidity());
 
         Optional<RefreshTokenEntity> existingOpt =
