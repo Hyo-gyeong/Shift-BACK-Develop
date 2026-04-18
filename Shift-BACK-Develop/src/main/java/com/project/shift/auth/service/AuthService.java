@@ -11,34 +11,26 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.project.shift.auth.dao.AuthDAO;
 import com.project.shift.auth.dto.LoginRequestDTO;
 import com.project.shift.auth.dto.LoginResponseDTO;
 import com.project.shift.auth.entity.RefreshTokenEntity;
+import com.project.shift.auth.repository.AuthRepository;
 import com.project.shift.auth.repository.RefreshTokenRepository;
 import com.project.shift.global.jwt.JwtService;
 import com.project.shift.user.entity.UserEntity;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    private final AuthDAO authDao;
+    private final AuthRepository authRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
-
-    public AuthService(AuthDAO authDao,
-                       JwtService jwtService,
-                       AuthenticationManager authenticationManager,
-                       RefreshTokenRepository refreshTokenRepository) {
-        this.authDao = authDao;
-        this.jwtService = jwtService;
-        this.authenticationManager = authenticationManager;
-        this.refreshTokenRepository = refreshTokenRepository;
-    }
 
     // 로그인
     @Transactional
@@ -52,11 +44,8 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(cred);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // dto -> entity로 변환
-        UserEntity userEntity = UserEntity.builder()
-                .loginId(loginInfo.loginId())
-                .build();
-        UserEntity foundUser = authDao.getUser(userEntity);
+        UserEntity foundUser = authRepository.findByLoginId(loginInfo.loginId())
+                .orElseThrow(() -> new BadCredentialsException("[SYSTEM] 사용자를 찾을 수 없습니다."));
 
         Long userId = foundUser.getUserId();
         String name = foundUser.getName();
@@ -80,16 +69,6 @@ public class AuthService {
 
         log.info("[AUTH] 로그아웃 시작 UserId: {}", userId);
 
-        // ================================================================
-        // [REFACTOR 2026-04-14] 항목 3: USERS.REFRESH_TOKEN NULL 업데이트 ->
-        //                               REFRESH_TOKENS 행 삭제
-        //   변경 전: authDao.updateRefreshToken(userId)
-        //            (JPQL UPDATE u SET u.refreshToken = NULL ...)
-        //   변경 후: refreshTokenRepository.deleteById(userId)
-        //
-        //   존재하지 않아도(이미 로그아웃된 상태) 조용히 통과되도록
-        //   existsById 체크 후 삭제.
-        // ================================================================
         if (refreshTokenRepository.existsById(userId)) {
             refreshTokenRepository.deleteById(userId);
         }
@@ -113,13 +92,6 @@ public class AuthService {
         String newAccessToken = jwtService.createAccessToken(foundUser.getUserId(), foundUser.getName());
         String newRefreshToken = jwtService.createRefreshToken(foundUser.getUserId());
 
-        // ================================================================
-        // [REFACTOR 2026-04-14] 항목 3: USERS 업데이트 -> REFRESH_TOKENS 갱신
-        //   변경 전:
-        //     foundUser.setRefreshToken(newRefreshToken);
-        //     authDao.updateUser(foundUser);
-        //   변경 후: saveRefreshToken() 헬퍼 재사용
-        // ================================================================
         saveRefreshToken(foundUser, newRefreshToken);
 
         return new LoginResponseDTO(newAccessToken, newRefreshToken);
@@ -151,18 +123,6 @@ public class AuthService {
         return userIdFromRefresh;
     }
 
-    // ================================================================
-    // [REFACTOR 2026-04-14] 항목 3: 토큰 검증 로직을 REFRESH_TOKENS 기준으로 변경
-    //   변경 전:
-    //     foundUser = authDao.getUserById(userId);
-    //     foundUser.getRefreshToken()과 파라미터 비교
-    //   변경 후:
-    //     1) RefreshTokenRepository에서 토큰 Row 조회
-    //     2) 없으면 인증 실패 (로그아웃/탈퇴 상태)
-    //     3) 값이 파라미터와 다르면 인증 실패
-    //     4) UserEntity는 AccessToken 재발급 시 필요한 name/userId 때문에
-    //        별도 authDao.getUserById로 한 번만 조회
-    // ================================================================
     private UserEntity validateUserByToken(Long userId, String refreshToken) {
         Optional<RefreshTokenEntity> tokenOpt = refreshTokenRepository.findById(userId);
 
@@ -170,10 +130,8 @@ public class AuthService {
             throw new BadCredentialsException("[SYSTEM] 리프레시 토큰이 저장된 리프레시 토큰과 일치하지 않습니다.");
         }
 
-        UserEntity foundUser = authDao.getUserById(userId);
-        if (foundUser == null) {
-            throw new BadCredentialsException("[SYSTEM] 사용자를 찾을 수 없습니다.");
-        }
+        UserEntity foundUser = authRepository.findByUserId(userId)
+                .orElseThrow(() -> new BadCredentialsException("[SYSTEM] 사용자를 찾을 수 없습니다."));
 
         return foundUser;
     }
