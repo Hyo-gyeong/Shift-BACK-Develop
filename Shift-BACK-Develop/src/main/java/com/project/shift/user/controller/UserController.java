@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -82,16 +81,14 @@ public class UserController {
     // 본인 정보 조회
     // 응답: UserResponseDTO (userId, loginId, name, phone, address, points)
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDTO> getMyInfo(@AuthenticationPrincipal UserDetails userDetails) {
-    	Long userId = Long.parseLong(userDetails.getUsername());
+    public ResponseEntity<UserResponseDTO> getMyInfo(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(userService.getUserInfo(userId));
     }
 
     // 본인 정보 수정
     @PutMapping("/info")
-    public ResponseEntity<UserResponseDTO> updateMyInfo(@AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<UserResponseDTO> updateMyInfo(@AuthenticationPrincipal Long userId,
     													@RequestBody UserUpdateRequestDTO request) {
-    	Long userId = Long.parseLong(userDetails.getUsername());
         return ResponseEntity.ok(userService.updateUserInfo(userId, request));
     }
 
@@ -105,24 +102,21 @@ public class UserController {
     // SHOP-011 포인트 사용/적립 내역 조회 (본인 계정)
     @GetMapping("/points/history")
     public ResponseEntity<PointHistoryResponseDTO> getPointHistory(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+            @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(orderService.getPointHistory(userId));
     }
 
     // 마이포인트 조회
     @GetMapping("/points")
-    public ResponseEntity<Map<String, Object>> getMyPoints(@AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+    public ResponseEntity<Map<String, Object>> getMyPoints(@AuthenticationPrincipal Long userId) {
         UserResponseDTO user = userService.getUserInfo(userId);
         return ResponseEntity.ok(Map.of("points", user.getPoints()));
     }
 
     // 비밀번호 인증
     @PostMapping("/check/password")
-    public ResponseEntity<Map<String, Object>> verifyPassword(@AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<Map<String, Object>> verifyPassword(@AuthenticationPrincipal Long userId,
                                                                @RequestBody Map<String, String> request) {
-        Long userId = Long.parseLong(userDetails.getUsername());
         String password = request.get("password");
         if (password == null || password.isBlank()) {
             throw new IllegalArgumentException("비밀번호를 입력해주세요.");
@@ -139,8 +133,7 @@ public class UserController {
 
     // 회원 탈퇴
     @DeleteMapping
-    public ResponseEntity<Map<String, Object>> withdrawUser(@AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
+    public ResponseEntity<Map<String, Object>> withdrawUser(@AuthenticationPrincipal Long userId) {
         withdrawFacade.withdraw(userId);
 
         // SecurityContextHolder 처리는 Security 인프라 관심사
