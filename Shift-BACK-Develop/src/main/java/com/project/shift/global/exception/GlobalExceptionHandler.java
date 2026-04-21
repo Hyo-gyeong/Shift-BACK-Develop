@@ -1,32 +1,83 @@
 package com.project.shift.global.exception;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 
+// [리팩토링 2026-04-19] GlobalExceptionHandler 확장
+// 추가 사항:
+//   1) BusinessException 핸들러 도입 — 도메인 예외 마다 자기 고유의 status/title 을 가져오므로
+//      이 핸들러 하나로 UserNotFoundException(404) / InvalidPasswordException(401) /
+//      DuplicatePhoneException(409) 등을 의미에 맞는 HTTP 상태코드로 내려줄 수 있음.
+//      이전에는 모두 IllegalArgumentException → 400 으로 뭉쳐 내려가 클라이언트 분기가 어려웠음.
+//   2) MethodArgumentNotValidException 핸들러 도입 — @Valid 가 걸린 DTO 의 Bean Validation 실패를
+//      필드별 에러 맵 ("errors" custom property) 으로 묶어 400 응답.
+//      → 기존 수동 검증(idValidate/passwordValidate) 을 Bean Validation 으로 위임 가능해짐.
+//   3) IllegalStateException 의 상태코드를 409 CONFLICT 로 조정.
+//      이전에는 400 으로 처리했으나 "상태상 수행 불가"(예: 배송 중인 상품이 있어 탈퇴 불가) 는
+//      RESTful 관점에서 충돌 상황이므로 409 가 적절.
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 잘못된 요청 파라미터, 비즈니스 규칙 위반 (유효성 검증 실패 등)
+    // [리팩토링 2026-04-19] 도메인 예외 공통 처리
+    // BusinessException 서브클래스(UserNotFoundException 등)는 자기 고유의 status/title 을 갖고 있음.
+    // 이 핸들러가 해당 값을 그대로 ProblemDetail 에 실어 내려줌.
+    @ExceptionHandler(BusinessException.class)
+    public ProblemDetail handleBusiness(BusinessException e) {
+        log.warn("[GLOBAL] {}: {}", e.getClass().getSimpleName(), e.getMessage());
+        return createProblemDetail(e.getStatus(), e.getTitle(), e.getMessage());
+    }
+
+    // @RequestBody @Valid 실패는 MethodArgumentNotValidException
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidation(MethodArgumentNotValidException e) {
+        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+        Map<String, String> errors = new LinkedHashMap<>();
+        for (FieldError fe : fieldErrors) {
+            errors.put(fe.getField(), fe.getDefaultMessage());
+        }
+        log.warn("[GLOBAL] Validation failed: {}", errors);
+
+        ProblemDetail pd = createProblemDetail(
+                HttpStatus.BAD_REQUEST,
+                "입력값 오류",
+                "요청 값이 유효성 검증에 실패했습니다."
+        );
+        pd.setProperty("errors", errors);
+        return pd;
+    }
+
+    // 잘못된 요청 파라미터 (포맷/타입 위반 등 순수 형식 오류)
+    // 도메인 규칙 위반은 BusinessException 을 쓰도록 점진 이관하지만,
+    // 외부 라이브러리나 기타 루틴이 여전히 IllegalArgumentException 을 던질 수 있어 안전망으로 유지.
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleIllegalArgument(IllegalArgumentException e) {
         log.warn("[GLOBAL] IllegalArgumentException: {}", e.getMessage());
         return createProblemDetail(HttpStatus.BAD_REQUEST, "잘못된 요청", e.getMessage());
     }
 
-    // 현재 상태에서 수행 불가 (예: 배송 중인 상품이 있어 탈퇴 불가)
+    // [리팩토링 2026-04-19] IllegalStateException 의 상태코드 400 -> 409 CONFLICT
+    // 이전: createProblemDetail(HttpStatus.BAD_REQUEST, "처리 불가", ...)
+    // 개선: "현재 상태로는 수행 불가"(예: 배송 중인 상품 존재로 탈퇴 불가) 는 RESTful 관점에서
+    //       전형적인 충돌 상황이므로 409 가 의미상 정확.
     @ExceptionHandler(IllegalStateException.class)
     public ProblemDetail handleIllegalState(IllegalStateException e) {
         log.warn("[GLOBAL] IllegalStateException: {}", e.getMessage());
-        return createProblemDetail(HttpStatus.BAD_REQUEST, "처리 불가", e.getMessage());
+        return createProblemDetail(HttpStatus.CONFLICT, "처리 불가", e.getMessage());
     }
 
     // 권한 없음 (본인 외 리소스 접근 시도 등)
@@ -62,4 +113,24 @@ public class GlobalExceptionHandler {
         problemDetail.setProperty("timestamp", LocalDateTime.now());
         return problemDetail;
     }
+    
+	 // @Validated 적용 시 파라미터 레벨 검증 실패 처리
+	 // @Validated + 파라미터 직접 검증 실패는 ConstraintViolationException으로 분리됨
+	 @ExceptionHandler(ConstraintViolationException.class)
+	 public ProblemDetail handleConstraintViolation(ConstraintViolationException e) {
+	     Map<String, String> errors = new LinkedHashMap<>();
+	     e.getConstraintViolations().forEach(cv -> {
+	         String field = cv.getPropertyPath().toString();
+	         errors.put(field, cv.getMessage());
+	     });
+	     log.warn("[GLOBAL] ConstraintViolation: {}", errors);
+	
+	     ProblemDetail pd = createProblemDetail(
+	             HttpStatus.BAD_REQUEST,
+	             "입력값 오류",
+	             "요청 값이 유효성 검증에 실패했습니다."
+	     );
+	     pd.setProperty("errors", errors);
+	     return pd;
+	 }
 }

@@ -1,4 +1,4 @@
-package com.project.shift.user.dto;
+package com.project.shift.user.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
