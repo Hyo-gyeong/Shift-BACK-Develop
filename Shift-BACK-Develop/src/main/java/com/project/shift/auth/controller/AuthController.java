@@ -1,13 +1,15 @@
 package com.project.shift.auth.controller;
 
-import com.project.shift.auth.dto.LoginRequestDTO;
-import com.project.shift.auth.dto.LoginResponseDTO;
+import com.project.shift.auth.dto.request.LoginRequestDTO;
+import com.project.shift.auth.dto.response.LoginResponseDTO;
 import com.project.shift.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -27,12 +29,10 @@ public class AuthController {
     }
 
     // 로그인 기능
+    // [리팩토링 2026-04-19] @Valid + 수동 검증 제거
     @PostMapping("/login")
-    public ResponseEntity<?> userLogin(@RequestBody LoginRequestDTO request, HttpServletResponse response) {
+    public ResponseEntity<?> userLogin(@Valid @RequestBody LoginRequestDTO request, HttpServletResponse response) {
         log.info("[AUTH] 로그인 시도 User ID: {}", request.loginId());
-        // 기본 검증
-        idValidate(request.loginId());
-        passwordValidate(request.password());
 
         LoginResponseDTO tokens = authService.login(request);
         log.info("[AUTH] 로그인 성공 User ID: {}", request.loginId());
@@ -43,29 +43,12 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("accessToken", tokens.accessToken()));
     }
 
-    // 비밀번호 기본 검증
-    private static void passwordValidate(String password) {
-        if (password == null || password.isBlank()) {
-            throw new IllegalArgumentException("[SYSTEM] 비밀번호가 입력되지 않았습니다.");
-        }
-        if (password.length() > 24) {
-            throw new IllegalArgumentException("[SYSTEM] 비밀번호 형식이 올바르지 않습니다.");
-        }
-    }
+    // [리팩토링 2026-04-19] 수동 검증 메서드 제거
 
-    // 아이디 기본 검증
-    private static void idValidate(String loginId) {
-        if (loginId == null || loginId.isBlank()) {
-            throw new IllegalArgumentException("[SYSTEM] 값이 입력되지 않았습니다.");
-        }
-        if (loginId.length() > 20) {
-            throw new IllegalArgumentException("[SYSTEM] 아이디 형식이 올바르지 않습니다.");
-        }
-    }
-
+    // [리팩토링 2026-04-19] logout() 에 @AuthenticationPrincipal Long userId 주입
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
-        authService.logout();
+    public ResponseEntity<?> logout(@AuthenticationPrincipal Long userId) {
+        authService.logout(userId);
 
         // 로그아웃 시 쿠키 삭제
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")

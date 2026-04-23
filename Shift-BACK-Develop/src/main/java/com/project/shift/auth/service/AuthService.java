@@ -6,13 +6,11 @@ import java.util.Optional;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.project.shift.auth.dto.LoginRequestDTO;
-import com.project.shift.auth.dto.LoginResponseDTO;
+import com.project.shift.auth.dto.request.LoginRequestDTO;
+import com.project.shift.auth.dto.response.LoginResponseDTO;
 import com.project.shift.auth.entity.RefreshTokenEntity;
 import com.project.shift.auth.repository.AuthRepository;
 import com.project.shift.auth.repository.RefreshTokenRepository;
@@ -41,8 +39,14 @@ public class AuthService {
                 loginInfo.password()
         );
 
-        Authentication authentication = authenticationManager.authenticate(cred);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // [리팩토링 2026-04-19] SecurityContextHolder 세팅 제거
+        // 이전:
+        //   SecurityContextHolder.getContext().setAuthentication(authentication);
+        // 개선: Stateless JWT 환경에서 SecurityContextHolder 에 authentication 을 저장해도
+        //       다음 요청은 새 스레드/새 컨텍스트에서 시작하므로 이 저장은 무의미한 no-op.
+        //       인증 실패 시에는 authenticationManager 가 BadCredentialsException 을 던져
+        //       GlobalExceptionHandler 가 401 응답으로 처리.
+        authenticationManager.authenticate(cred);
 
         UserEntity foundUser = authRepository.findByLoginId(loginInfo.loginId())
                 .orElseThrow(() -> new BadCredentialsException("[SYSTEM] 사용자를 찾을 수 없습니다."));
@@ -62,16 +66,12 @@ public class AuthService {
         return new LoginResponseDTO(accessToken, refreshToken);
     }
 
+    // [리팩토링 2026-04-19] logout() 시그니처 변경 + SecurityContextHolder 의존 제거
     @Transactional
-    public void logout() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = Long.parseLong(auth.getName());
-
+    public void logout(Long userId) {
         log.info("[AUTH] 로그아웃 시작 UserId: {}", userId);
 
-        if (refreshTokenRepository.existsById(userId)) {
-            refreshTokenRepository.deleteById(userId);
-        }
+        refreshTokenRepository.deleteById(userId);
 
         log.info("[AUTH] 로그아웃 완료 UserId: {}", userId);
     }
@@ -79,11 +79,10 @@ public class AuthService {
     // 토큰 재발급
     @Transactional
     public LoginResponseDTO refresh(String accessToken, String refreshToken) {
-        // refresh token 검증
-        validateRefreshToken(refreshToken);
-
-        // 토큰의 값(userId)이 서로 일치하는지 체크
-        Long userId = validateTokenPair(accessToken, refreshToken);
+        // [리팩토링 2026-04-19] refresh() 검증 3단계 → 2단계로 단순화
+        //   JwtService 만으로 가능한 서명/타입/짝 검증을 verifyRefreshPair 한 메서드로 통합.
+        //   DB 기반 검증(validateUserByToken) 은 Repository 접근이 필요해 Service 에 유지.
+        Long userId = jwtService.verifyRefreshPair(accessToken, refreshToken);
 
         // DB의 정보와 같은지 체크
         UserEntity foundUser = validateUserByToken(userId, refreshToken);
@@ -97,32 +96,8 @@ public class AuthService {
         return new LoginResponseDTO(newAccessToken, newRefreshToken);
     }
 
-    private void validateRefreshToken(String refreshToken) {
-        // 토큰 유효성 체크
-        if (!jwtService.isValidToken(refreshToken)) {
-            throw new BadCredentialsException("[SYSTEM] 유효하지 않은 리프레시 토큰입니다.");
-        }
-        // 토큰 타입이 refresh 인지 체크
-        if (!jwtService.isRefreshToken(refreshToken)) {
-            throw new BadCredentialsException("[SYSTEM] 토큰 타입이 리프레시 토큰이 아닙니다.");
-        }
-    }
-
-    private Long validateTokenPair(String accessToken, String refreshToken) {
-        Long userIdFromAccess = jwtService.extractUserIdFromExpiredValidToken(accessToken);
-        if (userIdFromAccess == null) {
-            throw new BadCredentialsException("[SYSTEM] 신뢰할 수 없는 엑세스 토큰입니다.");
-        }
-
-        Long userIdFromRefresh = jwtService.extractUserIdFromValidToken(refreshToken);
-
-        // 두 토큰의 짝이 맞는지 체크
-        if (!userIdFromAccess.equals(userIdFromRefresh)) {
-            throw new BadCredentialsException("[SYSTEM] 토큰이 서로 일치하지 않습니다.");
-        }
-        return userIdFromRefresh;
-    }
-
+    // [리팩토링 2026-04-19] validateRefreshToken / validateTokenPair 제거
+    //       JwtService.verifyRefreshPair 로 통합하여 AuthService 의 refresh() 가 한 줄로 처리.
     private UserEntity validateUserByToken(Long userId, String refreshToken) {
         Optional<RefreshTokenEntity> tokenOpt = refreshTokenRepository.findById(userId);
 
@@ -130,12 +105,12 @@ public class AuthService {
             throw new BadCredentialsException("[SYSTEM] 리프레시 토큰이 저장된 리프레시 토큰과 일치하지 않습니다.");
         }
 
-        UserEntity foundUser = authRepository.findByUserId(userId)
+        UserEntity foundUser = authRepository.findById(userId)
                 .orElseThrow(() -> new BadCredentialsException("[SYSTEM] 사용자를 찾을 수 없습니다."));
 
         return foundUser;
     }
-    
+
     private void saveRefreshToken(UserEntity foundUser, String newTokenValue) {
     	// expiredAt : 실제 설정값을 읽어 DB와 동기화 (7일)
         LocalDateTime newExpiredAt = LocalDateTime.now().plus(jwtService.getRefreshTokenValidity());
@@ -149,7 +124,7 @@ public class AuthService {
                     return e;
                 })
                 .orElseGet(() -> RefreshTokenEntity.builder()
-                        .user(foundUser)
+                        .userId(foundUser.getUserId())
                         .tokenValue(newTokenValue)
                         .expiredAt(newExpiredAt)
                         .build());

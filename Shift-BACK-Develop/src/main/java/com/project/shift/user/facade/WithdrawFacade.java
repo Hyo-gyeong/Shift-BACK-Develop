@@ -60,9 +60,7 @@ public class WithdrawFacade {
 
         // 4. [REFACTOR 2026-04-14] 리프레시 토큰 물리 삭제
         //    존재하지 않아도 조용히 통과 (이미 로그아웃된 경우)
-        if (refreshTokenRepository.existsById(userId)) {
-            refreshTokenRepository.deleteById(userId);
-        }
+        refreshTokenRepository.deleteById(userId);
 
         // 5. 친구 관계 삭제 — chat 패키지 리팩토링 완료 후 추가
         // friendService.deleteAllFriends(userId);

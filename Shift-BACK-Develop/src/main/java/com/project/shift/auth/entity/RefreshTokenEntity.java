@@ -2,15 +2,9 @@ package com.project.shift.auth.entity;
 
 import java.time.LocalDateTime;
 
-import com.project.shift.user.entity.UserEntity;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,16 +37,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshTokenEntity {
 
-    // @MapsId 공유 PK 전략: User의 userId를 이 엔티티의 PK로 재사용
-	// 외래 키(FK)를 기본 키(PK)로 동시에 사용(식별 관계)할 때 연관관계 매핑과 식별자 매핑을 연결하는 핵심 어노테이션
     @Id
     @Column(name = "USER_ID")
     private Long userId;
-
-    @MapsId  // user.userId 값을 @Id 필드(userId)로 자동 매핑
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_ID")
-    private UserEntity user;
 
     @Column(name = "TOKEN_VALUE", nullable = false, length = 500)
     private String tokenValue;
@@ -61,8 +48,8 @@ public class RefreshTokenEntity {
     private LocalDateTime expiredAt;
 
     @Builder
-    RefreshTokenEntity(UserEntity user, String tokenValue, LocalDateTime expiredAt) {
-        this.user = user;
+    RefreshTokenEntity(Long userId, String tokenValue, LocalDateTime expiredAt) {
+        this.userId = userId;
         this.tokenValue = tokenValue;
         this.expiredAt = expiredAt;
     }

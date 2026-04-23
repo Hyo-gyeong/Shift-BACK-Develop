@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -130,5 +131,26 @@ public class JwtService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    // [리팩토링 2026-04-19] AuthService refresh() 의 검증 3단계를 한 메서드로 통합
+    public Long verifyRefreshPair(String accessToken, String refreshToken) {
+        if (!isValidToken(refreshToken)) {
+            throw new BadCredentialsException("[SYSTEM] 유효하지 않은 리프레시 토큰입니다.");
+        }
+        if (!isRefreshToken(refreshToken)) {
+            throw new BadCredentialsException("[SYSTEM] 토큰 타입이 리프레시 토큰이 아닙니다.");
+        }
+
+        Long userIdFromAccess = extractUserIdFromExpiredValidToken(accessToken);
+        if (userIdFromAccess == null) {
+            throw new BadCredentialsException("[SYSTEM] 신뢰할 수 없는 엑세스 토큰입니다.");
+        }
+
+        Long userIdFromRefresh = extractUserIdFromValidToken(refreshToken);
+        if (!userIdFromAccess.equals(userIdFromRefresh)) {
+            throw new BadCredentialsException("[SYSTEM] 토큰이 서로 일치하지 않습니다.");
+        }
+        return userIdFromRefresh;
     }
 }

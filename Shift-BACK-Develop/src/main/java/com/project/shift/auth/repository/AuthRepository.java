@@ -10,6 +10,4 @@ import com.project.shift.user.entity.UserEntity;
 @Repository
 public interface AuthRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByLoginId(String loginId);
-
-    Optional<UserEntity> findByUserId(Long userId);
 }
