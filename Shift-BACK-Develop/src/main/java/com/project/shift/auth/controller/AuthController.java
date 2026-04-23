@@ -67,25 +67,13 @@ public class AuthController {
 
     // Access 토큰 재발급 기능
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestHeader(value = HEADER, required = false) String authorizationHeader,
-                                          @CookieValue(name = "refreshToken", required = false) String refreshToken) {
-        // 쿠키 유효성 검사
-        if (refreshToken == null) {
-            throw new IllegalArgumentException("[SYSTEM] 리프레시 토큰이 존재하지 않습니다.");
-        }
+    public ResponseEntity<?> refreshToken(
+            @RequestHeader(value = HEADER) String authorizationHeader,
+            @CookieValue(name = "refreshToken") String refreshToken) {
 
-        // 헤더 유효성 검사
-        if (authorizationHeader == null || !authorizationHeader.startsWith(TOKEN_HEADER)) {
-            throw new IllegalArgumentException("[SYSTEM] Access Token이 올바르지 않습니다.");
-        }
-
-        // 헤더에서 토큰 추출
         String accessToken = authorizationHeader.replace(TOKEN_HEADER, "");
-
-        // 토큰 재발급 서비스 호출
         LoginResponseDTO tokens = authService.refresh(accessToken, refreshToken);
 
-        // 새로운 리프레시 토큰 쿠키 생성
         ResponseCookie newRefreshCookie = createRefreshTokenCookie(tokens.refreshToken());
 
         return ResponseEntity.ok()

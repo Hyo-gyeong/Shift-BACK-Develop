@@ -11,6 +11,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -133,4 +135,28 @@ public class GlobalExceptionHandler {
 	     pd.setProperty("errors", errors);
 	     return pd;
 	 }
+	 
+	// required = true인 @CookieValue 누락 시
+	// ex) refreshToken 쿠키 없이 /auth/refresh 요청
+	@ExceptionHandler(MissingRequestCookieException.class)
+	public ProblemDetail handleMissingCookie(MissingRequestCookieException e) {
+	    log.warn("[GLOBAL] MissingRequestCookieException: {}", e.getMessage());
+	    return createProblemDetail(
+	            HttpStatus.BAD_REQUEST,
+	            "잘못된 요청",
+	            "'" + e.getCookieName() + "' 쿠키가 존재하지 않습니다."
+	    );
+	}
+
+	// required = true인 @RequestHeader 누락 시
+	// ex) Authorization 헤더 없이 /auth/refresh 요청
+	@ExceptionHandler(MissingRequestHeaderException.class)
+	public ProblemDetail handleMissingHeader(MissingRequestHeaderException e) {
+	    log.warn("[GLOBAL] MissingRequestHeaderException: {}", e.getMessage());
+	    return createProblemDetail(
+	            HttpStatus.BAD_REQUEST,
+	            "잘못된 요청",
+	            "'" + e.getHeaderName() + "' 헤더가 존재하지 않습니다."
+	    );
+	}
 }
