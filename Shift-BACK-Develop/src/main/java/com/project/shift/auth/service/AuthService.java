@@ -12,10 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.project.shift.auth.dto.request.LoginRequestDTO;
 import com.project.shift.auth.dto.response.LoginResponseDTO;
 import com.project.shift.auth.entity.RefreshTokenEntity;
-import com.project.shift.auth.repository.AuthRepository;
 import com.project.shift.auth.repository.RefreshTokenRepository;
 import com.project.shift.global.jwt.JwtService;
 import com.project.shift.user.entity.UserEntity;
+import com.project.shift.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AuthRepository authRepository;
+    private final UserRepository userRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -48,7 +48,7 @@ public class AuthService {
         //       GlobalExceptionHandler 가 401 응답으로 처리.
         authenticationManager.authenticate(cred);
 
-        UserEntity foundUser = authRepository.findByLoginId(loginInfo.loginId())
+        UserEntity foundUser = userRepository.findByLoginId(loginInfo.loginId())
                 .orElseThrow(() -> new BadCredentialsException("[SYSTEM] 사용자를 찾을 수 없습니다."));
 
         Long userId = foundUser.getUserId();
@@ -105,7 +105,7 @@ public class AuthService {
             throw new BadCredentialsException("[SYSTEM] 리프레시 토큰이 저장된 리프레시 토큰과 일치하지 않습니다.");
         }
 
-        UserEntity foundUser = authRepository.findById(userId)
+        UserEntity foundUser = userRepository.findById(userId)
                 .orElseThrow(() -> new BadCredentialsException("[SYSTEM] 사용자를 찾을 수 없습니다."));
 
         return foundUser;
